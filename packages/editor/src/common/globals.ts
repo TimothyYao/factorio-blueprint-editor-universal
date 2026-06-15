@@ -136,13 +136,76 @@ function getBT(path: string): Promise<Texture> {
     })
 }
 
+/**
+ * A loud "missing texture" marker — a magenta/black checkerboard that tiles
+ * across whatever footprint a sprite expected. Built lazily (it needs a DOM
+ * canvas) and shared by every failed load. `repeat` wrap lets the 16px source
+ * fill any frame size, so the marker lands at the sprite's real size instead of
+ * a 1px dot. Shown ONLY on a failed load (see getTexture); a texture still in
+ * flight keeps the transparent EMPTY source, so this never flashes mid-load.
+ */
+let failedTextureSource: Texture['source'] | undefined
+function getFailedTextureSource(): Texture['source'] {
+    if (failedTextureSource) return failedTextureSource
+    const S = 16
+    const canvas = document.createElement('canvas')
+    canvas.width = S
+    canvas.height = S
+    const ctx = canvas.getContext('2d')
+    if (ctx) {
+        ctx.fillStyle = '#ff00ff'
+        ctx.fillRect(0, 0, S, S)
+        ctx.fillStyle = '#101010'
+        ctx.fillRect(0, 0, S / 2, S / 2)
+        ctx.fillRect(S / 2, S / 2, S / 2, S / 2)
+    }
+    const tex = Texture.from(canvas)
+    tex.source.style.addressMode = 'repeat'
+    tex.source.style.scaleMode = 'nearest'
+    failedTextureSource = tex.source
+    return failedTextureSource
+}
+
+/**
+ * A calm placeholder shown while a texture's atlas file is still loading: a
+ * translucent light-gray fill rather than nothing, sized to the frame the real
+ * sprite will occupy, so entities fade in as a soft block instead of popping
+ * out of empty space (cuts the flicker on first paint / slow fetches). Solid
+ * colour, so `repeat` wrap fills any frame from one tiny shared source.
+ */
+let loadingTextureSource: Texture['source'] | undefined
+function getLoadingTextureSource(): Texture['source'] {
+    if (loadingTextureSource) return loadingTextureSource
+    const S = 8
+    const canvas = document.createElement('canvas')
+    canvas.width = S
+    canvas.height = S
+    const ctx = canvas.getContext('2d')
+    if (ctx) {
+        ctx.fillStyle = 'rgba(150, 150, 150, 0.3)'
+        ctx.fillRect(0, 0, S, S)
+    }
+    const tex = Texture.from(canvas)
+    tex.source.style.addressMode = 'repeat'
+    loadingTextureSource = tex.source
+    return loadingTextureSource
+}
+
 function getTexture(path: string, x = 0, y = 0, w = 0, h = 0): Texture {
     const key = `${DATA_URL}/${path.replace('.png', '.basis')}`
     const KK = `${key}-${x}-${y}-${w}-${h}`
     let t = textureCache.get(KK)
     if (t) return t
-    t = new Texture({ source: Texture.EMPTY.source, dynamic: true })
+    t = new Texture({ source: getLoadingTextureSource(), dynamic: true })
     t.noFrame = false
+    // Size the loading placeholder to the frame the real texture will fill, so
+    // the entity shows a soft gray block at the right footprint while in flight
+    // (the source is solid, so repeat wrap fills any size).
+    t.frame.x = 0
+    t.frame.y = 0
+    t.frame.width = w || 32
+    t.frame.height = h || 32
+    t.update()
     textureCache.set(KK, t)
     let prom = started.get(key)
     if (!prom) {
@@ -159,7 +222,20 @@ function getTexture(path: string, x = 0, y = 0, w = 0, h = 0): Texture {
             t.update()
             t.dynamic = false
         },
-        err => console.error(err)
+        err => {
+            console.error(err)
+            // Don't leave an invisible gap: swap in the shared checkerboard and
+            // tile it across the frame the atlas would have filled. Loud and
+            // diagnosable — the signal a partially-covered pack needs. (Distinct
+            // from the in-flight state, which keeps the transparent EMPTY source.)
+            t.source = getFailedTextureSource()
+            t.frame.x = 0
+            t.frame.y = 0
+            t.frame.width = w || 32
+            t.frame.height = h || 32
+            t.update()
+            t.dynamic = false
+        }
     )
     return t
 }
