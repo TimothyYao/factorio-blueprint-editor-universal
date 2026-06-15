@@ -166,13 +166,46 @@ function getFailedTextureSource(): Texture['source'] {
     return failedTextureSource
 }
 
+/**
+ * A calm placeholder shown while a texture's atlas file is still loading: a
+ * translucent light-gray fill rather than nothing, sized to the frame the real
+ * sprite will occupy, so entities fade in as a soft block instead of popping
+ * out of empty space (cuts the flicker on first paint / slow fetches). Solid
+ * colour, so `repeat` wrap fills any frame from one tiny shared source.
+ */
+let loadingTextureSource: Texture['source'] | undefined
+function getLoadingTextureSource(): Texture['source'] {
+    if (loadingTextureSource) return loadingTextureSource
+    const S = 8
+    const canvas = document.createElement('canvas')
+    canvas.width = S
+    canvas.height = S
+    const ctx = canvas.getContext('2d')
+    if (ctx) {
+        ctx.fillStyle = 'rgba(150, 150, 150, 0.3)'
+        ctx.fillRect(0, 0, S, S)
+    }
+    const tex = Texture.from(canvas)
+    tex.source.style.addressMode = 'repeat'
+    loadingTextureSource = tex.source
+    return loadingTextureSource
+}
+
 function getTexture(path: string, x = 0, y = 0, w = 0, h = 0): Texture {
     const key = `${DATA_URL}/${path.replace('.png', '.basis')}`
     const KK = `${key}-${x}-${y}-${w}-${h}`
     let t = textureCache.get(KK)
     if (t) return t
-    t = new Texture({ source: Texture.EMPTY.source, dynamic: true })
+    t = new Texture({ source: getLoadingTextureSource(), dynamic: true })
     t.noFrame = false
+    // Size the loading placeholder to the frame the real texture will fill, so
+    // the entity shows a soft gray block at the right footprint while in flight
+    // (the source is solid, so repeat wrap fills any size).
+    t.frame.x = 0
+    t.frame.y = 0
+    t.frame.width = w || 32
+    t.frame.height = h || 32
+    t.update()
     textureCache.set(KK, t)
     let prom = started.get(key)
     if (!prom) {
