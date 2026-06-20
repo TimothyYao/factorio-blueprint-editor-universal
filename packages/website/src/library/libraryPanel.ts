@@ -50,6 +50,8 @@ export function initLibraryPanel(
 ): LibraryPanel {
     // Which pack's tree is being browsed (defaults to the active/rendered one).
     let browsedPack = controller.getActivePack()
+    // Folder ids the user has collapsed (UI-only, per session — not persisted).
+    const collapsed = new Set<string>()
     const onActivePack = (): boolean => browsedPack === controller.getActivePack()
     const packLabel = (id: string): string => cb.packList().find(p => p.id === id)?.label ?? id
 
@@ -157,6 +159,36 @@ export function initLibraryPanel(
         refresh()
         cb.toast(`Saved "${name}"`, 'success')
     })
+
+    // Interchange: copy a native string out, or paste one in (decomposed). These
+    // act on the *browsed* pack (pure data ops — no live canvas involved).
+    const exportToClipboard = (str: string | null, what: string): void => {
+        if (!str) {
+            cb.toast(`Nothing to export — ${what} is empty.`, 'info')
+            return
+        }
+        cb.copyText(str)
+    }
+
+    actionButton('Import…', async () => {
+        const str = cb.promptName('Paste a blueprint or book string', '')
+        if (!str) return
+        if (!str.trim().startsWith('0')) {
+            cb.toast('Paste a blueprint string (it should start with “0”).', 'warning')
+            return
+        }
+        try {
+            await controller.importInto(browsedPack, str.trim())
+            refresh()
+            cb.toast('Imported', 'success')
+        } catch {
+            cb.toast('Couldn’t read that blueprint string.', 'error')
+        }
+    })
+    actionButton('Export pack', () =>
+        exportToClipboard(controller.exportPack(browsedPack), 'this pack')
+    )
+    actionButton('Export all', () => exportToClipboard(controller.exportLibrary(), 'the library'))
 
     // --- scrollable body ----------------------------------------------------
     const body = document.createElement('div')
@@ -401,6 +433,7 @@ export function initLibraryPanel(
         const name = cb.promptName('New folder name', 'New folder')
         if (!name) return
         await controller.createFolder(browsedPack, name, parentId)
+        if (parentId) collapsed.delete(parentId) // reveal the new subfolder
         refresh()
     }
 
@@ -527,8 +560,14 @@ export function initLibraryPanel(
             items.push({ label: 'Copy string', run: () => copyString(node.encoded) })
             items.push({ label: 'Versions…', run: () => openVersions(node) })
         }
-        if (node.kind === 'folder')
+        if (node.kind === 'folder') {
             items.push({ label: 'New subfolder', run: () => newFolder(node.id) })
+            items.push({
+                label: 'Export as book',
+                run: () =>
+                    exportToClipboard(controller.exportNode(browsedPack, node.id), 'this folder'),
+            })
+        }
         items.push(
             { label: 'Rename', run: () => renameNode(node) },
             { label: 'Duplicate', run: () => duplicateNode(node.id) },
@@ -603,9 +642,16 @@ export function initLibraryPanel(
         const row = document.createElement('div')
         row.className = 'library-row library-folder'
         row.style.paddingLeft = `${8 + depth * 16}px`
+        const isCollapsed = collapsed.has(node.id)
         const name = document.createElement('span')
         name.className = 'library-row-name'
-        name.textContent = `📁 ${node.name}`
+        // 📂 open / 📁 closed; click the name to toggle (the ⋯ stays a menu).
+        name.textContent = `${isCollapsed ? '📁' : '📂'} ${node.name}`
+        name.addEventListener('click', () => {
+            if (collapsed.has(node.id)) collapsed.delete(node.id)
+            else collapsed.add(node.id)
+            refresh()
+        })
         const buttons = document.createElement('span')
         buttons.className = 'library-row-buttons'
         buttons.appendChild(
@@ -613,7 +659,7 @@ export function initLibraryPanel(
         )
         row.append(name, buttons)
         into.appendChild(row)
-        for (const child of node.children) renderNode(child, into, depth + 1)
+        if (!isCollapsed) for (const child of node.children) renderNode(child, into, depth + 1)
     }
 
     const section = (label: string): void => {
