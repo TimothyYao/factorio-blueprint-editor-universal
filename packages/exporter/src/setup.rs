@@ -313,13 +313,35 @@ pub async fn extract(
     let active_mods_path = base_factorio_dir.join("script-output/active-mods.json");
     let factorio_executable = base_factorio_dir.join("bin/x64/factorio");
 
-    let info = include_str!("export-data/info.json");
+    // The export-data mod dumps `data.raw` from its own data-final-fixes. It
+    // must load LAST, or that snapshot is taken before other mods' own
+    // data-final-fixes and misses whatever they finalize there. Factorio breaks
+    // load-order ties between unrelated mods alphabetically, so with only a
+    // `base` dependency "export-data" (e) sorts ahead of e.g. "space-exploration"
+    // (s) — which is exactly why SE's late recipe edits (utility/production
+    // science) were captured in their pre-final-fixes state. Add an OPTIONAL
+    // dependency (`? mod`) on every enabled pack mod: optional deps still enforce
+    // "load after" when the mod is present, without failing if one is absent, so
+    // export-data now sorts after every other enabled mod.
+    let info = {
+        let mut info: serde_json::Value =
+            serde_json::from_str(include_str!("export-data/info.json"))?;
+        let mut deps = info["dependencies"].as_array().cloned().unwrap_or_default();
+        for m in &pack.mods {
+            if m == "base" {
+                continue; // already a required dependency in the base info.json
+            }
+            deps.push(serde_json::Value::String(format!("? {m}")));
+        }
+        info["dependencies"] = serde_json::Value::Array(deps);
+        serde_json::to_string_pretty(&info)?
+    };
     let script = include_str!("export-data/control.lua");
     let data = include_str!("export-data/data-final-fixes.lua");
     let locale = generate_locale(&factorio_data, &mods_root, &pack.mods).await?;
 
     tokio::fs::create_dir_all(&scenario_dir).await?;
-    tokio::fs::write(mod_dir.join("info.json"), info).await?;
+    tokio::fs::write(mod_dir.join("info.json"), &info).await?;
     tokio::fs::write(mod_dir.join("locale.lua"), locale).await?;
     tokio::fs::write(mod_dir.join("data-final-fixes.lua"), data).await?;
     tokio::fs::write(scenario_dir.join("control.lua"), script).await?;
