@@ -21,11 +21,15 @@ set -euo pipefail
 # the caller's cwd (npm already cd's here; a direct `./e2e/run-e2e.sh` may not).
 cd "$(dirname "$0")/.."
 
-# 1) A stale PLAYWRIGHT_BROWSERS_PATH. If it's exported but points at a directory
-#    that does not exist, Playwright dutifully looks for the browser there, finds
-#    nothing, and fails at launch. Drop it so Playwright falls back to its default
-#    cache (~/.cache/ms-playwright), where the browser usually already lives.
-if [[ -n "${PLAYWRIGHT_BROWSERS_PATH:-}" && ! -d "${PLAYWRIGHT_BROWSERS_PATH}" ]]; then
+# 1) A stale PLAYWRIGHT_BROWSERS_PATH. If it's exported as an *absolute* path to a
+#    directory that does not exist, Playwright dutifully looks for the browser
+#    there, finds nothing, and fails at launch. Drop it so Playwright falls back to
+#    its default cache (~/.cache/ms-playwright), where the browser usually already
+#    lives. Only absolute paths are touched: the documented sentinel `0` (use the
+#    copy under node_modules) and relative values are left for Playwright to resolve
+#    against its own cwd — we don't second-guess those. (The `== /*` test is false
+#    for an unset/empty var too, so no separate emptiness check is needed.)
+if [[ "${PLAYWRIGHT_BROWSERS_PATH:-}" == /* && ! -d "${PLAYWRIGHT_BROWSERS_PATH}" ]]; then
     echo "run-e2e: PLAYWRIGHT_BROWSERS_PATH='${PLAYWRIGHT_BROWSERS_PATH}' does not exist — falling back to the default browser cache." >&2
     unset PLAYWRIGHT_BROWSERS_PATH
 fi
@@ -53,4 +57,7 @@ if [[ -r "${mem_max_file}" ]]; then
     fi
 fi
 
-exec npx playwright test "$@"
+# `--no-install` pins npx to the repo-local Playwright CLI (a devDependency, so
+# `npm install` has already provided it) and makes it error out rather than fetch
+# from the registry — keeping the wrapper network-free on constrained-egress hosts.
+exec npx --no-install playwright test "$@"
