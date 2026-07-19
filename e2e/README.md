@@ -40,6 +40,41 @@ that `@playwright/test` targets, so **don't** run `playwright install` — the
 browser-download CDN isn't in the egress allowlist and the step will 403. (This
 is also why the SessionStart hook installs deps but not browsers.)
 
+### Constrained / rootless hosts (`test:e2e:host`)
+
+On a normal box `npm run test:e2e` is all you need. On a sandboxed host the
+_environment around_ Playwright can be wrong in ways that make **every** spec die
+at browser launch in a few ms — long before any test logic — which reads like a
+mass failure but isn't:
+
+- `PLAYWRIGHT_BROWSERS_PATH` is exported but points at a directory that doesn't
+  exist, so Playwright can't find the browser; or
+- Chromium's system libs (`libnss3`, `libgbm`, `libX11`, …) are missing and there's
+  no root to `playwright install --with-deps` them, so the renderer dies at launch.
+
+`npm run test:e2e:host` (a thin wrapper, `e2e/run-e2e.sh`) heals both and then
+forwards every argument straight to `playwright test`, so it's a transparent no-op
+where the environment is already fine — args pass through as usual:
+
+```bash
+npm run test:e2e:host -- --project=desktop-chromium --workers=1
+```
+
+It never downloads anything (see the CDN note above); it only fixes how Playwright
+_finds_ an already-installed browser. If your host stages the Chromium system libs
+somewhere, point the loader at that dir (host-specific, so it lives in your env, not
+in the repo):
+
+```bash
+export PLAYWRIGHT_SYS_LIBS=/path/to/staged/usr/lib/x86_64-linux-gnu
+```
+
+One caveat the wrapper can only _warn_ about, not fix: the app is a single
+software-rendered (SwiftShader, no GPU) WebGL canvas, so under a tight cgroup
+memory cap the canvas-heavy specs (library / modpack / persistence) can OOM-crash
+the renderer as a `Target crashed` — even single-worker. That's a host limit, not a
+regression; run those on a box with more headroom (or lean on CI, which shards).
+
 ## Projects
 
 Two projects are defined; most specs run on both, touch specs on the mobile one:

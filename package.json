@@ -15,6 +15,7 @@
         "test:watch": "vitest",
         "test:e2e": "playwright test",
         "test:e2e:ui": "playwright test --ui",
+        "test:e2e:host": "bash e2e/run-e2e.sh",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
         "format": "prettier . --check",
