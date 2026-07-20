@@ -748,6 +748,40 @@ export function getRecipeIconSourceName(recipeName: string): string | undefined 
     return results.length === 1 ? results[0].name : undefined
 }
 
+/**
+ * Which of `names` have no entry in the inventory layout. The item/recipe/module
+ * picker renders its choices by walking `inventoryLayout` and showing the ones
+ * that are present in a filter, so a name absent from the layout is silently
+ * unselectable. That bites modded recipes the exporter couldn't place: a recipe
+ * inherits its subgroup from its product in Factorio, but the dump only carries
+ * an *explicit* subgroup, so product-inheriting recipes (e.g. SE's
+ * `se-iron-ingot-to-plate`, which turns an iron ingot into iron plate in an
+ * assembling machine) fall through and never reach the picker. Callers surface
+ * these as an extra "Other" group so a valid choice is never lost. Returned in
+ * layout-friendly order (by each entry's `order`, then name) for a stable list.
+ */
+export function namesMissingFromInventoryLayout(names: string[]): string[] {
+    const present = new Set<string>()
+    for (const group of FD.inventoryLayout) {
+        // Modded dumps can carry a group/subgroup whose empty Lua table
+        // serialized as `{}` (an object, not an array) — guard the shape.
+        const subgroups = Array.isArray(group.subgroups) ? group.subgroups : []
+        for (const subgroup of subgroups) {
+            const items = Array.isArray(subgroup.items) ? subgroup.items : []
+            for (const item of items) present.add(item.name)
+        }
+    }
+    const orderOf = (name: string): string =>
+        FD.recipes[name]?.order ??
+        FD.items[name]?.order ??
+        FD.fluids[name]?.order ??
+        FD.signals[name]?.order ??
+        ''
+    return names
+        .filter(name => !present.has(name))
+        .sort((a, b) => orderOf(a).localeCompare(orderOf(b)) || a.localeCompare(b))
+}
+
 export function loadData(str: string): void {
     const data = JSON.parse(str)
     FD.items = data.items

@@ -297,10 +297,18 @@ export class Entity extends EventEmitter<EntityEvents> {
         const e = this.entityData
         if (!isCraftingMachine(e)) return []
 
-        return Object.keys(FD.recipes)
-            .map(k => FD.recipes[k])
-            .filter(recipe => e.crafting_categories.includes(recipe.category || 'crafting'))
-            .map(recipe => recipe.name)
+        return (
+            Object.keys(FD.recipes)
+                .map(k => FD.recipes[k])
+                // `hidden` recipes never appear in a crafting menu in-game (the
+                // `recipe-unknown` placeholder, removed-item recipes like `pistol`,
+                // and all auto-generated `*-recycling` recipes). Offering them would
+                // just be noise. `hide_from_player_crafting` is deliberately *not*
+                // filtered — those are craftable in machines, just not by hand.
+                .filter(recipe => !recipe.hidden)
+                .filter(recipe => e.crafting_categories.includes(recipe.category || 'crafting'))
+                .map(recipe => recipe.name)
+        )
     }
 
     /** Count of module slots */
