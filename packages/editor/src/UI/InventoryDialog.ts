@@ -6,6 +6,7 @@ import F from './controls/functions'
 import { Dialog } from './controls/Dialog'
 import { Button } from './controls/Button'
 import { fitToWidthScale } from './quickbarLayout'
+import { isItemTappable, maxItemScroll } from './inventoryScroll'
 import { getRecents, recordRecent } from './recentItems'
 import { colors, styles } from './style'
 
@@ -587,7 +588,7 @@ export class InventoryDialog extends Dialog {
 
     private maxItemScroll(): number {
         const g = this.activeGroup()
-        return g ? Math.max(0, g.height - InventoryDialog.ITEMS_H) : 0
+        return g ? maxItemScroll(g.height, InventoryDialog.ITEMS_H) : 0
     }
 
     private applyItemScroll(): void {
@@ -595,10 +596,14 @@ export class InventoryDialog extends Dialog {
         this.m_itemScroll = Math.min(this.m_itemScroll, this.maxItemScroll())
         if (g) {
             g.y = -this.m_itemScroll
+            // The mask clips rendering but not hit-testing, so gate interactivity
+            // to the viewport (see inventoryScroll.ts — gating on the button's
+            // 36px size, not the 38px pitch, keeps the bottom row clickable at
+            // full scroll).
             for (const item of g.children) {
-                const top = item.y - this.m_itemScroll
-                item.eventMode =
-                    top >= -1 && top + 38 <= InventoryDialog.ITEMS_H + 1 ? 'static' : 'none'
+                item.eventMode = isItemTappable(item.y, this.m_itemScroll, InventoryDialog.ITEMS_H)
+                    ? 'static'
+                    : 'none'
             }
         }
         if (this.m_itemArrows) {
@@ -606,6 +611,42 @@ export class InventoryDialog extends Dialog {
             this.m_itemArrows.up.visible = this.m_itemScroll > 0
             this.m_itemArrows.down.visible = this.m_itemScroll < max
         }
+    }
+
+    /**
+     * Test seam (see testHook.ts): switch to the tallest item group, scroll it
+     * fully to the bottom and report the last item button's screen-space centre
+     * (CSS px) plus the applied scroll — the regression surface for "the last
+     * row renders but can't be clicked at full scroll". Returns null if the
+     * dialog has no item buttons at all.
+     */
+    public scrollToLastItem(): { x: number; y: number; scroll: number } | null {
+        // Measure from child positions, not `.height`: invisible containers
+        // (every group but the active one) report zero-size bounds.
+        const contentHeight = (c: Container): number =>
+            c.children.reduce((h, ch) => Math.max(h, ch.y + 36), 0)
+        let group: Container | undefined
+        for (const c of this.m_InventoryItems.children) {
+            if (c.children.length > 0 && (!group || contentHeight(c) > contentHeight(group)))
+                group = c
+        }
+        if (!group) return null
+
+        // Activate it the same way a tab tap does.
+        for (const c of this.m_InventoryItems.children) {
+            c.visible = c === group
+            c.interactiveChildren = c === group
+        }
+        for (const t of this.m_InventoryGroups.children) t.active = t.data === group
+
+        this.m_itemScroll = Number.MAX_SAFE_INTEGER // applyItemScroll clamps to max
+        this.applyItemScroll()
+
+        // Last *button* — the recents group interleaves Text section headers.
+        const last = [...group.children].reverse().find(c => c instanceof Button)
+        if (!last) return null
+        const b = last.getBounds().rectangle
+        return { x: b.x + b.width / 2, y: b.y + b.height / 2, scroll: this.m_itemScroll }
     }
 
     /**
