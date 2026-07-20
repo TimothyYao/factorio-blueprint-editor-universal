@@ -46,22 +46,42 @@ describe('namesMissingFromInventoryLayout', () => {
         loadData(readFileSync('packages/exporter/data/output/space-exploration/data.json', 'utf8'))
         const present = layoutNames()
         const somePresent = [...present].slice(0, 5)
-        const missing = namesMissingFromInventoryLayout([...somePresent, 'se-iron-ingot-to-plate'])
-        // Present names are never reported; the known orphan always is.
+        const absent = '__definitely-not-in-any-layout__'
+        const missing = namesMissingFromInventoryLayout([...somePresent, absent])
+        // Present names are never reported; a name that isn't in the layout is.
         for (const n of somePresent) expect(missing).not.toContain(n)
-        expect(missing).toContain('se-iron-ingot-to-plate')
+        expect(missing).toContain(absent)
     })
 })
 
 describe('SE iron-ingot-to-plate is pickable (regression)', () => {
-    it('assembling-machine-2 accepts it and the picker surfaces it', () => {
+    it('assembling-machine-2 accepts it and the layout now places it', () => {
         loadData(readFileSync('packages/exporter/data/output/space-exploration/data.json', 'utf8'))
         const accepted = acceptedRecipesFor('assembling-machine-2')
         expect(accepted).toContain('se-iron-ingot-to-plate')
-        // It is absent from the layout (the root cause) but the "Other" tab
-        // built from namesMissingFromInventoryLayout restores it.
-        expect(layoutNames().has('se-iron-ingot-to-plate')).toBe(false)
-        expect(namesMissingFromInventoryLayout(accepted)).toContain('se-iron-ingot-to-plate')
+        // With the layout fix it's placed in its product's subgroup (`iron`),
+        // so it's directly pickable — no longer relegated to the "Other" tab.
+        expect(layoutNames().has('se-iron-ingot-to-plate')).toBe(true)
+        expect(namesMissingFromInventoryLayout(accepted)).not.toContain('se-iron-ingot-to-plate')
+    })
+})
+
+describe('layout has no duplicate names (regression)', () => {
+    it.each(['vanilla-2.0', 'space-age', 'space-exploration'])('%s', pack => {
+        loadData(readFileSync(`packages/exporter/data/output/${pack}/data.json`, 'utf8'))
+        const seen = new Set<string>()
+        const dups: string[] = []
+        for (const group of FD.inventoryLayout) {
+            const subgroups = Array.isArray(group.subgroups) ? group.subgroups : []
+            for (const subgroup of subgroups) {
+                const items = Array.isArray(subgroup.items) ? subgroup.items : []
+                for (const item of items) {
+                    if (seen.has(item.name)) dups.push(item.name)
+                    seen.add(item.name)
+                }
+            }
+        }
+        expect(dups, `duplicate layout entries: ${dups.join(', ')}`).toEqual([])
     })
 })
 
