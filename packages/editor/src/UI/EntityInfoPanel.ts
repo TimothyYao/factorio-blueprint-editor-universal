@@ -9,6 +9,7 @@ import {
 import G from '../common/globals'
 import util from '../common/util'
 import { ISignal } from '../types'
+import { beaconEffectMultiplier } from '../core/beaconEffects'
 import { Entity } from '../core/Entity'
 import { createCircuitNetworkBadges } from './circuitNetworkBadges'
 import F from './controls/functions'
@@ -143,28 +144,32 @@ export class EntityInfoPanel extends Panel {
                 }
             }
 
-            for (const beacon of this.findNearbyBeacons(entity)) {
+            const beacons = this.findNearbyBeacons(entity)
+            for (const beacon of beacons) {
+                // Not just distribution_effectivity: since 2.0 the transmitted
+                // effect also falls off with the number of beacons reaching
+                // this machine (vanilla: 1/sqrt(N); SE: overload to 0) — see
+                // beaconEffectMultiplier.
+                const multiplier = beaconEffectMultiplier(
+                    beacon.entityData as BeaconPrototype,
+                    beacons.filter(b => b.name === beacon.name).length,
+                    beacons.length
+                )
                 for (const module of beacon.modules) {
                     if (!module) continue
 
                     const moduleData = getModule(module)
                     if (moduleData.effect.productivity) {
-                        productivity +=
-                            moduleData.effect.productivity *
-                            (beacon.entityData as BeaconPrototype).distribution_effectivity
+                        productivity += moduleData.effect.productivity * multiplier
                     }
                     if (moduleData.effect.consumption) {
-                        consumption +=
-                            moduleData.effect.consumption *
-                            (beacon.entityData as BeaconPrototype).distribution_effectivity
+                        consumption += moduleData.effect.consumption * multiplier
                     }
                     // if (moduleData.effect.pollution) {
-                    //     pollution += moduleData.effect.pollution * (beacon.entityData as BeaconPrototype).distribution_effectivity
+                    //     pollution += moduleData.effect.pollution * multiplier
                     // }
                     if (moduleData.effect.speed) {
-                        speed +=
-                            moduleData.effect.speed *
-                            (beacon.entityData as BeaconPrototype).distribution_effectivity
+                        speed += moduleData.effect.speed * multiplier
                     }
                 }
             }
@@ -476,15 +481,19 @@ export class EntityInfoPanel extends Panel {
                 return false
             }
 
-            const beaconAura = new Rectangle(beacon.position.x, beacon.position.y, 1, 1)
-            beaconAura.pad((FD.entities.beacon as BeaconPrototype).supply_area_distance + 1)
+            // The supply area is the beacon's own footprint grown by its
+            // supply_area_distance on every side. Beacons differ wildly here
+            // (SE alone spans 2x2/range-2 compact to 5x5/range-14 wide), so
+            // both must come from the actual beacon, not the vanilla
+            // `FD.entities.beacon` prototype.
+            const beaconAura = new Rectangle(beacon.position.x, beacon.position.y)
+            beaconAura.pad(beacon.size.x / 2, beacon.size.y / 2)
+            beaconAura.pad((beacon.entityData as BeaconPrototype).supply_area_distance)
 
-            return (
-                beaconAura.contains(entityRect.left, entityRect.top) ||
-                beaconAura.contains(entityRect.right, entityRect.top) ||
-                beaconAura.contains(entityRect.left, entityRect.bottom) ||
-                beaconAura.contains(entityRect.right, entityRect.bottom)
-            )
+            // Rectangle.intersects treats a shared edge as a miss, matching
+            // the game: collision boxes sit strictly inside the tile grid, so
+            // an edge-adjacent machine is out of range.
+            return beaconAura.intersects(entityRect)
         })
     }
 }
