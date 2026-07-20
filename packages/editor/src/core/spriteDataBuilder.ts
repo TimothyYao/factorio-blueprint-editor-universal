@@ -1296,6 +1296,13 @@ function draw_simple_entity(e: any): (data: IDrawData) => readonly SpriteData[] 
                 : [util.duplicate(first)]
         } else if (e.animations?.layers) {
             layers = e.animations.layers.map(l => util.duplicate(l))
+        } else if (e.animations && Array.isArray(e.animations)) {
+            // Array of animation variants (AnimationVariations, e.g. SE's
+            // placeable ruin remnants) - pick first, like the pictures branch
+            const first = e.animations[0]
+            layers = first?.layers
+                ? first.layers.map(l => util.duplicate(l))
+                : [util.duplicate(first)]
         } else if (e.animations && !e.animations.layers) {
             // 4-way animation - use direction
             const dirName = util.getDirName(data.dir || 0)
