@@ -1,5 +1,5 @@
 import { Sprite, Container, Texture, AlphaFilter, ColorSource } from 'pixi.js'
-import FD, { getEnergySource, hasModuleFunctionality } from '../core/factorioData'
+import FD, { getEnergySource, getEntitySize, hasModuleFunctionality } from '../core/factorioData'
 import {
     BeaconPrototype,
     ElectricPolePrototype,
@@ -70,11 +70,15 @@ export class UnderlayContainer extends Container {
                 },
             ]
         }
-        if (name === 'beacon') {
+        if (ed.type === 'beacon') {
+            // The aura extends supply_area_distance beyond the beacon's own
+            // footprint — matching by type (not the vanilla `beacon` name)
+            // and adding the real half-size covers modded beacons too (SE's
+            // compact/wide beacons range from 2x2/range-2 to 5x5/range-14).
             return [
                 {
                     type: 'beacons',
-                    radius: (ed as BeaconPrototype).supply_area_distance + 1,
+                    radius: (ed as BeaconPrototype).supply_area_distance + getEntitySize(ed).x / 2,
                     color: 0xd9c037,
                     alpha: VisualizationArea.ALPHA,
                 },
