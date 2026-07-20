@@ -1,5 +1,5 @@
 import { Container, Graphics, Text } from 'pixi.js'
-import FD from '../core/factorioData'
+import FD, { namesMissingFromInventoryLayout } from '../core/factorioData'
 import G from '../common/globals'
 import { inputMode } from '../common/input'
 import F from './controls/functions'
@@ -199,6 +199,33 @@ export class InventoryDialog extends Dialog {
             }
         }
 
+        // Filtered names the layout couldn't place still need to be selectable —
+        // chiefly modded recipes that inherit their subgroup from a product the
+        // exporter didn't resolve (e.g. SE's `se-iron-ingot-to-plate`). Gather
+        // them into a trailing "Other" tab so a valid recipe/item is never
+        // silently unpickable. Only runs for filtered pickers (recipe/module/
+        // item-filter); the unfiltered main inventory has no such orphans.
+        if (this.m_itemsFilter !== undefined) {
+            const orphans = namesMissingFromInventoryLayout(this.m_itemsFilter)
+            if (orphans.length > 0) {
+                const otherItems = new Container<Button<Container>>()
+                let itemColIndex = 0
+                let itemRowIndex = 0
+                for (const name of orphans) {
+                    if (itemColIndex === this.m_cols) {
+                        itemColIndex = 0
+                        itemRowIndex += 1
+                    }
+                    const button = this.makeItemButton(name)
+                    button.position.set(itemColIndex * 38, itemRowIndex * 38)
+                    otherItems.addChild(button)
+                    itemColIndex += 1
+                }
+                addTab(InventoryDialog.otherIcon(), otherItems, groupIndex)
+                groupIndex += 1
+            }
+        }
+
         const recipePanel = new Container()
         recipePanel.position.set(0, 442)
         this.addChild(recipePanel)
@@ -291,6 +318,10 @@ export class InventoryDialog extends Dialog {
                 )
             )
             if (hasItems) tabs += 1
+        }
+        // The trailing "Other" tab (layout-orphaned filter names; see constructor).
+        if (itemsFilter !== undefined && namesMissingFromInventoryLayout(itemsFilter).length > 0) {
+            tabs += 1
         }
         const needed = tabs * 70 + 22 // tabs (70px each, minus trailing gap) + 12px margins
         return Math.max(404, Math.min(needed, G.app.screen.width - 16))
@@ -483,6 +514,15 @@ export class InventoryDialog extends Dialog {
         if (key === 'recipes') return ents.map(e => e.recipe).filter((r): r is string => !!r)
         if (key === 'modules') return ents.flatMap(e => e.modules).filter((m): m is string => !!m)
         return ents.map(e => e.name)
+    }
+
+    /** Glyph icon for the synthetic "Other" tab (layout-orphaned filter names). */
+    private static otherIcon(): Container {
+        const c = new Container()
+        const t = new Text({ text: '⋯', style: { fill: 0xffe6c0, fontSize: 44 } })
+        t.anchor.set(0.5)
+        c.addChild(t)
+        return c
     }
 
     /** ★ glyph icon for the synthetic Recents tab. */
