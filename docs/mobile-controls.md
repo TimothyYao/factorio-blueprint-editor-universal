@@ -118,6 +118,13 @@ pipelines at once made touch taps double-act via the browser's synthetic
   in-dialog and refreshes live; recipe-on-hover gated to desktop, fixing the stray
   touch-drag tooltip); and a **responsive body width** so the tab scroll only
   engages when the tabs truly can't fit (more item columns on wider screens).
+  Follow-up fix: the hit-test gate demanded the full 38px grid pitch fit the
+  viewport, which left the **bottom row visible but unclickable at full scroll**
+  (reproduces on the Space Age pack — no vanilla group overflows the 8-row
+  viewport at 10 columns); the scroll math now lives in framework-free
+  `inventoryScroll.ts` (unit-tested) gating on the button's rendered 36px, and
+  `e2e/inventory.spec.ts` clicks the bottom row for real via a
+  `__FBE_TEST__.inventoryScrollToLastItem()` probe.
 - ✅ **Pasted blueprints keep their wires** (issue #37) — the touch/drag paste mode
   (#30) placed every entity but none of the wires: `Editor.appendBlueprint` rebound
   the pasted entities to the (empty) target blueprint, so `PaintBlueprintContainer`

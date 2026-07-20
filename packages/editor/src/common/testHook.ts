@@ -128,6 +128,14 @@ export interface FbeTestHook {
     openInventory: () => void
     /** Open the item inventory and long-press-preview `name` (Confirm/Pin bar). */
     previewInventoryItem: (name: string) => void
+    /**
+     * Open the item inventory (selecting spawns a paint ghost, like the `E`
+     * keybind does), switch to its tallest item group, scroll it fully to the
+     * bottom and return the last item button's on-screen centre (CSS px) plus
+     * the applied scroll. Backs the "last row stays clickable at full scroll"
+     * regression e2e — the returned point is then clicked for real.
+     */
+    inventoryScrollToLastItem: () => { x: number; y: number; scroll: number } | null
     closeDialogs: () => void
     centerView: () => void
     /**
@@ -197,6 +205,15 @@ export function installTestHook(win: Window = window): void {
         previewInventoryItem: name => {
             Dialog.closeAll()
             G.UI.createInventory('Inventory', undefined, undefined, 'items').beginPreview(name)
+        },
+        inventoryScrollToLastItem: () => {
+            Dialog.closeAll()
+            return G.UI.createInventory(
+                'Inventory',
+                undefined,
+                name => G.BPC.spawnPaintContainer(name),
+                'items'
+            ).scrollToLastItem()
         },
         closeDialogs: () => Dialog.closeAll(),
         centerView: () => G.BPC.centerViewport(),
