@@ -56,6 +56,26 @@ signal they're principled rather than ad-hoc.
 | space-age         | 0       | 3      |
 | space-exploration | 0       | 10     |
 
+## Corrected re-export (2026-07-20)
+
+The committed dump predated the exporter's load-last fix (`f714ad6`) and had
+only been hand-patched for 17 recipes — everything else SE's _postprocess_
+mod finalizes in `data-final-fixes` was still in its pre-fix state. A full
+re-export with the fix applied corrected:
+
+- **Beacon stats** — the basic beacon is `distribution_effectivity` **0.5**
+  with the `[1, 0]` beacon-overload profile (was vanilla's `1.5` + 1/√N),
+  which the beacon effect math in `EntityInfoPanel` now honors via
+  `core/beaconEffects.ts` (profile × effectivity, `beacon_counter` semantics).
+- **102 entities, 109 recipes, 210 items** that postprocess generates late
+  (grounded/spaced structure variants, placeable ruin remnants, late recipe
+  variants) are now in the dump. The ruins' `animations`-array shape
+  (AnimationVariations) is handled in `draw_simple_entity`, keeping the
+  census at 0 partial without ratcheting.
+
+The re-encode is deterministic — no previously committed `.basis` changed —
+so the atlas diff is exactly the data diff (95 added, 9 pruned).
+
 ## Accepted box-fallbacks (intentionally not rendered)
 
 The remaining "failed" entries are **graphics-less internal/script entities**,
