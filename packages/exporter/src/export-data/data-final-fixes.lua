@@ -394,10 +394,18 @@ do
         }
     end
 
+    -- A name is placed at most once. Items are added first and win, so a recipe
+    -- (or fluid/signal) sharing a product's name — `nuclear-fuel`, `lubricant`,
+    -- `sulfuric-acid`, … — no longer lands in the layout a second time and shows
+    -- as a duplicate entry in the selector.
+    local placed = {}
+
     local function addEntriesToSubroups(t, defaultSubgroup)
         for _, entry in pairs(t) do
             local subgroup = entry.subgroup or defaultSubgroup
-            if subgroup ~= nil and entry.order ~= nil and subgroups[subgroup] ~= nil then
+            if subgroup ~= nil and entry.order ~= nil and subgroups[subgroup] ~= nil
+                and not placed[entry.name] then
+                placed[entry.name] = true
                 -- some fluid recipes are missing their icon and order
                 -- local fluid = data.raw.fluid[entry.name] or {}
                 table.insert(subgroups[subgroup].items, {
@@ -411,8 +419,54 @@ do
         end
     end
 
+    -- The product a recipe is "about" — used to inherit its menu placement.
+    -- Explicit main_product wins ('' means the recipe designates no single one);
+    -- otherwise a lone result is the main product. `result` is a 1.1-era
+    -- fallback (2.0 uses `results`).
+    local function recipeMainProductName(recipe)
+        if recipe.main_product ~= nil then
+            if recipe.main_product == '' then return nil end
+            return recipe.main_product
+        end
+        if recipe.results ~= nil and #recipe.results == 1 then
+            local r = recipe.results[1]
+            return r.name or r[1]
+        end
+        if recipe.result ~= nil then return recipe.result end
+        return nil
+    end
+
+    -- Recipes for the layout. A recipe with no explicit subgroup/order inherits
+    -- them from its main product, exactly as Factorio does when placing it in the
+    -- crafting menu — the raw prototype carries only the *explicit* values, so
+    -- without resolving this, product-inheriting recipes (common in overhaul
+    -- mods, e.g. SE's `se-iron-ingot-to-plate`: iron ingot -> iron plate in an
+    -- assembling machine) get no subgroup and silently drop out of the picker.
+    -- `hidden` recipes never appear in a crafting menu (the `recipe-unknown`
+    -- placeholder, removed-item recipes, all auto-generated `*-recycling`), so
+    -- they're excluded here.
+    local function resolvedRecipes()
+        local list = {}
+        for _, recipe in pairs(deep_copy(data.raw.recipe)) do
+            if not recipe.hidden then
+                if recipe.subgroup == nil or recipe.order == nil then
+                    local productName = recipeMainProductName(recipe)
+                    local product = productName ~= nil
+                        and (output.items[productName] or output.fluids[productName])
+                        or nil
+                    if product ~= nil then
+                        if recipe.subgroup == nil then recipe.subgroup = product.subgroup end
+                        if recipe.order == nil then recipe.order = product.order end
+                    end
+                end
+                table.insert(list, recipe)
+            end
+        end
+        return list
+    end
+
     addEntriesToSubroups(output.items)
-    addEntriesToSubroups(deep_copy(data.raw.recipe))
+    addEntriesToSubroups(resolvedRecipes())
     addEntriesToSubroups(deep_copy(data.raw.fluid), 'fluid')
     addEntriesToSubroups(deep_copy(data.raw['virtual-signal']))
 

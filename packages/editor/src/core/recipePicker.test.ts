@@ -66,6 +66,26 @@ describe('SE iron-ingot-to-plate is pickable (regression)', () => {
 })
 
 describe.each(['vanilla-2.0', 'space-age', 'space-exploration'])(
+    'acceptedRecipes excludes hidden recipes: %s',
+    pack => {
+        it('never offers a hidden recipe (recipe-unknown, *-recycling, …)', () => {
+            loadData(readFileSync(`packages/exporter/data/output/${pack}/data.json`, 'utf8'))
+            const offered = new Set<string>()
+            for (const [name, e] of Object.entries(FD.entities)) {
+                if (e.type !== 'assembling-machine' && e.type !== 'furnace') continue
+                for (const r of acceptedRecipesFor(name)) offered.add(r)
+            }
+            const hiddenOffered = [...offered].filter(
+                r => (FD.recipes[r] as { hidden?: boolean }).hidden
+            )
+            expect(hiddenOffered, `hidden recipes offered: ${hiddenOffered.join(', ')}`).toEqual([])
+            // Sanity: the placeholder is present in the data but must not be offered.
+            if (FD.recipes['recipe-unknown']) expect(offered.has('recipe-unknown')).toBe(false)
+        })
+    }
+)
+
+describe.each(['vanilla-2.0', 'space-age', 'space-exploration'])(
     'recipe picker covers every accepted recipe: %s',
     pack => {
         it('layout ∪ orphans is exhaustive for crafting machines', () => {

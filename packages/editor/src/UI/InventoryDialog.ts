@@ -138,6 +138,13 @@ export class InventoryDialog extends Dialog {
 
         let groupIndex = 0
 
+        // A name can occur in more than one layout entry — e.g. a recipe and its
+        // like-named product item/fluid both land in the layout (`nuclear-fuel`,
+        // `lubricant`, `sulfuric-acid`, …), which rendered the same choice twice
+        // in the selector. Track what's already been shown and skip repeats so
+        // each name gets exactly one button across every group tab.
+        const placed = new Set<string>()
+
         // Optional "Recents" tab (first, active). Built via populateRecents so it
         // can be refreshed live when pinning/unpinning changes the quickbar.
         if (recentsKey) {
@@ -172,6 +179,8 @@ export class InventoryDialog extends Dialog {
                 const subgroupItems = Array.isArray(subgroup.items) ? subgroup.items : []
                 for (const item of subgroupItems) {
                     if (!this.isAllowed(item.name)) continue
+                    if (placed.has(item.name)) continue
+                    placed.add(item.name)
 
                     if (itemColIndex === this.m_cols) {
                         itemColIndex = 0
@@ -212,6 +221,8 @@ export class InventoryDialog extends Dialog {
                 let itemColIndex = 0
                 let itemRowIndex = 0
                 for (const name of orphans) {
+                    if (placed.has(name)) continue
+                    placed.add(name)
                     if (itemColIndex === this.m_cols) {
                         itemColIndex = 0
                         itemRowIndex += 1
@@ -221,8 +232,10 @@ export class InventoryDialog extends Dialog {
                     otherItems.addChild(button)
                     itemColIndex += 1
                 }
-                addTab(InventoryDialog.otherIcon(), otherItems, groupIndex)
-                groupIndex += 1
+                if (otherItems.children.length > 0) {
+                    addTab(InventoryDialog.otherIcon(), otherItems, groupIndex)
+                    groupIndex += 1
+                }
             }
         }
 
