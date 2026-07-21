@@ -21,6 +21,10 @@ import { LibraryNode } from './model'
 export interface LibraryPanelCallbacks {
     /** Load an encoded blueprint/book onto the canvas ('' → a blank blueprint). */
     loadEncoded(encoded: string): Promise<void>
+    /** Load a folder's book onto the canvas to navigate (a view — not editable). */
+    openFolderBook(bookString: string, label: string): Promise<void>
+    /** True while a folder is being viewed as a book (Save is suspended then). */
+    isViewingBook(): boolean
     /** Encode the current canvas (active blueprint or book) to a string. */
     currentEncoded(): Promise<string>
     /** Show a transient message. */
@@ -171,14 +175,18 @@ export function initLibraryPanel(
     }
 
     actionButton('Import…', async () => {
-        const str = cb.promptName('Paste a blueprint or book string', '')
+        // A <textarea> modal, not window.prompt: blueprint strings are thousands of
+        // chars and prompt truncates/mangles them (notably on touch).
+        const raw = await textModal('Paste a blueprint or book string', 'Import')
+        if (raw === null) return
+        const str = raw.trim()
         if (!str) return
-        if (!str.trim().startsWith('0')) {
+        if (!str.startsWith('0')) {
             cb.toast('Paste a blueprint string (it should start with “0”).', 'warning')
             return
         }
         try {
-            await controller.importInto(browsedPack, str.trim())
+            await controller.importInto(browsedPack, str)
             refresh()
             cb.toast('Imported', 'success')
         } catch {
@@ -337,6 +345,47 @@ export function initLibraryPanel(
             panel.appendChild(overlay)
         })
 
+    // A modal with a <textarea> for pasting long text (e.g. a blueprint/book
+    // string). window.prompt truncates/mangles long strings, especially on touch,
+    // so import needs a real field. Resolves the entered text, or null on cancel.
+    const textModal = (title: string, confirmLabel: string): Promise<string | null> =>
+        new Promise(resolve => {
+            const overlay = document.createElement('div')
+            overlay.className = 'library-picker'
+            const box = document.createElement('div')
+            box.className = 'library-picker-box library-dialog'
+            const heading = document.createElement('div')
+            heading.className = 'library-dialog-text'
+            heading.textContent = title
+            const textarea = document.createElement('textarea')
+            textarea.className = 'library-textarea'
+            textarea.rows = 5
+            textarea.spellcheck = false
+            const row = document.createElement('div')
+            row.className = 'library-dialog-actions'
+            const done = (v: string | null): void => {
+                overlay.remove()
+                resolve(v)
+            }
+            const cancel = document.createElement('button')
+            cancel.type = 'button'
+            cancel.textContent = 'Cancel'
+            cancel.addEventListener('click', () => done(null))
+            const ok = document.createElement('button')
+            ok.type = 'button'
+            ok.className = 'library-dialog-confirm'
+            ok.textContent = confirmLabel
+            ok.addEventListener('click', () => done(textarea.value))
+            row.append(cancel, ok)
+            box.append(heading, textarea, row)
+            overlay.appendChild(box)
+            overlay.addEventListener('click', e => {
+                if (e.target === overlay) done(null)
+            })
+            panel.appendChild(overlay)
+            textarea.focus()
+        })
+
     // --- node operations ----------------------------------------------------
 
     // Open a leaf as the working context. From a non-active pack this reloads the
@@ -358,6 +407,23 @@ export function initLibraryPanel(
         if (!go) return
         await controller.setActiveForPack(browsedPack, id)
         cb.requestPackSwitch(browsedPack) // setDataPack → reload → reopens this entry
+    }
+
+    // Open a folder as a navigable book on the canvas (Phase 5b — view only).
+    // Rendering needs the active pack's atlas, so it's active-pack-only for now.
+    const openFolder = async (folder: Extract<LibraryNode, { kind: 'folder' }>): Promise<void> => {
+        if (!onActivePack()) {
+            cb.toast('Switch to this pack to open its books.', 'info')
+            return
+        }
+        const book = controller.exportNode(browsedPack, folder.id)
+        if (!book) {
+            cb.toast('This folder has no blueprints to open.', 'info')
+            return
+        }
+        await cb.openFolderBook(book, folder.name)
+        refresh()
+        close()
     }
 
     // After a structural change, reload the canvas if the active leaf was affected.
@@ -670,6 +736,8 @@ export function initLibraryPanel(
         })
         const buttons = document.createElement('span')
         buttons.className = 'library-row-buttons'
+        // Open the folder as a navigable book on the canvas (Phase 5b).
+        buttons.appendChild(iconBtn('Open', 'Open as book', () => openFolder(node)))
         buttons.appendChild(
             iconBtn('⋯', 'More', e => showMenu(e.currentTarget as HTMLElement, menuFor(node)))
         )
@@ -702,16 +770,21 @@ export function initLibraryPanel(
 
         // Working-context actions act on the live canvas (the active pack); they're
         // disabled while browsing another pack. "New folder" works on any pack.
+        // While viewing a folder as a book (5b) there's no leaf to save to, so the
+        // Save actions are suspended (New project exits the view).
         const active = onActivePack()
+        const viewing = cb.isViewingBook()
         const onScratchpad = active && controller.isScratchpad(controller.getActiveId())
         newProjectBtn.disabled = !active
-        saveAsBtn.disabled = !active
-        saveBtn.disabled = !active || onScratchpad
-        saveBtn.title = onScratchpad
-            ? 'The scratchpad is always live — use “Save as…” to keep a named copy.'
-            : !active
-              ? 'Switch to this pack to edit here.'
-              : ''
+        saveAsBtn.disabled = !active || viewing
+        saveBtn.disabled = !active || onScratchpad || viewing
+        saveBtn.title = viewing
+            ? 'Viewing a book — open a blueprint to edit and save.'
+            : onScratchpad
+              ? 'The scratchpad is always live — use “Save as…” to keep a named copy.'
+              : !active
+                ? 'Switch to this pack to edit here.'
+                : ''
 
         const tree = controller.getTreeFor(browsedPack)
         body.replaceChildren()

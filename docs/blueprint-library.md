@@ -192,11 +192,16 @@ A single `LibraryState` document, in `packages/website/src/library/`:
           `activeIndex`; `interchange` preserves them on export **and** decompose
           (fixes the export-as-book fidelity gap); clone/duplicate copy them; folder
           ⋯ "Edit description…"; the description shows on hover (a ⓘ hint).
-    - [ ] **5b — open a folder as a book** on the canvas (view/navigate via the
-          editor's flattened index slider). Data stays in the leaves; no
-          canvas-book → tree write-back (edit by opening a leaf).
+    - [x] **5b — open a folder as a book.** A folder's "Open" button loads it as a
+          navigable Book onto the canvas (flip through it with the settings BP Book
+          Index slider). It's a **view**: the working context + autosave are
+          suspended (`viewingBook` in `index.ts`), so the book is never written back
+          into a leaf; the indicator shows "📖 <folder>" and Save is disabled.
+          Opening a leaf / New project exits the view. Active-pack only (rendering
+          needs the pack's atlas). No write-back / reordering (deferred).
     - [ ] **5c — render icons** in the panel (atlas/sprite extraction). Storing /
           round-tripping icons is free (5a); drawing them is the separate hard bit.
+          _(deferred — not planned unless it becomes cheap)_
 - [ ] **Phase 6 — External backend.** OAuth-locked remote store (e.g. Firebase)
       behind the `LibraryStore` interface; sync/merge story.
 
@@ -210,10 +215,14 @@ A single `LibraryState` document, in `packages/website/src/library/`:
 - **Live unsaved-dot** — the indicator's "modified" dot refreshes on autosave
   (tab hide), not on every edit; live tracking needs an editor change event.
 - **Richer dialogs** — confirms (delete / discard / pack-switch) use an in-panel
-  modal (so they're never hidden behind the open panel like a toast would be);
-  Save As / Rename / New folder / Import all use `window.prompt` (a text-input /
-  textarea modal can replace those later — pasting a long string into a prompt is
-  workable but clunky).
+  modal; **Import…** uses a `<textarea>` modal (blueprint strings are thousands of
+  chars — `window.prompt` truncates/mangles them, notably on touch). Save As /
+  Rename / New folder / Edit description still use `window.prompt` (short names, so
+  it's fine); a text-input modal can replace those later.
+- **Mobile book navigation** — a pasted book / an opened folder-book (5b) loads,
+  but flipping through it uses the desktop **Settings → BP Book Index** slider,
+  which isn't usable on touch. An on-canvas book nav is a mobile-controls
+  follow-up; until then 5b's navigation is effectively desktop-only.
 - **Import routing** — the panel's Import… is paste-only (`0`-strings, no URL
   fetch) and grafts into the _browsed_ pack at root; routing by the top-level
   book label to a matching pack (the `packHint`) is wired in the model but not yet

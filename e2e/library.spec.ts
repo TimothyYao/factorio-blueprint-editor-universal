@@ -42,6 +42,16 @@ async function openPanel(page: Page): Promise<void> {
     await expect(panel(page)).toHaveClass(/active/)
 }
 
+// Import via the textarea modal (blueprint strings are too long for window.prompt).
+async function pasteImport(page: Page, str: string): Promise<void> {
+    await panel(page).getByRole('button', { name: 'Import…', exact: true }).click()
+    await panel(page).locator('.library-textarea').fill(str)
+    await panel(page)
+        .locator('.library-dialog')
+        .getByRole('button', { name: 'Import', exact: true })
+        .click()
+}
+
 test.describe('blueprint library', () => {
     test.beforeEach(() => {
         test.skip(
@@ -353,10 +363,7 @@ test.describe('blueprint library — organization & multi-pack (Phase 2)', () =>
         expect(exported.startsWith('0')).toBe(true)
 
         // Import that string back → it decomposes into a second "Imported" folder.
-        page.on('dialog', d => d.accept(exported))
-        await panel(page)
-            .getByRole('button', { name: /^Import/i })
-            .click()
+        await pasteImport(page, exported)
         await expect(panel(page).locator('.library-folder', { hasText: 'Imported' })).toHaveCount(2)
     })
 
@@ -437,10 +444,7 @@ test.describe('blueprint library — organization & multi-pack (Phase 2)', () =>
         await openPanel(page)
 
         // Import (decomposes into a folder named after the book)…
-        page.on('dialog', d => d.accept(BOOK))
-        await panel(page)
-            .getByRole('button', { name: /^Import/i })
-            .click()
+        await pasteImport(page, BOOK)
         await expect(panel(page).locator('.library-folder', { hasText: 'My Book' })).toBeVisible()
 
         // …then export it back and decode (content survives; bytes won't match).
@@ -455,5 +459,52 @@ test.describe('blueprint library — organization & multi-pack (Phase 2)', () =>
         expect(
             out.blueprints.map((e: { blueprint: { entities: unknown } }) => e.blueprint.entities)
         ).toEqual([chest.entities, belt.entities])
+    })
+
+    test('opens a folder as a navigable book, then exits the view on a leaf open', async ({
+        page,
+    }) => {
+        const chest = dec(CHEST).blueprint
+        const belt = dec(BELT).blueprint
+        const BOOK = enc({
+            blueprint_book: {
+                item: 'blueprint-book',
+                active_index: 0,
+                version: chest.version,
+                label: 'Nav Book',
+                blueprints: [
+                    { index: 0, blueprint: chest },
+                    { index: 1, blueprint: belt },
+                ],
+            },
+        })
+
+        await page.goto('/?test')
+        await waitForReady(page)
+        await openPanel(page)
+        await pasteImport(page, BOOK)
+        await expect(panel(page).locator('.library-folder', { hasText: 'Nav Book' })).toBeVisible()
+
+        // Open the folder as a book — it loads onto the canvas (first blueprint =
+        // the chest, 1 entity) and the indicator flips to book-view.
+        await panel(page)
+            .locator('.library-row', { hasText: 'Nav Book' })
+            .getByRole('button', { name: 'Open as book', exact: true })
+            .click()
+        await expect.poll(() => entityCount(page)).toBe(1)
+        await expect(indicator(page)).toHaveText('📖 Nav Book')
+
+        // While viewing a book there's no leaf to save to — Save is suspended.
+        await openPanel(page)
+        await expect(panel(page).getByRole('button', { name: /save version/i })).toBeDisabled()
+
+        // Opening a blueprint leaf exits the book-view (back to a normal project).
+        await panel(page)
+            .locator('.library-row', { hasText: 'persist-test-chest' })
+            .first()
+            .getByRole('button', { name: 'Open', exact: true })
+            .click()
+        await expect(indicator(page)).not.toContainText('📖')
+        await expect.poll(() => entityCount(page)).toBe(1)
     })
 })
