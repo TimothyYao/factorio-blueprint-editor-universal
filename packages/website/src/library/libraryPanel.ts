@@ -175,14 +175,18 @@ export function initLibraryPanel(
     }
 
     actionButton('Import…', async () => {
-        const str = cb.promptName('Paste a blueprint or book string', '')
+        // A <textarea> modal, not window.prompt: blueprint strings are thousands of
+        // chars and prompt truncates/mangles them (notably on touch).
+        const raw = await textModal('Paste a blueprint or book string', 'Import')
+        if (raw === null) return
+        const str = raw.trim()
         if (!str) return
-        if (!str.trim().startsWith('0')) {
+        if (!str.startsWith('0')) {
             cb.toast('Paste a blueprint string (it should start with “0”).', 'warning')
             return
         }
         try {
-            await controller.importInto(browsedPack, str.trim())
+            await controller.importInto(browsedPack, str)
             refresh()
             cb.toast('Imported', 'success')
         } catch {
@@ -339,6 +343,47 @@ export function initLibraryPanel(
                 if (e.target === overlay) done(false)
             })
             panel.appendChild(overlay)
+        })
+
+    // A modal with a <textarea> for pasting long text (e.g. a blueprint/book
+    // string). window.prompt truncates/mangles long strings, especially on touch,
+    // so import needs a real field. Resolves the entered text, or null on cancel.
+    const textModal = (title: string, confirmLabel: string): Promise<string | null> =>
+        new Promise(resolve => {
+            const overlay = document.createElement('div')
+            overlay.className = 'library-picker'
+            const box = document.createElement('div')
+            box.className = 'library-picker-box library-dialog'
+            const heading = document.createElement('div')
+            heading.className = 'library-dialog-text'
+            heading.textContent = title
+            const textarea = document.createElement('textarea')
+            textarea.className = 'library-textarea'
+            textarea.rows = 5
+            textarea.spellcheck = false
+            const row = document.createElement('div')
+            row.className = 'library-dialog-actions'
+            const done = (v: string | null): void => {
+                overlay.remove()
+                resolve(v)
+            }
+            const cancel = document.createElement('button')
+            cancel.type = 'button'
+            cancel.textContent = 'Cancel'
+            cancel.addEventListener('click', () => done(null))
+            const ok = document.createElement('button')
+            ok.type = 'button'
+            ok.className = 'library-dialog-confirm'
+            ok.textContent = confirmLabel
+            ok.addEventListener('click', () => done(textarea.value))
+            row.append(cancel, ok)
+            box.append(heading, textarea, row)
+            overlay.appendChild(box)
+            overlay.addEventListener('click', e => {
+                if (e.target === overlay) done(null)
+            })
+            panel.appendChild(overlay)
+            textarea.focus()
         })
 
     // --- node operations ----------------------------------------------------

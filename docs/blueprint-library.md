@@ -215,10 +215,14 @@ A single `LibraryState` document, in `packages/website/src/library/`:
 - **Live unsaved-dot** — the indicator's "modified" dot refreshes on autosave
   (tab hide), not on every edit; live tracking needs an editor change event.
 - **Richer dialogs** — confirms (delete / discard / pack-switch) use an in-panel
-  modal (so they're never hidden behind the open panel like a toast would be);
-  Save As / Rename / New folder / Import all use `window.prompt` (a text-input /
-  textarea modal can replace those later — pasting a long string into a prompt is
-  workable but clunky).
+  modal; **Import…** uses a `<textarea>` modal (blueprint strings are thousands of
+  chars — `window.prompt` truncates/mangles them, notably on touch). Save As /
+  Rename / New folder / Edit description still use `window.prompt` (short names, so
+  it's fine); a text-input modal can replace those later.
+- **Mobile book navigation** — a pasted book / an opened folder-book (5b) loads,
+  but flipping through it uses the desktop **Settings → BP Book Index** slider,
+  which isn't usable on touch. An on-canvas book nav is a mobile-controls
+  follow-up; until then 5b's navigation is effectively desktop-only.
 - **Import routing** — the panel's Import… is paste-only (`0`-strings, no URL
   fetch) and grafts into the _browsed_ pack at root; routing by the top-level
   book label to a matching pack (the `packHint`) is wired in the model but not yet

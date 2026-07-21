@@ -42,6 +42,16 @@ async function openPanel(page: Page): Promise<void> {
     await expect(panel(page)).toHaveClass(/active/)
 }
 
+// Import via the textarea modal (blueprint strings are too long for window.prompt).
+async function pasteImport(page: Page, str: string): Promise<void> {
+    await panel(page).getByRole('button', { name: 'Import…', exact: true }).click()
+    await panel(page).locator('.library-textarea').fill(str)
+    await panel(page)
+        .locator('.library-dialog')
+        .getByRole('button', { name: 'Import', exact: true })
+        .click()
+}
+
 test.describe('blueprint library', () => {
     test.beforeEach(() => {
         test.skip(
@@ -353,10 +363,7 @@ test.describe('blueprint library — organization & multi-pack (Phase 2)', () =>
         expect(exported.startsWith('0')).toBe(true)
 
         // Import that string back → it decomposes into a second "Imported" folder.
-        page.on('dialog', d => d.accept(exported))
-        await panel(page)
-            .getByRole('button', { name: /^Import/i })
-            .click()
+        await pasteImport(page, exported)
         await expect(panel(page).locator('.library-folder', { hasText: 'Imported' })).toHaveCount(2)
     })
 
@@ -437,10 +444,7 @@ test.describe('blueprint library — organization & multi-pack (Phase 2)', () =>
         await openPanel(page)
 
         // Import (decomposes into a folder named after the book)…
-        page.on('dialog', d => d.accept(BOOK))
-        await panel(page)
-            .getByRole('button', { name: /^Import/i })
-            .click()
+        await pasteImport(page, BOOK)
         await expect(panel(page).locator('.library-folder', { hasText: 'My Book' })).toBeVisible()
 
         // …then export it back and decode (content survives; bytes won't match).
@@ -478,10 +482,7 @@ test.describe('blueprint library — organization & multi-pack (Phase 2)', () =>
         await page.goto('/?test')
         await waitForReady(page)
         await openPanel(page)
-        page.on('dialog', d => d.accept(BOOK))
-        await panel(page)
-            .getByRole('button', { name: /^Import/i })
-            .click()
+        await pasteImport(page, BOOK)
         await expect(panel(page).locator('.library-folder', { hasText: 'Nav Book' })).toBeVisible()
 
         // Open the folder as a book — it loads onto the canvas (first blueprint =
