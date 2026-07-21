@@ -43,6 +43,12 @@ let book: Book
 const library = new LibraryController(createLibraryStore(), DATA_PACK)
 let libraryPanel: LibraryPanel
 let activeProjectEl: HTMLElement | null
+// "Book view" (Phase 5b): opening a folder loads it as a navigable Book onto the
+// canvas (flip through it with the settings BP Book Index slider). It's a *view*
+// — the working context (active leaf) and autosave are suspended so we never
+// write the whole book back into a leaf. Opening a leaf / New project exits it.
+let viewingBook = false
+let viewingBookLabel = ''
 // The data-pack manifest (id + label), for the library panel's pack drop-down.
 // Loaded once at init from packs.json (same source as the settings pane); the
 // active pack is always present even if the manifest fetch fails.
@@ -201,6 +207,9 @@ function currentEncodedString(): Promise<string> {
 window.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'hidden') return
     if (bp === undefined) return
+    // A folder book-view isn't the working context — don't autosave it back into
+    // a leaf (that would clobber the previously-active leaf with the whole book).
+    if (viewingBook) return
 
     currentEncodedString()
         .then(enc => {
@@ -333,9 +342,14 @@ function clearBlueprint(): void {
 
 // --- library chrome (panel callbacks + the active-project indicator) ---------
 
-// Update the top-centre indicator to the active project's name.
+// Update the top-centre indicator to the active project's name (or the book being
+// viewed, in Phase 5b's book-view mode).
 function updateActiveIndicator(): void {
-    if (activeProjectEl) activeProjectEl.textContent = library.getActiveName()
+    if (activeProjectEl) {
+        activeProjectEl.textContent = viewingBook
+            ? `📖 ${viewingBookLabel}`
+            : library.getActiveName()
+    }
 }
 
 // Toggle the indicator's "unsaved changes" dot from a known encoded snapshot of
@@ -348,6 +362,8 @@ function refreshModifiedIndicator(encoded: string): void {
 // shared chrome (toasts/clipboard); everything else it does via the controller.
 const libraryCallbacks: LibraryPanelCallbacks = {
     loadEncoded: async (encoded: string) => {
+        // Opening a leaf (or starting a new project) leaves book-view.
+        viewingBook = false
         if (!encoded) {
             await loadBp(new Blueprint())
             return
@@ -355,6 +371,17 @@ const libraryCallbacks: LibraryPanelCallbacks = {
         const bpOrBook = await getBlueprintOrBookFromSource(encoded)
         await loadBp(bpOrBook)
     },
+    // Load a folder's book onto the canvas to navigate (Phase 5b) without making
+    // it the working context — autosave stays suspended until a leaf is opened.
+    openFolderBook: async (bookString: string, label: string) => {
+        const bpOrBook = await getBlueprintOrBookFromSource(bookString)
+        await loadBp(bpOrBook, `Opened "${label}" as a book`)
+        viewingBook = true
+        viewingBookLabel = label
+        activeProjectEl?.classList.remove('modified')
+        updateActiveIndicator()
+    },
+    isViewingBook: () => viewingBook,
     currentEncoded: currentEncodedString,
     toast: (text, type = 'info') => createToast({ text, type }),
     promptName: (message, defaultName) => window.prompt(message, defaultName),

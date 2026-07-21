@@ -192,11 +192,16 @@ A single `LibraryState` document, in `packages/website/src/library/`:
           `activeIndex`; `interchange` preserves them on export **and** decompose
           (fixes the export-as-book fidelity gap); clone/duplicate copy them; folder
           ⋯ "Edit description…"; the description shows on hover (a ⓘ hint).
-    - [ ] **5b — open a folder as a book** on the canvas (view/navigate via the
-          editor's flattened index slider). Data stays in the leaves; no
-          canvas-book → tree write-back (edit by opening a leaf).
+    - [x] **5b — open a folder as a book.** A folder's "Open" button loads it as a
+          navigable Book onto the canvas (flip through it with the settings BP Book
+          Index slider). It's a **view**: the working context + autosave are
+          suspended (`viewingBook` in `index.ts`), so the book is never written back
+          into a leaf; the indicator shows "📖 <folder>" and Save is disabled.
+          Opening a leaf / New project exits the view. Active-pack only (rendering
+          needs the pack's atlas). No write-back / reordering (deferred).
     - [ ] **5c — render icons** in the panel (atlas/sprite extraction). Storing /
           round-tripping icons is free (5a); drawing them is the separate hard bit.
+          _(deferred — not planned unless it becomes cheap)_
 - [ ] **Phase 6 — External backend.** OAuth-locked remote store (e.g. Firebase)
       behind the `LibraryStore` interface; sync/merge story.
 

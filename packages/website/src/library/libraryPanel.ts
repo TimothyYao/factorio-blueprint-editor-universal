@@ -21,6 +21,10 @@ import { LibraryNode } from './model'
 export interface LibraryPanelCallbacks {
     /** Load an encoded blueprint/book onto the canvas ('' → a blank blueprint). */
     loadEncoded(encoded: string): Promise<void>
+    /** Load a folder's book onto the canvas to navigate (a view — not editable). */
+    openFolderBook(bookString: string, label: string): Promise<void>
+    /** True while a folder is being viewed as a book (Save is suspended then). */
+    isViewingBook(): boolean
     /** Encode the current canvas (active blueprint or book) to a string. */
     currentEncoded(): Promise<string>
     /** Show a transient message. */
@@ -360,6 +364,23 @@ export function initLibraryPanel(
         cb.requestPackSwitch(browsedPack) // setDataPack → reload → reopens this entry
     }
 
+    // Open a folder as a navigable book on the canvas (Phase 5b — view only).
+    // Rendering needs the active pack's atlas, so it's active-pack-only for now.
+    const openFolder = async (folder: Extract<LibraryNode, { kind: 'folder' }>): Promise<void> => {
+        if (!onActivePack()) {
+            cb.toast('Switch to this pack to open its books.', 'info')
+            return
+        }
+        const book = controller.exportNode(browsedPack, folder.id)
+        if (!book) {
+            cb.toast('This folder has no blueprints to open.', 'info')
+            return
+        }
+        await cb.openFolderBook(book, folder.name)
+        refresh()
+        close()
+    }
+
     // After a structural change, reload the canvas if the active leaf was affected.
     const reflectActive = async (touchedId: string): Promise<void> => {
         if (!onActivePack()) return
@@ -670,6 +691,8 @@ export function initLibraryPanel(
         })
         const buttons = document.createElement('span')
         buttons.className = 'library-row-buttons'
+        // Open the folder as a navigable book on the canvas (Phase 5b).
+        buttons.appendChild(iconBtn('Open', 'Open as book', () => openFolder(node)))
         buttons.appendChild(
             iconBtn('⋯', 'More', e => showMenu(e.currentTarget as HTMLElement, menuFor(node)))
         )
@@ -702,16 +725,21 @@ export function initLibraryPanel(
 
         // Working-context actions act on the live canvas (the active pack); they're
         // disabled while browsing another pack. "New folder" works on any pack.
+        // While viewing a folder as a book (5b) there's no leaf to save to, so the
+        // Save actions are suspended (New project exits the view).
         const active = onActivePack()
+        const viewing = cb.isViewingBook()
         const onScratchpad = active && controller.isScratchpad(controller.getActiveId())
         newProjectBtn.disabled = !active
-        saveAsBtn.disabled = !active
-        saveBtn.disabled = !active || onScratchpad
-        saveBtn.title = onScratchpad
-            ? 'The scratchpad is always live — use “Save as…” to keep a named copy.'
-            : !active
-              ? 'Switch to this pack to edit here.'
-              : ''
+        saveAsBtn.disabled = !active || viewing
+        saveBtn.disabled = !active || onScratchpad || viewing
+        saveBtn.title = viewing
+            ? 'Viewing a book — open a blueprint to edit and save.'
+            : onScratchpad
+              ? 'The scratchpad is always live — use “Save as…” to keep a named copy.'
+              : !active
+                ? 'Switch to this pack to edit here.'
+                : ''
 
         const tree = controller.getTreeFor(browsedPack)
         body.replaceChildren()
