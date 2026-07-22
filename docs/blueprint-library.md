@@ -221,9 +221,26 @@ loaded).
   via **dynamic `import()`** inside a lazy init, so (a) an unconfigured build
   never loads it and (b) Vite code-splits it into its own lazy chunk (it does not
   bloat the entry chunk). Owns config (`firebaseConfigured()`), auth (`signIn`
-  via Google **redirect** — mobile-friendly, not popup; `signOutUser`; `onAuth`,
-  which also completes `getRedirectResult` on return), and `createRemote(uid)`,
-  the `RemoteLibraryDoc` over the Firestore doc.
+  via Google **popup-first, with a redirect fallback**; `signOutUser`; `onAuth`,
+  which wires `onAuthStateChanged` and also completes `getRedirectResult` on
+  return — so the fallback path finishes cleanly), and `createRemote(uid)`, the
+  `RemoteLibraryDoc` over the Firestore doc.
+
+    > **Why popup-first (not redirect).** This static deployment serves the app
+    > from `trisiak.github.io` while the auth handler lives on a _different_ origin
+    > (`authDomain` = `*.firebaseapp.com`). The redirect flow stores its result
+    > under that authDomain origin and reads it back through a cross-origin iframe;
+    > Chrome 115+'s **third-party storage partitioning** partitions that iframe's
+    > storage away from the top-level site, so `getRedirectResult` silently resolves
+    > `null` and the user lands back signed out. Firebase's recommended fix is to
+    > serve the same-origin `/__/auth` handler, but GitHub Pages can't proxy it — so
+    > `signIn` uses `signInWithPopup`, whose credential returns over `postMessage` to
+    > the still-open opener (a same-origin handle) and never touches partitioned
+    > storage. Redirect is retained only as a fallback for `auth/popup-blocked` /
+    > `auth/operation-not-supported-in-this-environment` (a user-dismissed or
+    > double-clicked popup is _not_ a fallback trigger). Don't flip this back to
+    > redirect-first without a same-origin auth handler in place.
+
 - **`library/syncService.ts`** — orchestration, **no firebase imports** (so it's
   node-unit-tested with a fake remote). `SyncedLibraryStore` is a `LibraryStore`
   decorator handed to the controller: it writes local first (durability), then
@@ -301,7 +318,7 @@ default 8080, which collides with the vite dev/preview server). Build with
    `VITE_FIREBASE_*` repo variables.
 2. **Authentication → Sign-in method → enable Google.**
 3. **Authentication → Settings → Authorized domains →** add the Pages origin
-   (`trisiak.github.io`) so the redirect sign-in is allowed.
+   (`trisiak.github.io`) so the popup (and redirect-fallback) sign-in is allowed.
 4. **Firestore →** create the database, then deploy the rules:
    `firebase deploy --only firestore:rules` (from `firestore.rules`).
 

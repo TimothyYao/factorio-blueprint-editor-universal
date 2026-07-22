@@ -76,16 +76,62 @@ function bits(): Promise<FirebaseBits> {
 }
 
 /**
- * Start a Google sign-in via **redirect** (not popup — popups are unreliable /
- * blocked on mobile, which is this fork's focus). The page navigates away and
- * returns; `onAuth` completes the redirect on the way back in.
+ * Start a Google sign-in via **popup** first, falling back to redirect only when
+ * a popup genuinely can't open.
+ *
+ * This inverts the earlier redirect-first choice, and the reason is structural to
+ * this deployment. The app is served from `trisiak.github.io` while the auth
+ * handler lives on `authDomain` (`*.firebaseapp.com`) — a *different* origin. The
+ * redirect flow stashes its result in storage keyed to that authDomain origin and
+ * then reads it back through a cross-origin iframe; under Chrome 115+'s
+ * third-party storage partitioning that iframe's storage is partitioned away from
+ * the top-level site, so `getRedirectResult` silently resolves `null` and the
+ * user lands right back signed out. The canonical fix (Firebase's redirect
+ * best-practices, Option 1) is to serve the `/__/auth` handler from the app's own
+ * origin — but static GitHub Pages hosting can't proxy that handler, so we can't
+ * take it. A **popup** sidesteps the whole problem: the credential comes back over
+ * `postMessage` to the still-open opener window (a same-origin handle), never
+ * through partitioned third-party storage. On success `onAuthStateChanged` (wired
+ * in `onAuth`) fires on its own — nothing else to do here.
+ *
+ * Redirect is kept only as a fallback for the cases where a popup *can't* run
+ * (blocked, or an environment that doesn't support popups) — it still completes on
+ * the origins/browsers where authDomain matches or storage isn't partitioned, so
+ * it's better than nothing on exotic mobile browsers. `onAuth` awaits
+ * `getRedirectResult` to finish that path on the way back in.
  */
 export function signIn(): void {
     if (!firebaseConfigured()) return
     void bits()
-        .then(({ auth, authMod }) => {
+        .then(async ({ auth, authMod }) => {
             const provider = new authMod.GoogleAuthProvider()
-            return authMod.signInWithRedirect(auth, provider)
+            try {
+                await authMod.signInWithPopup(auth, provider)
+                // Resolved ⇒ signed in; onAuthStateChanged does the rest.
+            } catch (error) {
+                const code = (error as { code?: string } | null)?.code
+                switch (code) {
+                    case 'auth/cancelled-popup-request':
+                        // A second signIn() (a double-click) aborts the first
+                        // popup request. Benign — the surviving popup carries on;
+                        // don't log or fall back.
+                        return
+                    case 'auth/popup-closed-by-user':
+                        // The user dismissed the popup — they changed their mind.
+                        // Not a failure of the mechanism, so no redirect fallback
+                        // (a full-page navigation they didn't ask for).
+                        console.info('Library sign-in dismissed by user')
+                        return
+                    case 'auth/popup-blocked':
+                    case 'auth/operation-not-supported-in-this-environment':
+                        // A popup genuinely can't open here — fall back to the
+                        // redirect flow (completed by getRedirectResult in onAuth).
+                        return authMod.signInWithRedirect(auth, provider)
+                    default:
+                        console.error('Library sign-in failed', error)
+                        return
+                }
+            }
         })
         .catch(error => console.error('Library sign-in failed', error))
 }
