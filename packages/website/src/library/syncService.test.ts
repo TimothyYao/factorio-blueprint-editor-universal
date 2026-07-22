@@ -10,6 +10,7 @@ import {
     ConflictInfo,
 } from './syncService'
 import { InMemoryLibraryStore } from './store'
+import { resolveSync } from './sync'
 import { LibraryState, BlueprintEntry } from './model'
 
 // The orchestration is pure logic with injected effects, so these drive it with
@@ -146,6 +147,10 @@ interface Harness {
     conflicts: ConflictInfo[]
 }
 
+// A fixed injected clock so the keep-mine winner's re-stamped `updatedAt` is
+// deterministic (distinct from the doc revs used as timestamps elsewhere).
+const NOW = 777777
+
 function harness(remoteInitial: LibraryState | null = null): Harness {
     const local = new InMemoryLibraryStore()
     const remote = new FakeRemote(remoteInitial)
@@ -156,6 +161,7 @@ function harness(remoteInitial: LibraryState | null = null): Harness {
     const service = new SyncService({
         local,
         writerId: ME,
+        now: () => NOW,
         storage,
         onStatus: s => statuses.push(s),
         onPulled: r => pulled.push(r),
@@ -276,7 +282,7 @@ describe('SyncService.push', () => {
 })
 
 describe('SyncService.resolveConflict', () => {
-    it('keep-mine force-pushes local over the remote', async () => {
+    it('keep-mine pushes a strictly-newer winner and re-inits the controller', async () => {
         const h = harness(full(9, OTHER))
         await h.local.save(full(3, ME))
         h.service.attach('uid-1', h.remote)
@@ -285,11 +291,44 @@ describe('SyncService.resolveConflict', () => {
 
         await h.service.resolveConflict('keep-mine')
         await flush()
-        // Local (mall content at rev 3) now owns the remote.
-        expect(h.remote.doc?.rev).toBe(3)
+        // The winner carries local's content, but its rev dominates BOTH sides
+        // (max(3, 9) + 1) and it's re-stamped with our writer + injected clock —
+        // so it can't be regress-pushed away by the other device (see below).
+        expect(h.remote.doc?.rev).toBe(10)
         expect(h.remote.doc?.writerId).toBe(ME)
+        expect(h.remote.doc?.updatedAt).toBe(NOW)
+        expect(h.remote.doc?.packs['vanilla-2.0'].children[0].name).toBe('mall')
+        // Saved to the local store too, so local and remote agree on the new rev.
+        expect((await h.local.load())?.rev).toBe(10)
+        expect((await h.local.load())?.writerId).toBe(ME)
+        // onPulled fired with the winner so the controller re-inits off the store
+        // (identical active-leaf content — a canvas no-op — but the rev advances).
+        expect(h.pulled.at(-1)?.rev).toBe(10)
         expect(h.service.getStatus()).toBe('synced')
         expect(h.service.getConflict()).toBeNull()
+    })
+
+    it('keep-mine winner survives the other device`s next reconcile (no silent clobber)', async () => {
+        // Device A resolves keep-mine against a remote the other device advanced.
+        const h = harness(full(9, OTHER))
+        await h.local.save(full(3, ME))
+        h.service.attach('uid-1', h.remote)
+        await flush()
+        await h.service.resolveConflict('keep-mine')
+        await flush()
+        const pushed = h.remote.doc as LibraryState
+        expect(pushed.rev).toBe(10)
+
+        // Now replay device B's next reconcile. B last synced its own rev-9 write,
+        // so its baseRev is 9 and its local is that rev-9 doc. Crucially the pushed
+        // rev (10) is ABOVE B's base — so resolveSync does NOT hit the
+        // `remote.rev < baseRev → push` branch that would silently clobber A's
+        // choice. Clean B (no new edits) fast-forwards with a pull.
+        const cleanB = resolveSync(full(9, OTHER), pushed, 9, OTHER)
+        expect(cleanB.action).toBe('pull')
+        // A dirty B (edited past its base) gets a genuine conflict, never a push.
+        const dirtyB = resolveSync(full(11, OTHER), pushed, 9, OTHER)
+        expect(dirtyB.action).toBe('conflict')
     })
 
     it('take-theirs pulls the remote copy', async () => {
@@ -302,6 +341,34 @@ describe('SyncService.resolveConflict', () => {
         await flush()
         expect((await h.local.load())?.rev).toBe(9)
         expect(h.pulled.at(-1)?.rev).toBe(9)
+        expect(h.service.getStatus()).toBe('synced')
+    })
+})
+
+describe('SyncService — conflict de-duplication', () => {
+    it('a second conflict while one is pending refreshes the info without re-prompting', async () => {
+        const h = harness(full(9, OTHER))
+        await h.local.save(full(3, ME))
+        h.service.attach('uid-1', h.remote)
+        await flush()
+        // First attach with real data on both sides → one conflict, one prompt.
+        expect(h.conflicts).toHaveLength(1)
+        expect(h.service.getConflict()?.remote.rev).toBe(9)
+
+        // The remote moves again, then a reconcile-on-visible re-raises while the
+        // modal is still open. onConflict must NOT fire a second time (no stacked
+        // overlay), but the stored info is refreshed to the latest docs.
+        h.remote.doc = full(12, OTHER)
+        await h.service.reconcile()
+        await flush()
+        expect(h.conflicts).toHaveLength(1) // still one prompt
+        expect(h.service.getConflict()?.remote.rev).toBe(12) // but latest info
+
+        // resolveConflict reads pendingConflict live, so keep-mine dominates the
+        // *latest* remote (rev 12): winner rev = max(3, 12) + 1 = 13.
+        await h.service.resolveConflict('keep-mine')
+        await flush()
+        expect(h.remote.doc?.rev).toBe(13)
         expect(h.service.getStatus()).toBe('synced')
     })
 })

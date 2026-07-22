@@ -18,7 +18,7 @@
 //   - `SyncService` — owns the attached remote, the per-user base revision, the
 //     status callback, and the reconcile / push / pull / conflict flows.
 
-import { LibraryState } from './model'
+import { LibraryState, Now } from './model'
 import { LibraryStore } from './store'
 import { resolveSync } from './sync'
 
@@ -156,6 +156,8 @@ export interface SyncServiceOptions {
     local: LibraryStore
     /** This install's write attribution (mirrors the controller's writerId). */
     writerId: string
+    /** Injected clock for stamping the keep-mine winner. Defaults to `Date.now`. */
+    now?: Now
     /** Base-revision persistence. Defaults to `localStorage`. */
     storage?: StorageLike
     /** Fired whenever the status changes (drives the panel's glyph). */
@@ -181,6 +183,7 @@ export class SyncService {
 
     private readonly local: LibraryStore
     private readonly writerId: string
+    private readonly now: Now
     private readonly storage: StorageLike | null
     private readonly onStatus?: (status: SyncStatus) => void
     private readonly onPulled?: (remote: LibraryState) => void
@@ -189,6 +192,7 @@ export class SyncService {
     public constructor(opts: SyncServiceOptions) {
         this.local = opts.local
         this.writerId = opts.writerId
+        this.now = opts.now ?? Date.now
         this.storage = opts.storage ?? safeLocalStorage()
         this.onStatus = opts.onStatus
         this.onPulled = opts.onPulled
@@ -276,19 +280,52 @@ export class SyncService {
     }
 
     /**
-     * Answer a raised conflict: `keep-mine` force-pushes local over the remote
-     * (expecting the remote rev we prompted with — re-read inside the push flow if
-     * it moved again); `take-theirs` pulls the remote copy.
+     * Answer a raised conflict: `keep-mine` re-stamps local as a strictly-newer
+     * winner and force-pushes it over the remote (expecting the remote rev we
+     * prompted with — re-read inside the push flow if it moved again);
+     * `take-theirs` pulls the remote copy.
      */
     public async resolveConflict(choice: ConflictChoice): Promise<void> {
         const c = this.pendingConflict
         if (!c || !this.remote) return
         this.pendingConflict = null
-        if (choice === 'keep-mine') {
-            await this.doPush(c.local, c.remote.rev)
-        } else {
+        if (choice === 'take-theirs') {
             await this.doPull(c.remote)
+            return
         }
+        // keep-mine. Pushing `c.local` as-is is unsafe: per-install rev counters
+        // mean its `rev` is typically *lower* than the remote's, so the other
+        // device — whose stored baseRev equals that higher old remote rev — would
+        // hit resolveSync's `remote.rev < baseRev → push` branch on its next
+        // reconcile and silently clobber this explicit choice. So build a winner
+        // that strictly dominates *both* sides: bump the rev past the remote's,
+        // re-stamp a fresh updatedAt + our writerId. The other device then sees a
+        // foreign, strictly-newer write and pulls (clean) or conflicts (dirty) —
+        // never the silent regressed-push.
+        const winner: LibraryState = {
+            ...c.local,
+            rev: Math.max(c.local.rev, c.remote.rev) + 1,
+            updatedAt: this.now(),
+            writerId: this.writerId,
+        }
+        // Save locally first so local and remote agree on the new rev; without
+        // this the controller's in-memory doc keeps the old lower rev and its next
+        // stampWrite would regress the doc.
+        try {
+            await this.local.save(winner)
+        } catch (e) {
+            this.fail(e)
+            return
+        }
+        // Transactionally push the winner, expecting the remote rev we prompted
+        // with (doPush re-resolves if it moved again under us).
+        const pushed = await this.doPush(winner, c.remote.rev)
+        // On a successful push, re-init the controller from the local store so its
+        // in-memory doc adopts the winner's rev — otherwise it keeps the old lower
+        // rev and its next stampWrite would regress the doc. Content-wise this is a
+        // no-op for the canvas: local won, so index.ts's handlePulled sees
+        // identical active-leaf content.
+        if (pushed) this.onPulled?.(winner)
     }
 
     // --- internals ----------------------------------------------------------
@@ -297,9 +334,12 @@ export class SyncService {
      * Transactionally write `local`, expecting the remote to be at `expectedRev`.
      * On `'stale'` (someone wrote between our resolve and this save) reload the
      * remote and re-resolve; the outcome may be another push (retry), a pull, or a
-     * conflict. Bounded so a pathological write-race can't spin forever.
+     * conflict. Bounded so a pathological write-race can't spin forever. Returns
+     * `true` only if `local` itself landed on the remote (an `'ok'` write) — a
+     * stale re-resolve that ends in a pull / conflict / noop returns `false`, so
+     * callers (keep-mine) know whether their exact doc won.
      */
-    private async doPush(local: LibraryState, expectedRev: number | null): Promise<void> {
+    private async doPush(local: LibraryState, expectedRev: number | null): Promise<boolean> {
         this.setStatus('syncing')
         for (let attempt = 0; attempt < 3; attempt++) {
             let res: 'ok' | 'stale'
@@ -307,12 +347,12 @@ export class SyncService {
                 res = await (this.remote as RemoteLibraryDoc).save(local, expectedRev)
             } catch (e) {
                 this.fail(e)
-                return
+                return false
             }
             if (res === 'ok') {
                 this.setBase(local.rev)
                 this.setStatus('synced')
-                return
+                return true
             }
             // Stale: the remote moved. Reload and re-resolve against what's there.
             let remoteNow: LibraryState | null
@@ -320,7 +360,7 @@ export class SyncService {
                 remoteNow = await (this.remote as RemoteLibraryDoc).load()
             } catch (e) {
                 this.fail(e)
-                return
+                return false
             }
             const decision = resolveSync(local, remoteNow, this.baseRev, this.writerId)
             if (decision.action === 'push') {
@@ -329,18 +369,19 @@ export class SyncService {
             }
             if (decision.action === 'pull') {
                 await this.doPull(decision.doc as LibraryState)
-                return
+                return false
             }
             if (decision.action === 'conflict') {
                 this.raiseConflict(local, remoteNow as LibraryState)
-                return
+                return false
             }
             // noop — nothing left to write.
             this.setStatus('synced')
-            return
+            return false
         }
         // Exhausted the retry budget against a doc that keeps moving.
         this.setStatus('error')
+        return false
     }
 
     /** Adopt a remote doc locally, advance the base, and notify the caller. */
@@ -357,9 +398,17 @@ export class SyncService {
     }
 
     private raiseConflict(local: LibraryState, remote: LibraryState): void {
+        // A conflict can be raised while one is already pending (reconcile-on-
+        // visible racing a stale debounced push). Always refresh the stored docs
+        // (latest wins), but only fire `onConflict` when none was pending — a
+        // second invocation would stack a duplicate modal overlay in the panel.
+        // Replacing without re-prompting is safe because `resolveConflict` reads
+        // `pendingConflict` *live* at the moment the user answers, so the already-
+        // open prompt resolves against these latest docs, not the stale ones.
+        const alreadyPending = this.pendingConflict !== null
         this.pendingConflict = { local, remote }
         this.setStatus('conflict')
-        this.onConflict?.(this.pendingConflict)
+        if (!alreadyPending) this.onConflict?.(this.pendingConflict)
     }
 
     private setStatus(status: SyncStatus): void {

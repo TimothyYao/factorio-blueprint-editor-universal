@@ -253,7 +253,9 @@ echoes) to decide push / pull / conflict / noop. Remote writes go through a
 Firestore **transaction** that rejects (`'stale'`) if the remote `rev` moved
 since we resolved, closing the two-device push/push race; on `'stale'` the
 service reloads and re-resolves. A genuine both-sides-diverged conflict is
-surfaced to the user (keep-mine force-pushes; take-theirs pulls).
+surfaced to the user (keep-mine re-stamps the local doc as a strictly-newer
+winner — rev bumped past the remote's, fresh writer/clock — so it dominates other
+devices instead of being regress-pushed away; take-theirs pulls).
 
 ### Config (Vite env vars)
 
