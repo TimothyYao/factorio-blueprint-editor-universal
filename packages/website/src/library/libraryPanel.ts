@@ -17,6 +17,26 @@
 
 import { LibraryController } from './controller'
 import { LibraryNode } from './model'
+import { SyncStatus, ConflictChoice } from './syncService'
+
+/**
+ * The cloud-sync surface the panel needs (Phase 6). Supplied only when firebase
+ * is configured; when absent (or `isConfigured()` is false) the panel renders no
+ * sync chrome at all and is pixel-identical to the local-only build. Holds no
+ * firebase imports itself — `index.ts` bridges to `firebase.ts` / the SyncService.
+ */
+export interface LibrarySyncCallbacks {
+    /** Whether this build has firebase config (else: no sync UI). */
+    isConfigured(): boolean
+    /** The signed-in user (email may be null), or null when signed out. */
+    getUser(): { email: string | null } | null
+    /** The current sync status (drives the status glyph). */
+    getStatus(): SyncStatus
+    /** Begin a Google sign-in (a redirect). */
+    signIn(): void
+    /** Sign out (back to local-only). */
+    signOut(): void
+}
 
 export interface LibraryPanelCallbacks {
     /** Load an encoded blueprint/book onto the canvas ('' → a blank blueprint). */
@@ -39,6 +59,8 @@ export interface LibraryPanelCallbacks {
     packList(): { id: string; label: string }[]
     /** Switch the editor's rendering pack (a `setDataPack` reload). */
     requestPackSwitch(pack: string): void
+    /** Cloud sync (Phase 6). Absent ⇒ no sync chrome (local-only build). */
+    sync?: LibrarySyncCallbacks
 }
 
 export interface LibraryPanel {
@@ -46,6 +68,17 @@ export interface LibraryPanel {
     open(): void
     close(): void
     refresh(): void
+    /** Re-render the header sync widget (called by index.ts on auth/status change). */
+    syncChanged(): void
+    /**
+     * Show the conflict chooser (the cloud copy diverged from this device's).
+     * Resolves the user's choice, or null if dismissed. Opens the panel first so
+     * the in-panel modal is reachable.
+     */
+    promptConflict(
+        local: { updatedAt: number },
+        remote: { updatedAt: number }
+    ): Promise<ConflictChoice | null>
 }
 
 export function initLibraryPanel(
@@ -69,6 +102,7 @@ export function initLibraryPanel(
     const open = (): void => {
         browsedPack = controller.getActivePack()
         refresh()
+        renderSync()
         panel.classList.add('active')
     }
     const toggle = (): void => (panel.classList.contains('active') ? close() : open())
@@ -85,6 +119,65 @@ export function initLibraryPanel(
     closeBtn.textContent = '×'
     closeBtn.addEventListener('click', close)
     header.append(title, closeBtn)
+
+    // --- cloud sync bar (Phase 6) -------------------------------------------
+    // Rendered only when firebase is configured; otherwise it stays empty and
+    // hidden (see the `hidden` toggle in renderSync), so a local-only build looks
+    // exactly as before. Signed out ⇒ a "Sign in" button; signed in ⇒ the account
+    // email, a status glyph, and "Sign out".
+    const syncBar = document.createElement('div')
+    syncBar.className = 'library-sync'
+
+    // The status glyph + its accessible label, keyed off the sync status.
+    const STATUS_GLYPH: Record<SyncStatus, { glyph: string; label: string } | null> = {
+        disabled: null,
+        'signed-out': null,
+        syncing: { glyph: '⟳', label: 'Syncing…' },
+        synced: { glyph: '☁︎', label: 'Synced' },
+        conflict: { glyph: '⚠', label: 'Sync conflict' },
+        error: { glyph: '⚠', label: 'Sync error' },
+        offline: { glyph: '⦸', label: 'Offline' },
+    }
+
+    function renderSync(): void {
+        const sync = cb.sync
+        syncBar.replaceChildren()
+        if (!sync || !sync.isConfigured()) {
+            syncBar.hidden = true
+            return
+        }
+        syncBar.hidden = false
+        const user = sync.getUser()
+        if (!user) {
+            const signIn = document.createElement('button')
+            signIn.type = 'button'
+            signIn.className = 'library-sync-btn'
+            signIn.textContent = 'Sign in to sync'
+            signIn.addEventListener('click', () => sync.signIn())
+            syncBar.appendChild(signIn)
+            return
+        }
+        const glyph = STATUS_GLYPH[sync.getStatus()]
+        if (glyph) {
+            const g = document.createElement('span')
+            g.className = `library-sync-glyph library-sync-${sync.getStatus()}`
+            g.textContent = glyph.glyph
+            g.title = glyph.label
+            g.setAttribute('aria-label', glyph.label)
+            syncBar.appendChild(g)
+        }
+        const email = document.createElement('span')
+        email.className = 'library-sync-email'
+        email.textContent = user.email ?? 'Signed in'
+        email.title = user.email ?? ''
+        syncBar.appendChild(email)
+        const signOut = document.createElement('button')
+        signOut.type = 'button'
+        signOut.className = 'library-sync-btn'
+        signOut.textContent = 'Sign out'
+        signOut.addEventListener('click', () => sync.signOut())
+        syncBar.appendChild(signOut)
+    }
 
     // --- pack drop-down -----------------------------------------------------
     const packBar = document.createElement('div')
@@ -202,8 +295,9 @@ export function initLibraryPanel(
     const body = document.createElement('div')
     body.className = 'library-body'
 
-    panel.append(header, packBar, actions, body)
+    panel.append(header, syncBar, packBar, actions, body)
     document.body.appendChild(panel)
+    renderSync()
 
     // --- a small popover menu (the per-row "⋯") -----------------------------
     interface MenuItem {
@@ -813,5 +907,53 @@ export function initLibraryPanel(
         }
     }
 
-    return { toggle, open, close, refresh }
+    // The cloud-conflict chooser — a two-option in-panel modal (reuses the
+    // .library-picker overlay like confirmModal/textModal). Unlike confirmModal's
+    // single confirm, both outcomes are explicit choices, each annotated with when
+    // that side was last changed so the user can judge which to keep.
+    const promptConflict = (
+        local: { updatedAt: number },
+        remote: { updatedAt: number }
+    ): Promise<ConflictChoice | null> => {
+        open() // ensure the panel (and thus the in-panel modal) is visible
+        return new Promise(resolve => {
+            const overlay = document.createElement('div')
+            overlay.className = 'library-picker'
+            const box = document.createElement('div')
+            box.className = 'library-picker-box library-dialog'
+            const text = document.createElement('div')
+            text.className = 'library-dialog-text'
+            text.textContent = 'Cloud copy is newer — it was changed on another device.'
+            const detail = document.createElement('div')
+            detail.className = 'library-conflict-times'
+            const when = (ms: number): string => (ms ? new Date(ms).toLocaleString() : 'unknown')
+            detail.textContent = `This device: ${when(local.updatedAt)} · Cloud: ${when(remote.updatedAt)}`
+            const row = document.createElement('div')
+            row.className = 'library-dialog-actions'
+            const done = (v: ConflictChoice | null): void => {
+                overlay.remove()
+                resolve(v)
+            }
+            const mine = document.createElement('button')
+            mine.type = 'button'
+            mine.textContent = 'Keep this device’s copy'
+            mine.addEventListener('click', () => done('keep-mine'))
+            const theirs = document.createElement('button')
+            theirs.type = 'button'
+            theirs.className = 'library-dialog-confirm'
+            theirs.textContent = 'Take the cloud copy'
+            theirs.addEventListener('click', () => done('take-theirs'))
+            row.append(mine, theirs)
+            box.append(text, detail, row)
+            overlay.appendChild(box)
+            // A backdrop click dismisses without choosing (the conflict persists;
+            // the next reconcile re-raises it).
+            overlay.addEventListener('click', e => {
+                if (e.target === overlay) done(null)
+            })
+            panel.appendChild(overlay)
+        })
+    }
+
+    return { toggle, open, close, refresh, syncChanged: renderSync, promptConflict }
 }

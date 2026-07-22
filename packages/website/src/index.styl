@@ -456,6 +456,54 @@ body.mobile
         &:hover
             background-color: rgba(255, 255, 255, 0.1)
 
+    // Cloud-sync bar (Phase 6): account + status glyph, or a sign-in button.
+    // Hidden entirely on a local-only (unconfigured) build.
+    .library-sync
+        display: flex
+        align-items: center
+        gap: 8px
+        padding: 8px 16px
+        border-bottom: 1px solid #555
+        &[hidden]
+            display: none
+        .library-sync-email
+            flex: 1 1 auto
+            overflow: hidden
+            text-overflow: ellipsis
+            white-space: nowrap
+            color: #cfe8f4
+            font-size: 12px
+        .library-sync-glyph
+            flex: 0 0 auto
+            font-size: 15px
+            line-height: 1
+            &.library-sync-syncing
+                color: #9fb4c0
+            &.library-sync-synced
+                color: #7fd18a
+            &.library-sync-conflict,
+            &.library-sync-error
+                color: #ffc451
+            &.library-sync-offline
+                color: #d08a8a
+        .library-sync-btn
+            flex: 0 0 auto
+            padding: 5px 10px
+            color: white
+            font-size: 12px
+            background: #43464b
+            border: 1px solid #6a6a6a
+            border-radius: 4px
+            cursor: pointer
+            &:hover
+                filter: brightness(1.15)
+
+    // Conflict-chooser timestamps (inside the .library-dialog modal).
+    .library-conflict-times
+        margin-top: 8px
+        color: #9fb4c0
+        font-size: 12px
+
     .library-actions
         display: flex
         gap: 8px

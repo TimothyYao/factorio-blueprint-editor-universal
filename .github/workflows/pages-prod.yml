@@ -34,6 +34,15 @@ jobs:
       - run: npm run build:website
         env:
           PUBLIC_BASE: /factorio-blueprint-editor/
+          # Firebase web config for the blueprint library's cloud sync (Phase 6).
+          # These are GitHub repo *variables*, not secrets — Firebase web config is
+          # public by design (it ships in the client bundle). If they're unset they
+          # resolve to empty ⇒ the build is "unconfigured" ⇒ a local-only build with
+          # no sign-in UI. See packages/website/src/library/firebase.ts.
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
 
       - name: Deploy to gh-pages root
         uses: JamesIves/github-pages-deploy-action@v4

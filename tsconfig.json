@@ -1,7 +1,11 @@
 {
     "compilerOptions": {
         "target": "ESNext",
-        "module": "ES6",
+        // ESNext (not ES6) so `import.meta.env` and dynamic `import()` type-check —
+        // both used by the website (Vite env config + the code-split Firebase SDK
+        // load in `library/firebase.ts`). Consistent with `target: ESNext` and the
+        // bundler module resolution below; Vite emits ESNext regardless.
+        "module": "ESNext",
         "skipLibCheck": true,
 
         /* Bundler mode */

@@ -1,0 +1,19 @@
+{
+    "//": "Firebase emulator config for the blueprint library's Phase 6 cloud sync. See docs/blueprint-library.md (Phase 6) for the debugging workflow: run `firebase emulators:start`, then build the site with VITE_FIREBASE_USE_EMULATORS=true so the editor points auth at 127.0.0.1:9099 and Firestore at 127.0.0.1:8091.",
+    "firestore": {
+        "rules": "firestore.rules"
+    },
+    "emulators": {
+        "auth": {
+            "port": 9099
+        },
+        "firestore": {
+            "//": "8091, not the default 8080 — 8080 collides with the vite dev/preview server (see packages/website/vite.config.js). The editor's connectFirestoreEmulator call uses 8091 to match.",
+            "port": 8091
+        },
+        "singleProjectMode": true,
+        "ui": {
+            "enabled": true
+        }
+    }
+}

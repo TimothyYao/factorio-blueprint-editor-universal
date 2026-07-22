@@ -23,7 +23,17 @@ import { initActionToolbar } from './actionToolbar'
 import { loadSavedBlueprint, clearSavedBlueprint } from './blueprintStorage'
 import { LibraryController } from './library/controller'
 import { createLibraryStore } from './library/store'
+import { getWriterId } from './library/model'
 import { initLibraryPanel, LibraryPanel, LibraryPanelCallbacks } from './library/libraryPanel'
+import { SyncService, SyncedLibraryStore, SyncStatus, ConflictInfo } from './library/syncService'
+import {
+    firebaseConfigured,
+    signIn,
+    signOutUser,
+    onAuth,
+    createRemote,
+    AuthUser,
+} from './library/firebase'
 
 document.addEventListener('contextmenu', e => e.preventDefault())
 
@@ -40,7 +50,34 @@ let book: Book
 // docs/blueprint-library.md / issue #50). The active leaf is the working context
 // — the canvas edits it, autosave mirrors it, and Save checkpoints a version.
 // Scoped to the active data pack (the library's top tier is per pack).
-const library = new LibraryController(createLibraryStore(), DATA_PACK)
+//
+// Phase 6 puts the local store behind a `SyncedLibraryStore` decorator: the
+// controller still writes locally (durable, offline-first), and — when a user is
+// signed in — the write is mirrored to a Firebase remote via `SyncService`. On an
+// unconfigured build the service simply never attaches a remote, so this is
+// exactly the previous local-only behaviour.
+const localStore = createLibraryStore()
+// This install's write attribution, shared by the controller (via its default)
+// and the sync service so the resolver can recognise our own remote echoes.
+const writerId = getWriterId()
+let currentUser: AuthUser | null = null
+let syncStatus: SyncStatus = firebaseConfigured() ? 'signed-out' : 'disabled'
+const syncService = new SyncService({
+    local: localStore,
+    writerId,
+    onStatus: status => {
+        syncStatus = status
+        libraryPanel?.syncChanged()
+    },
+    onPulled: () => {
+        void handlePulled()
+    },
+    onConflict: info => {
+        void handleConflict(info)
+    },
+})
+const syncedStore = new SyncedLibraryStore(localStore, syncService)
+const library = new LibraryController(syncedStore, DATA_PACK, undefined, undefined, writerId)
 let libraryPanel: LibraryPanel
 let activeProjectEl: HTMLElement | null
 // "Book view" (Phase 5b): opening a folder loads it as a navigable Book onto the
@@ -177,6 +214,22 @@ editor
         libraryPanel = initLibraryPanel(library, libraryCallbacks)
         initLibraryChrome()
 
+        // Cloud sync (Phase 6): only wire firebase when it's configured. On an auth
+        // change, attach a per-uid remote and reconcile (sign-in / returning with a
+        // live session), or detach to fall back to local-only (sign-out). Signed
+        // out or unconfigured ⇒ exactly the local-only behaviour above.
+        if (firebaseConfigured()) {
+            onAuth(user => {
+                currentUser = user
+                if (user) {
+                    syncService.attach(user.uid, createRemote(user.uid))
+                } else {
+                    syncService.detach()
+                }
+                libraryPanel?.syncChanged()
+            })
+        }
+
         loadInitialBlueprint()
             .then(() => createWelcomeMessage())
             .catch(error => createBPImportError(error))
@@ -206,18 +259,91 @@ function currentEncodedString(): Promise<string> {
 // does NOT create a version snapshot; that's what an explicit Save is for.
 window.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'hidden') return
-    if (bp === undefined) return
-    // A folder book-view isn't the working context — don't autosave it back into
-    // a leaf (that would clobber the previously-active leaf with the whole book).
-    if (viewingBook) return
+    // Push any pending remote write immediately (the tab may be discarded next),
+    // over and above the autosave below. No-op when there's no remote / nothing
+    // pending. Also covers the book-view / not-loaded-yet early returns.
+    const flushRemote = (): void => {
+        void syncedStore.flush()
+    }
+    // A folder book-view isn't the working context — don't autosave it back into a
+    // leaf (that would clobber the previously-active leaf with the whole book) —
+    // and there's nothing to autosave before the first blueprint has loaded.
+    if (bp === undefined || viewingBook) {
+        flushRemote()
+        return
+    }
 
     currentEncodedString()
         .then(enc => {
             refreshModifiedIndicator(enc)
             return library.autosave(enc)
         })
+        .then(flushRemote)
         .catch(error => console.error('Failed to autosave blueprint', error))
 })
+
+// Returning to the tab (or a mobile app-switch back) is when the remote may have
+// moved — reconcile to pull down another device's edits. Cheap when nothing
+// changed (a single remote read that resolves to noop).
+window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return
+    if (syncService.hasRemote()) void syncService.reconcile()
+})
+
+// A pull adopted a remote doc into the local store. Re-init the controller (it
+// re-loads from the store and re-resolves the active leaf), refresh the panel,
+// and — carefully — reflect the change on the canvas without clobbering unsaved
+// local edits.
+async function handlePulled(): Promise<void> {
+    // Capture the pre-pull active leaf before re-init swaps in the remote state.
+    const prevEncoded = library.getActive().encoded
+    await library.init()
+    libraryPanel?.refresh()
+    updateActiveIndicator()
+
+    // Nothing on the canvas yet (pull raced ahead of the first load) — the initial
+    // load will pick up the freshly-adopted active leaf on its own.
+    if (bp === undefined) return
+    // A book-view isn't a working leaf — never swap the canvas out from under it.
+    if (viewingBook) return
+
+    const active = library.getActive()
+    // The active leaf's content is unchanged by this pull — leave the canvas be.
+    if (active.encoded === prevEncoded) {
+        return
+    }
+
+    // The active leaf changed remotely. If the canvas holds local edits that
+    // differ from the pre-pull leaf, prefer a toast over a silent swap so we never
+    // clobber unsaved work; the user can reopen to load the newest version.
+    const canvasEnc = await currentEncodedString().catch(() => prevEncoded)
+    if (canvasEnc && canvasEnc !== prevEncoded) {
+        createToast({
+            text: 'Library synced from another device. Reopen this project to load the newest version.',
+            type: 'info',
+            timeout: 10000,
+        })
+        return
+    }
+
+    // Safe to adopt: reopen the active entry onto the canvas.
+    const bpOrBook = active.encoded
+        ? await getBlueprintOrBookFromSource(active.encoded).catch(() => undefined)
+        : undefined
+    await loadBp(bpOrBook || new Blueprint(), `Synced "${active.name}"`)
+    refreshModifiedIndicator(active.encoded)
+}
+
+// Both sides diverged. Hand the two docs to the panel's conflict chooser and act
+// on the user's answer (keep-mine force-pushes; take-theirs pulls).
+async function handleConflict(info: ConflictInfo): Promise<void> {
+    if (!libraryPanel) return
+    const choice = await libraryPanel.promptConflict(
+        { updatedAt: info.local.updatedAt },
+        { updatedAt: info.remote.updatedAt }
+    )
+    if (choice) await syncService.resolveConflict(choice)
+}
 
 // Decide what to show on first load: a URL-named blueprint (imported as a new
 // leaf), or the active project (scratchpad by default), or a blank canvas.
@@ -408,6 +534,15 @@ const libraryCallbacks: LibraryPanelCallbacks = {
     // through setDataPack (which persists the choice and reloads). The panel has
     // already persisted the target pack's activeId, so the reload reopens it.
     requestPackSwitch: (pack: string) => setDataPack(pack),
+    // Cloud sync surface (Phase 6). `isConfigured` gates all sync chrome, so an
+    // unconfigured build renders the panel exactly as before.
+    sync: {
+        isConfigured: () => firebaseConfigured(),
+        getUser: () => currentUser,
+        getStatus: () => syncStatus,
+        signIn: () => signIn(),
+        signOut: () => signOutUser(),
+    },
 }
 
 // Wire the on-screen entry points to the panel once it exists.
