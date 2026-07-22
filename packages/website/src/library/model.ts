@@ -15,7 +15,13 @@
 // convenience — the repo isn't redux-style and this keeps call sites direct.
 
 /** Bump when the on-disk shape changes; the store migrates on load. */
-export const LIBRARY_VERSION = 1
+export const LIBRARY_VERSION = 2
+
+/**
+ * localStorage key for this install's writer id (see `getWriterId`). Namespaced
+ * with the repo's `fbe:` convention (cf. `fbe:dataPack`, `fbe:blueprint`).
+ */
+export const WRITER_ID_KEY = 'fbe:library:writerId'
 
 /** Per-leaf version history depth. Oldest snapshots are pruned past this. */
 export const DEFAULT_SNAPSHOT_LIMIT = 20
@@ -91,6 +97,23 @@ export interface PackTree {
 export interface LibraryState {
     version: number
     packs: Record<string, PackTree>
+    /**
+     * Monotonic revision counter, bumped once per *persisted* mutation (see
+     * `stampWrite`, called from the controller's `persist`). The conflict
+     * detector (`sync.ts`) compares it against the base revision a device last
+     * synced at to tell "unchanged", "advanced", and "regressed" apart — it's the
+     * primary last-write-wins signal, more reliable than a wall clock.
+     */
+    rev: number
+    /** Wall-clock ms of the last persisted mutation — for display + tie-breaks. */
+    updatedAt: number
+    /**
+     * Which install made the last write (see `getWriterId`). Lets a device
+     * recognise its *own* remote writes (an echo from a previous session / a
+     * pull-after-push race) versus another device's, so it can fast-forward its
+     * own echoes instead of flagging them as conflicts.
+     */
+    writerId: string
 }
 
 /** Injected clock/id sources so the model stays deterministic for tests. */
@@ -108,9 +131,60 @@ export const genId: IdGen = () => {
     return `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 }
 
-/** A fresh, empty library. */
-export function createLibrary(): LibraryState {
-    return { version: LIBRARY_VERSION, packs: {} }
+/**
+ * A fresh, empty library. The sync fields start "unwritten": `rev: 0` (no
+ * mutation has been persisted yet), `updatedAt` at the current clock, and an
+ * **empty** `writerId`. The empty writerId is a deliberate neutral sentinel — a
+ * document that has actually been persisted always carries a real id (every save
+ * runs `stampWrite`), so `''` unambiguously means "born locally, never stamped",
+ * and it can never collide with a genuine device id in the resolver's
+ * `writerId ===` echo test.
+ */
+export function createLibrary(now: Now = Date.now): LibraryState {
+    return { version: LIBRARY_VERSION, packs: {}, rev: 0, updatedAt: now(), writerId: '' }
+}
+
+/**
+ * Stamp a persisted mutation onto the document: bump the monotonic `rev`, record
+ * the wall-clock `updatedAt`, and attribute the write to `writerId`. Pure and
+ * deterministic (clock injected); the controller calls it inside `persist`, once
+ * per save, so `rev` counts exactly the writes that hit the store. Mutates in
+ * place (the controller owns the doc) and returns it for convenience.
+ */
+export function stampWrite(
+    state: LibraryState,
+    writerId: string,
+    now: Now = Date.now
+): LibraryState {
+    state.rev += 1
+    state.updatedAt = now()
+    state.writerId = writerId
+    return state
+}
+
+/**
+ * A stable per-install token, persisted in localStorage under `WRITER_ID_KEY`,
+ * minted on first use via `genId`. Identifies *this* device/browser profile so
+ * the sync resolver can distinguish our own remote echoes from another device's
+ * writes. When localStorage is unavailable (private mode, node) it falls back to
+ * an in-memory id that's stable for the session, so intra-session writes at least
+ * agree on a writer. The id generator is injectable for deterministic tests.
+ */
+let memoryWriterId: string | null = null
+export function getWriterId(id: IdGen = genId): string {
+    try {
+        const ls = globalThis.localStorage
+        if (ls) {
+            const stored = ls.getItem(WRITER_ID_KEY)
+            if (stored) return stored
+            const fresh = id()
+            ls.setItem(WRITER_ID_KEY, fresh)
+            return fresh
+        }
+    } catch {
+        /* storage blocked/unavailable — fall through to the in-memory id */
+    }
+    return (memoryWriterId ??= id())
 }
 
 /** A new, empty blueprint entry. */

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import {
     createLibrary,
     ensurePack,
@@ -16,7 +16,10 @@ import {
     restoreSnapshot,
     deleteSnapshot,
     pushRecent,
+    stampWrite,
+    getWriterId,
     LIBRARY_VERSION,
+    WRITER_ID_KEY,
     Now,
     IdGen,
 } from './model'
@@ -28,6 +31,65 @@ function fixtures(): { now: Now; id: IdGen } {
     let n = 0
     return { now: () => (t += 1), id: () => `id${n++}` }
 }
+
+describe('createLibrary', () => {
+    it('initializes the sync fields "unwritten": rev 0, updatedAt now, empty writerId', () => {
+        const { now } = fixtures()
+        const state = createLibrary(now)
+        expect(state.version).toBe(LIBRARY_VERSION)
+        expect(state.rev).toBe(0)
+        expect(state.updatedAt).toBe(1001) // first now() tick
+        expect(state.writerId).toBe('')
+    })
+})
+
+describe('stampWrite', () => {
+    it('bumps rev, records updatedAt, and attributes the writer (in place)', () => {
+        const { now } = fixtures()
+        const state = createLibrary(now)
+        const returned = stampWrite(state, 'device-A', now)
+        expect(returned).toBe(state) // mutates and returns the same object
+        expect(state.rev).toBe(1)
+        expect(state.updatedAt).toBe(1002)
+        expect(state.writerId).toBe('device-A')
+
+        stampWrite(state, 'device-B', now)
+        expect(state.rev).toBe(2) // monotonic
+        expect(state.writerId).toBe('device-B')
+        expect(state.updatedAt).toBe(1003)
+    })
+})
+
+describe('getWriterId', () => {
+    afterEach(() => {
+        vi.unstubAllGlobals()
+    })
+
+    it('mints and persists a stable id in localStorage, reusing it on later calls', () => {
+        const map = new Map<string, string>()
+        vi.stubGlobal('localStorage', {
+            getItem: (k: string) => map.get(k) ?? null,
+            setItem: (k: string, v: string) => void map.set(k, v),
+        })
+        let n = 0
+        const gen: IdGen = () => `w${n++}`
+
+        const first = getWriterId(gen)
+        expect(first).toBe('w0')
+        expect(map.get(WRITER_ID_KEY)).toBe('w0')
+        // A second call reads the persisted value rather than minting a new one.
+        expect(getWriterId(gen)).toBe('w0')
+    })
+
+    it('falls back to a session-stable in-memory id when localStorage is absent', () => {
+        vi.stubGlobal('localStorage', undefined)
+        let n = 0
+        const gen: IdGen = () => `mem${n++}`
+        const a = getWriterId(gen)
+        const b = getWriterId(gen)
+        expect(a).toBe(b) // stable across calls despite no persistence
+    })
+})
 
 describe('ensurePack', () => {
     it('creates a pack subtree with a stable scratchpad on first use', () => {

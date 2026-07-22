@@ -36,6 +36,8 @@ import {
     restoreSnapshot,
     deleteSnapshot,
     pushRecent,
+    stampWrite,
+    getWriterId,
     Now,
     IdGen,
     genId,
@@ -45,19 +47,26 @@ import {
 export const IMPORTED_FOLDER = 'Imported'
 
 export class LibraryController {
+    // Placeholder until `init` loads or freshly creates the real document; the
+    // injected clock isn't available to a field initializer, so this uses the
+    // default and is overwritten before any mutation is persisted.
     private state: LibraryState = createLibrary()
 
     public constructor(
         private readonly store: LibraryStore,
         private readonly pack: string,
         private readonly now: Now = Date.now,
-        private readonly id: IdGen = genId
+        private readonly id: IdGen = genId,
+        // This install's write attribution, stamped onto every persisted mutation
+        // so the sync resolver can recognise our own remote echoes. Injected in
+        // tests for determinism; defaults to the per-install localStorage token.
+        private readonly writerId: string = getWriterId(id)
     ) {}
 
     /** Load (or create) the library and resolve the active leaf for this pack. */
     public async init(): Promise<void> {
         const loaded = await this.store.load().catch(() => null)
-        this.state = loaded ?? createLibrary()
+        this.state = loaded ?? createLibrary(this.now)
         const tree = this.tree()
         // A persisted activeId that no longer resolves falls back to the scratchpad.
         if (!tree.activeId || !findNode(tree, tree.activeId)) {
@@ -70,6 +79,10 @@ export class LibraryController {
     }
 
     private persist(): Promise<void> {
+        // Every persisted mutation funnels through here, so this is the single
+        // place to stamp the doc's sync metadata (bump rev, record updatedAt +
+        // writerId) before it hits the store.
+        stampWrite(this.state, this.writerId, this.now)
         return this.store.save(this.state).catch(() => undefined)
     }
 
