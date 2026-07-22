@@ -95,6 +95,8 @@ describe('resolveSync — remote / local presence', () => {
         const d = resolveSync(local, null, null, ME)
         expect(d.action).toBe('push')
         expect(d.doc).toBe(local)
+        // conflictKind is set *only* on conflict decisions.
+        expect(d.conflictKind).toBeUndefined()
     })
     it('noops when neither side has a document', () => {
         expect(resolveSync(null, null, null, ME).action).toBe('noop')
@@ -151,6 +153,7 @@ describe('resolveSync — another device advanced the remote (remote.rev > baseR
         const d = resolveSync(full(4, ME), full(5, OTHER), 3, ME)
         expect(d.action).toBe('conflict')
         expect(d.doc).toBeNull()
+        expect(d.conflictKind).toBe('diverged')
     })
 })
 
@@ -180,6 +183,7 @@ describe('resolveSync — never synced (baseRev null) with existing local data',
         const d = resolveSync(full(2, ME), full(4, OTHER), null, ME)
         expect(d.action).toBe('conflict')
         expect(d.doc).toBeNull()
+        expect(d.conflictKind).toBe('first-attach')
     })
     it('pulls to establish a base when both sides are empty', () => {
         const remote = emptyPack(1, OTHER)

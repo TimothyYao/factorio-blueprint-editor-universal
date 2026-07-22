@@ -28,12 +28,24 @@ import { LibraryState } from './model'
 export type SyncAction = 'push' | 'pull' | 'conflict' | 'noop'
 
 /**
+ * The two structurally different situations that both surface as `conflict`, so
+ * callers can word the prompt correctly without re-parsing `reason`:
+ *  - `first-attach` — never synced from this device (`baseRev` null); the local
+ *    and remote libraries are unrelated histories, so *neither* is "newer" —
+ *    keeping one simply discards the other.
+ *  - `diverged`     — both sides advanced from a shared base; the remote is
+ *    genuinely newer work made on another device.
+ */
+export type ConflictKind = 'first-attach' | 'diverged'
+
+/**
  * What the caller should do. Serializable and self-describing:
  *  - `push`     — send `doc` (the local document) to the remote.
  *  - `pull`     — adopt `doc` (the remote document) locally.
  *  - `conflict` — both sides diverged; `doc` is null and the caller surfaces a
- *                 "remote is newer — keep mine / take theirs" choice (it already
- *                 holds both docs it passed in).
+ *                 keep-mine / take-theirs choice (it already holds both docs it
+ *                 passed in). `conflictKind` says which of the two conflict
+ *                 situations it is (see `ConflictKind`).
  *  - `noop`     — nothing to do.
  * `reason` is a short human-readable note for logs / the sync UI.
  */
@@ -42,10 +54,17 @@ export interface SyncDecision {
     reason: string
     /** The document to act on: local for `push`, remote for `pull`, else null. */
     doc: LibraryState | null
+    /** Set exactly when `action === 'conflict'`; which kind of conflict it is. */
+    conflictKind?: ConflictKind
 }
 
-function decide(action: SyncAction, reason: string, doc: LibraryState | null): SyncDecision {
-    return { action, reason, doc }
+function decide(
+    action: SyncAction,
+    reason: string,
+    doc: LibraryState | null,
+    conflictKind?: ConflictKind
+): SyncDecision {
+    return { action, reason, doc, conflictKind }
 }
 
 /**
@@ -102,7 +121,7 @@ export function resolveSync(
         if (localEmpty && remoteEmpty) {
             return decide('pull', 'first attach; both sides empty — adopt the remote', remote)
         }
-        return decide('conflict', 'first attach with real data on both sides', null)
+        return decide('conflict', 'first attach with real data on both sides', null, 'first-attach')
     }
 
     // Remote revision fell below our base — it was rolled back / restored from an
@@ -136,5 +155,5 @@ export function resolveSync(
         return decide('pull', 'remote advanced, local unchanged since base — pull', remote)
     }
     // Both sides advanced independently → the caller must resolve it.
-    return decide('conflict', 'remote and local both advanced from base', null)
+    return decide('conflict', 'remote and local both advanced from base', null, 'diverged')
 }

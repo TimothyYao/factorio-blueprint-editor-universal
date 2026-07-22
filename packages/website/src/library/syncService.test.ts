@@ -241,12 +241,28 @@ describe('SyncService.attach / reconcile', () => {
         expect(h.statuses.at(-1)).toBe('synced')
     })
 
-    it('raises a conflict when both sides carry real data on first attach', async () => {
+    it('raises a first-attach conflict (kind "first-attach") when both sides carry real data', async () => {
         const h = harness(full(9, OTHER))
         await h.local.save(full(3, ME))
         h.service.attach('uid-1', h.remote)
         await flush()
         expect(h.conflicts).toHaveLength(1)
+        expect(h.conflicts[0].kind).toBe('first-attach')
+        expect(h.service.getConflict()?.kind).toBe('first-attach')
+        expect(h.service.getStatus()).toBe('conflict')
+    })
+
+    it('raises a diverged conflict (kind "diverged") when both sides advanced from a shared base', async () => {
+        // A prior clean sync established base rev 3; the remote then advanced to 5
+        // (another device) and our local advanced to 4 — both moved past base.
+        const h = harness(full(5, OTHER))
+        h.storage.setItem(SYNC_BASE_KEY, JSON.stringify({ uid: 'uid-1', baseRev: 3 }))
+        await h.local.save(full(4, ME))
+        h.service.attach('uid-1', h.remote)
+        await flush()
+        expect(h.conflicts).toHaveLength(1)
+        expect(h.conflicts[0].kind).toBe('diverged')
+        expect(h.service.getConflict()?.kind).toBe('diverged')
         expect(h.service.getStatus()).toBe('conflict')
     })
 })

@@ -486,6 +486,12 @@ body.mobile
                 color: #ffc451
             &.library-sync-offline
                 color: #d08a8a
+            // In the conflict state the ⚠ becomes a clickable "Resolve…" re-entry
+            // point (see renderSync); give it the button affordance only then.
+            &.library-sync-action
+                cursor: pointer
+                &:hover
+                    filter: brightness(1.2)
         .library-sync-btn
             flex: 0 0 auto
             padding: 5px 10px
@@ -498,11 +504,22 @@ body.mobile
             &:hover
                 filter: brightness(1.15)
 
+    // Conflict-chooser explanation line (the first-attach case only).
+    .library-conflict-explain
+        margin-top: 8px
+        color: #cfe8f4
+        font-size: 12px
+
     // Conflict-chooser timestamps (inside the .library-dialog modal).
     .library-conflict-times
         margin-top: 8px
         color: #9fb4c0
         font-size: 12px
+
+    // The conflict-chooser's non-destructive "sign out" abort — de-emphasised
+    // relative to the two keep/take choices.
+    .library-conflict-signout
+        opacity: 0.85
 
     .library-actions
         display: flex

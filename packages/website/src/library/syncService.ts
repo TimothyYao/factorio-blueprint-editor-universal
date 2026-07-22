@@ -20,7 +20,11 @@
 
 import { LibraryState, Now } from './model'
 import { LibraryStore } from './store'
-import { resolveSync } from './sync'
+import { ConflictKind, resolveSync } from './sync'
+
+// Re-export so the panel/prompt seam can name the conflict kind without reaching
+// into `sync.ts` (it already takes its other sync types from here).
+export type { ConflictKind }
 
 /**
  * The minimal remote-document contract `SyncService` drives. `firebase.ts`
@@ -58,12 +62,24 @@ export type SyncStatus =
     | 'error'
     | 'offline'
 
-/** The two docs a conflict hands back to the caller's prompt. */
+/**
+ * The two docs a conflict hands back to the caller's prompt, plus `kind` so the
+ * prompt can word itself correctly (see `ConflictKind`): a `first-attach` where
+ * neither side is "newer", or a `diverged` where the remote is genuinely later
+ * work from another device.
+ */
 export interface ConflictInfo {
     local: LibraryState
     remote: LibraryState
+    kind: ConflictKind
 }
 
+/**
+ * The two real resolutions the resolver can act on. Sign-out is deliberately
+ * *not* here — it's an app-level action (bail back to signed-out), not an
+ * outcome the resolver produces; the widened choice lives at the prompt seam
+ * (`libraryPanel.ts`).
+ */
 export type ConflictChoice = 'keep-mine' | 'take-theirs'
 
 /** Injected timer so the debounce is deterministic in tests. */
@@ -259,7 +275,11 @@ export class SyncService {
                 await this.doPull(decision.doc as LibraryState)
                 break
             case 'conflict':
-                this.raiseConflict(local as LibraryState, remote as LibraryState)
+                this.raiseConflict(
+                    local as LibraryState,
+                    remote as LibraryState,
+                    decision.conflictKind as ConflictKind
+                )
                 break
             case 'noop':
                 // Nothing to do; if a remote is present its rev is our base already.
@@ -372,7 +392,11 @@ export class SyncService {
                 return false
             }
             if (decision.action === 'conflict') {
-                this.raiseConflict(local, remoteNow as LibraryState)
+                this.raiseConflict(
+                    local,
+                    remoteNow as LibraryState,
+                    decision.conflictKind as ConflictKind
+                )
                 return false
             }
             // noop — nothing left to write.
@@ -397,16 +421,18 @@ export class SyncService {
         this.onPulled?.(remote)
     }
 
-    private raiseConflict(local: LibraryState, remote: LibraryState): void {
+    private raiseConflict(local: LibraryState, remote: LibraryState, kind: ConflictKind): void {
         // A conflict can be raised while one is already pending (reconcile-on-
         // visible racing a stale debounced push). Always refresh the stored docs
         // (latest wins), but only fire `onConflict` when none was pending — a
         // second invocation would stack a duplicate modal overlay in the panel.
         // Replacing without re-prompting is safe because `resolveConflict` reads
         // `pendingConflict` *live* at the moment the user answers, so the already-
-        // open prompt resolves against these latest docs, not the stale ones.
+        // open prompt resolves against these latest docs, not the stale ones. The
+        // live doc is also what the panel's ⚠ re-entry point re-prompts against
+        // (`getConflict`) after an overlay dismissal.
         const alreadyPending = this.pendingConflict !== null
-        this.pendingConflict = { local, remote }
+        this.pendingConflict = { local, remote, kind }
         this.setStatus('conflict')
         if (!alreadyPending) this.onConflict?.(this.pendingConflict)
     }

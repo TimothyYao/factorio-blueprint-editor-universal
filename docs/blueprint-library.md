@@ -255,7 +255,11 @@ loaded).
   `visibilitychange`→visible, flushes on →hidden, and on a pull re-inits the
   controller + panel and (guardedly) reopens the active entry onto the canvas.
 - **`library/libraryPanel.ts`** — the header sync widget (Sign in / account +
-  status glyph + Sign out) and the conflict chooser modal.
+  status glyph + Sign out) and the conflict chooser modal (see the conflict
+  prompt below). In the `conflict` state the ⚠ status glyph is itself a
+  re-entry point: clicking it re-opens the chooser (via a `reopenConflict`
+  callback) against the live pending conflict, so a prompt dismissed by an
+  overlay click is reachable again without a reload.
 
 ### The LWW / baseRev model
 
@@ -269,10 +273,42 @@ accounts never reuses a stale base. `resolveSync` compares `remote.rev` /
 echoes) to decide push / pull / conflict / noop. Remote writes go through a
 Firestore **transaction** that rejects (`'stale'`) if the remote `rev` moved
 since we resolved, closing the two-device push/push race; on `'stale'` the
-service reloads and re-resolves. A genuine both-sides-diverged conflict is
-surfaced to the user (keep-mine re-stamps the local doc as a strictly-newer
-winner — rev bumped past the remote's, fresh writer/clock — so it dominates other
-devices instead of being regress-pushed away; take-theirs pulls).
+service reloads and re-resolves.
+
+### Conflicts and the conflict prompt
+
+A conflict is surfaced to the user with keep-mine / take-theirs (keep-mine
+re-stamps the local doc as a strictly-newer winner — rev bumped past the
+remote's, fresh writer/clock — so it dominates other devices instead of being
+regress-pushed away; take-theirs pulls). `resolveSync` raises `conflict` in two
+structurally different situations, carried through as `SyncDecision.conflictKind`
+→ `ConflictInfo.kind` so the prompt words itself correctly rather than parsing
+the `reason` string:
+
+- **`diverged`** — both sides advanced from a shared base; the cloud copy is
+  genuinely later work from another device. Prompt: _"Cloud copy is newer — it
+  was changed on another device."_ with both `updatedAt` timestamps.
+- **`first-attach`** — never synced from this device (`baseRev` null); the local
+  and remote libraries are unrelated histories, so _neither_ is "newer". Prompt:
+  _"This device and the cloud have different libraries."_ plus a line noting you
+  signed in on a device that already has its own library and keeping one discards
+  the other. The timestamps are still shown but framed neutrally (this device /
+  cloud), with no "newer" claim.
+
+Both kinds also offer a third, **non-destructive "Neither — sign out"** abort,
+for a user who signed in with messy/incompatible local state and wants to back up
+first. At the conflict path the service has neither pulled nor pushed, so **local
+IndexedDB and the cloud doc are both untouched**; sign-out (→ `onAuth(null)` →
+`SyncService.detach()`) just clears the pending conflict and returns to
+signed-out, leaving both stores exactly as they were. Sign-out is an app-level
+action wired in `index.ts` (`handleConflict`), not a resolver outcome — the
+widened prompt choice (`keep-mine | take-theirs | sign-out`) lives only at the
+panel seam; `SyncService.ConflictChoice` stays the two real resolutions.
+
+A prompt dismissed by an overlay/backdrop click leaves the status at ⚠
+`conflict`; clicking that glyph re-opens the chooser against the live pending
+conflict (`SyncService.getConflict()`, kept fresh by `raiseConflict`'s
+replace-latest dedupe). The panel guards against stacking a second modal.
 
 ### Config (Vite env vars)
 

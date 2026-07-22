@@ -334,14 +334,26 @@ async function handlePulled(): Promise<void> {
     refreshModifiedIndicator(active.encoded)
 }
 
-// Both sides diverged. Hand the two docs to the panel's conflict chooser and act
-// on the user's answer (keep-mine force-pushes; take-theirs pulls).
+// A conflict was raised. Hand the two docs (and the conflict `kind`, which words
+// the prompt) to the panel's chooser and act on the user's answer: keep-mine
+// force-pushes, take-theirs pulls, sign-out aborts.
 async function handleConflict(info: ConflictInfo): Promise<void> {
     if (!libraryPanel) return
     const choice = await libraryPanel.promptConflict(
+        info.kind,
         { updatedAt: info.local.updatedAt },
         { updatedAt: info.remote.updatedAt }
     )
+    if (choice === 'sign-out') {
+        // The abort: bail all the way back to the pre-sign-in state so the user can
+        // back up before choosing. INVARIANT: at the conflict path we've neither
+        // pulled nor pushed, so local IndexedDB and the cloud doc are both exactly
+        // as they were. signOutUser() → onAuth(null) → syncService.detach(), which
+        // clears the pending conflict and returns status to signed-out — leaving
+        // both stores untouched. Nothing to undo, nothing lost.
+        signOutUser()
+        return
+    }
     if (choice) await syncService.resolveConflict(choice)
 }
 
@@ -542,6 +554,13 @@ const libraryCallbacks: LibraryPanelCallbacks = {
         getStatus: () => syncStatus,
         signIn: () => signIn(),
         signOut: () => signOutUser(),
+        // The ⚠ glyph's re-entry point: re-prompt against the live pending
+        // conflict (kept fresh by raiseConflict's replace-latest dedupe). A no-op
+        // when there's none; the panel guards against stacking a second modal.
+        reopenConflict: () => {
+            const info = syncService.getConflict()
+            if (info) void handleConflict(info)
+        },
     },
 }
 

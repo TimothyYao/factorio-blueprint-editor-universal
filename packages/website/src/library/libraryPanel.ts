@@ -17,7 +17,16 @@
 
 import { LibraryController } from './controller'
 import { LibraryNode } from './model'
-import { SyncStatus, ConflictChoice } from './syncService'
+import { SyncStatus, ConflictChoice, ConflictKind } from './syncService'
+
+/**
+ * The conflict prompt's outcome — the two real resolutions plus the app-level
+ * `sign-out` abort (bail back to the pre-sign-in state so the user can back up
+ * before choosing). `sign-out` deliberately lives only here at the prompt seam,
+ * *not* in `SyncService.ConflictChoice`, which stays the two resolver outcomes;
+ * `index.ts` maps it to `signOut()` rather than `resolveConflict`.
+ */
+export type ConflictPromptChoice = ConflictChoice | 'sign-out'
 
 /**
  * The cloud-sync surface the panel needs (Phase 6). Supplied only when firebase
@@ -36,6 +45,13 @@ export interface LibrarySyncCallbacks {
     signIn(): void
     /** Sign out (back to local-only). */
     signOut(): void
+    /**
+     * Re-open the conflict chooser against the live pending conflict. The status
+     * glyph (⚠, in the `conflict` state) calls this so an overlay-dismissed prompt
+     * is reachable again without a reload — the earlier dedupe keeps the pending
+     * conflict live, so there's always something to re-prompt against.
+     */
+    reopenConflict(): void
 }
 
 export interface LibraryPanelCallbacks {
@@ -71,14 +87,18 @@ export interface LibraryPanel {
     /** Re-render the header sync widget (called by index.ts on auth/status change). */
     syncChanged(): void
     /**
-     * Show the conflict chooser (the cloud copy diverged from this device's).
-     * Resolves the user's choice, or null if dismissed. Opens the panel first so
-     * the in-panel modal is reachable.
+     * Show the conflict chooser. `kind` selects the wording — a `first-attach`
+     * (this device and the cloud hold unrelated libraries; neither is "newer") or
+     * a `diverged` (the cloud copy is genuinely later work from another device).
+     * Resolves the user's choice (keep-mine / take-theirs / the sign-out abort),
+     * or null if dismissed. Opens the panel first so the in-panel modal is
+     * reachable, and no-ops (resolving null) if a chooser is already up.
      */
     promptConflict(
+        kind: ConflictKind,
         local: { updatedAt: number },
         remote: { updatedAt: number }
-    ): Promise<ConflictChoice | null>
+    ): Promise<ConflictPromptChoice | null>
 }
 
 export function initLibraryPanel(
@@ -157,13 +177,26 @@ export function initLibraryPanel(
             syncBar.appendChild(signIn)
             return
         }
-        const glyph = STATUS_GLYPH[sync.getStatus()]
+        const status = sync.getStatus()
+        const glyph = STATUS_GLYPH[status]
         if (glyph) {
             const g = document.createElement('span')
-            g.className = `library-sync-glyph library-sync-${sync.getStatus()}`
+            g.className = `library-sync-glyph library-sync-${status}`
             g.textContent = glyph.glyph
-            g.title = glyph.label
-            g.setAttribute('aria-label', glyph.label)
+            if (status === 'conflict') {
+                // In the conflict state the ⚠ is a re-entry point: clicking it
+                // re-opens the chooser (an overlay-dismissed prompt is otherwise
+                // unreachable short of a reload). Give it the button affordance
+                // only here, where it's actionable.
+                g.classList.add('library-sync-action')
+                g.title = 'Resolve…'
+                g.setAttribute('role', 'button')
+                g.setAttribute('aria-label', 'Resolve sync conflict')
+                g.addEventListener('click', () => sync.reopenConflict())
+            } else {
+                g.title = glyph.label
+                g.setAttribute('aria-label', glyph.label)
+            }
             syncBar.appendChild(g)
         }
         const email = document.createElement('span')
@@ -907,15 +940,28 @@ export function initLibraryPanel(
         }
     }
 
-    // The cloud-conflict chooser — a two-option in-panel modal (reuses the
-    // .library-picker overlay like confirmModal/textModal). Unlike confirmModal's
-    // single confirm, both outcomes are explicit choices, each annotated with when
-    // that side was last changed so the user can judge which to keep.
+    // The cloud-conflict chooser — an in-panel modal (reuses the .library-picker
+    // overlay like confirmModal/textModal). Unlike confirmModal's single confirm,
+    // the outcomes are explicit choices, each annotated with when that side was
+    // last changed so the user can judge which to keep. Two structurally different
+    // conflicts share this modal (`kind`): a `diverged` one, where the cloud is
+    // genuinely newer, and a `first-attach` one, where this device and the cloud
+    // hold unrelated libraries and neither is "newer". Both offer a third,
+    // non-destructive "sign out" abort so a user with messy local state can bail
+    // back to before sign-in and back up first.
+    //
+    // Guards against stacking: the ⚠ re-entry point can fire while a chooser is
+    // already up, so a second open no-ops (resolving null) rather than layering a
+    // duplicate overlay.
+    let conflictOpen = false
     const promptConflict = (
+        kind: ConflictKind,
         local: { updatedAt: number },
         remote: { updatedAt: number }
-    ): Promise<ConflictChoice | null> => {
+    ): Promise<ConflictPromptChoice | null> => {
+        if (conflictOpen) return Promise.resolve(null)
         open() // ensure the panel (and thus the in-panel modal) is visible
+        conflictOpen = true
         return new Promise(resolve => {
             const overlay = document.createElement('div')
             overlay.className = 'library-picker'
@@ -923,14 +969,27 @@ export function initLibraryPanel(
             box.className = 'library-picker-box library-dialog'
             const text = document.createElement('div')
             text.className = 'library-dialog-text'
-            text.textContent = 'Cloud copy is newer — it was changed on another device.'
+            text.textContent =
+                kind === 'first-attach'
+                    ? 'This device and the cloud have different libraries.'
+                    : 'Cloud copy is newer — it was changed on another device.'
+            // First-attach gets an extra line spelling out the situation (there's no
+            // "newer" side to reason about, so the timestamps below stay neutral).
+            const explain = document.createElement('div')
+            explain.className = 'library-conflict-explain'
+            if (kind === 'first-attach') {
+                explain.textContent =
+                    'You signed in on a device that already has its own library; ' +
+                    'keeping one discards the other.'
+            }
             const detail = document.createElement('div')
             detail.className = 'library-conflict-times'
             const when = (ms: number): string => (ms ? new Date(ms).toLocaleString() : 'unknown')
             detail.textContent = `This device: ${when(local.updatedAt)} · Cloud: ${when(remote.updatedAt)}`
             const row = document.createElement('div')
             row.className = 'library-dialog-actions'
-            const done = (v: ConflictChoice | null): void => {
+            const done = (v: ConflictPromptChoice | null): void => {
+                conflictOpen = false
                 overlay.remove()
                 resolve(v)
             }
@@ -943,11 +1002,20 @@ export function initLibraryPanel(
             theirs.className = 'library-dialog-confirm'
             theirs.textContent = 'Take the cloud copy'
             theirs.addEventListener('click', () => done('take-theirs'))
-            row.append(mine, theirs)
-            box.append(text, detail, row)
+            // The abort: sign out without touching either side, so the user can back
+            // up before deciding (index.ts maps this to signOut(), not a resolve).
+            const signOut = document.createElement('button')
+            signOut.type = 'button'
+            signOut.className = 'library-conflict-signout'
+            signOut.textContent = 'Neither — sign out'
+            signOut.addEventListener('click', () => done('sign-out'))
+            row.append(mine, theirs, signOut)
+            box.append(text)
+            if (kind === 'first-attach') box.append(explain)
+            box.append(detail, row)
             overlay.appendChild(box)
             // A backdrop click dismisses without choosing (the conflict persists;
-            // the next reconcile re-raises it).
+            // the next reconcile — or a click on the ⚠ glyph — re-raises it).
             overlay.addEventListener('click', e => {
                 if (e.target === overlay) done(null)
             })
