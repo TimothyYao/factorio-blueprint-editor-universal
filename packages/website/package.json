@@ -11,6 +11,7 @@
         "@fbe/editor": "*",
         "dat.gui": "0.7.9",
         "file-saver": "2.0.5",
+        "firebase": "^12.16.0",
         "pixi.js": "8.17.1"
     },
     "devDependencies": {
