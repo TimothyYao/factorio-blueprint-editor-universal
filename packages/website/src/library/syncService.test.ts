@@ -126,6 +126,34 @@ class FakeRemote implements RemoteLibraryDoc {
     }
 }
 
+/**
+ * A fake remote whose `load` blocks on a promise the test resolves by hand, so we
+ * can hold a `reconcile` pass open mid-flight and probe the overlap guard.
+ */
+class GatedRemote implements RemoteLibraryDoc {
+    public doc: LibraryState | null
+    public loads = 0
+    public saves = 0
+    public readonly openGate: () => void
+    private readonly gate: Promise<void>
+    public constructor(initial: LibraryState | null = null) {
+        this.doc = initial
+        let open!: () => void
+        this.gate = new Promise<void>(resolve => (open = resolve))
+        this.openGate = open
+    }
+    public async load(): Promise<LibraryState | null> {
+        this.loads++
+        await this.gate
+        return this.doc ? structuredClone(this.doc) : null
+    }
+    public save(state: LibraryState): Promise<'ok' | 'stale'> {
+        this.saves++
+        this.doc = structuredClone(state)
+        return Promise.resolve('ok')
+    }
+}
+
 /** An in-memory StorageLike. */
 class FakeStorage implements StorageLike {
     public map = new Map<string, string>()
@@ -386,6 +414,39 @@ describe('SyncService — conflict de-duplication', () => {
         await flush()
         expect(h.remote.doc?.rev).toBe(13)
         expect(h.service.getStatus()).toBe('synced')
+    })
+})
+
+describe('SyncService — reconcile overlap guard', () => {
+    it('a reconcile entered while one is in flight bails without a second load', async () => {
+        // Local has real data; the remote's load is gated so the pass triggered by
+        // attach() hangs mid-flight (past the guard, awaiting both loads).
+        const local = new InMemoryLibraryStore()
+        await local.save(full(2, ME))
+        const remote = new GatedRemote(null)
+        const service = new SyncService({ local, writerId: ME, now: () => NOW })
+
+        // attach() fires reconcile #1, which reaches remote.load() (loads → 1) and
+        // then blocks on the gate.
+        service.attach('uid-1', remote)
+        await flush()
+        expect(remote.loads).toBe(1)
+
+        // A second reconcile while #1 is still in flight must bail immediately — no
+        // extra load, no interleaved resolve.
+        await service.reconcile()
+        expect(remote.loads).toBe(1)
+
+        // Let #1 finish: local seeds the empty remote (a push), guard clears.
+        remote.openGate()
+        await flush()
+        expect(remote.doc?.rev).toBe(2)
+        expect(service.getStatus()).toBe('synced')
+        expect(remote.loads).toBe(1) // the blocked-out second reconcile never loaded
+
+        // With the guard cleared a fresh reconcile proceeds normally (loads again).
+        await service.reconcile()
+        expect(remote.loads).toBe(2)
     })
 })
 

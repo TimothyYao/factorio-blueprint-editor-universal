@@ -475,8 +475,17 @@ body.mobile
             font-size: 12px
         .library-sync-glyph
             flex: 0 0 auto
-            font-size: 15px
+            // The ☁/⟳/⚠/⦸ text glyphs render tiny at the inherited size; bump them
+            // so they read clearly and sit balanced against the email/button text.
+            font-size: 1.4em
             line-height: 1
+            // inline-flex + centering keeps the enlarged glyph aligned with the
+            // adjacent text; the padding gives the clickable states (sync-now /
+            // resolve) a comfortable hit-area without nudging the row's baseline.
+            display: inline-flex
+            align-items: center
+            justify-content: center
+            padding: 2px 4px
             &.library-sync-syncing
                 color: #9fb4c0
             &.library-sync-synced

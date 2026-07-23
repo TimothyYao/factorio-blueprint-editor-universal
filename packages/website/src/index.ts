@@ -554,6 +554,12 @@ const libraryCallbacks: LibraryPanelCallbacks = {
         getStatus: () => syncStatus,
         signIn: () => signIn(),
         signOut: () => signOutUser(),
+        // The status glyph's manual "sync now" trigger. reconcile handles both
+        // directions — it pulls a newer remote and pushes if local advanced — so
+        // one call covers the whole round-trip. A no-op when there's no remote.
+        syncNow: () => {
+            if (syncService.hasRemote()) void syncService.reconcile()
+        },
         // The ⚠ glyph's re-entry point: re-prompt against the live pending
         // conflict (kept fresh by raiseConflict's replace-latest dedupe). A no-op
         // when there's none; the panel guards against stacking a second modal.

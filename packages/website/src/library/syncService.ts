@@ -196,6 +196,8 @@ export class SyncService {
     private baseRev: number | null = null
     private status: SyncStatus = 'disabled'
     private pendingConflict: ConflictInfo | null = null
+    /** True while a `reconcile` pass is in flight (the overlap guard, see below). */
+    private reconciling = false
 
     private readonly local: LibraryStore
     private readonly writerId: string
@@ -257,35 +259,47 @@ export class SyncService {
      */
     public async reconcile(): Promise<void> {
         if (!this.remote) return
-        this.setStatus('syncing')
-        let local: LibraryState | null
-        let remote: LibraryState | null
+        // Overlap guard: a reconcile is a load-both → resolve → act pass, and a
+        // second one entered while the first is mid-flight (impatient clicks on the
+        // "sync now" glyph, or a visibilitychange racing a manual trigger) would
+        // interleave loads/resolves and could clobber. Bail if one is already
+        // running — the caller's intent (a fresh pull) is served by the pass
+        // already underway.
+        if (this.reconciling) return
+        this.reconciling = true
         try {
-            ;[local, remote] = await Promise.all([this.local.load(), this.remote.load()])
-        } catch (e) {
-            this.fail(e)
-            return
-        }
-        const decision = resolveSync(local, remote, this.baseRev, this.writerId)
-        switch (decision.action) {
-            case 'push':
-                await this.doPush(decision.doc as LibraryState, this.baseRev)
-                break
-            case 'pull':
-                await this.doPull(decision.doc as LibraryState)
-                break
-            case 'conflict':
-                this.raiseConflict(
-                    local as LibraryState,
-                    remote as LibraryState,
-                    decision.conflictKind as ConflictKind
-                )
-                break
-            case 'noop':
-                // Nothing to do; if a remote is present its rev is our base already.
-                if (remote) this.setBase(remote.rev)
-                this.setStatus('synced')
-                break
+            this.setStatus('syncing')
+            let local: LibraryState | null
+            let remote: LibraryState | null
+            try {
+                ;[local, remote] = await Promise.all([this.local.load(), this.remote.load()])
+            } catch (e) {
+                this.fail(e)
+                return
+            }
+            const decision = resolveSync(local, remote, this.baseRev, this.writerId)
+            switch (decision.action) {
+                case 'push':
+                    await this.doPush(decision.doc as LibraryState, this.baseRev)
+                    break
+                case 'pull':
+                    await this.doPull(decision.doc as LibraryState)
+                    break
+                case 'conflict':
+                    this.raiseConflict(
+                        local as LibraryState,
+                        remote as LibraryState,
+                        decision.conflictKind as ConflictKind
+                    )
+                    break
+                case 'noop':
+                    // Nothing to do; if a remote is present its rev is our base already.
+                    if (remote) this.setBase(remote.rev)
+                    this.setStatus('synced')
+                    break
+            }
+        } finally {
+            this.reconciling = false
         }
     }
 

@@ -46,6 +46,13 @@ export interface LibrarySyncCallbacks {
     /** Sign out (back to local-only). */
     signOut(): void
     /**
+     * Pull from the remote *now* — the manual "sync now" trigger behind the status
+     * glyph (a focused tab otherwise only reconciles on attach / tab-return, so it
+     * never sees another device's changes). `reconcile` handles both directions:
+     * it pulls a newer remote and pushes if local advanced.
+     */
+    syncNow(): void
+    /**
      * Re-open the conflict chooser against the live pending conflict. The status
      * glyph (⚠, in the `conflict` state) calls this so an overlay-dismissed prompt
      * is reachable again without a reload — the earlier dedupe keeps the pending
@@ -148,15 +155,21 @@ export function initLibraryPanel(
     const syncBar = document.createElement('div')
     syncBar.className = 'library-sync'
 
-    // The status glyph + its accessible label, keyed off the sync status.
+    // The status glyph + its accessible label, keyed off the sync status. Each
+    // glyph carries a trailing U+FE0E (text variation selector, `TEXT` below):
+    // ⚠ and ☁ default to colourful *emoji* presentation on many platforms, so
+    // without it the four glyphs render as a mismatched set (some monochrome text,
+    // some emoji). FE0E forces text presentation uniformly; it's a harmless no-op
+    // on the glyphs that have no emoji variant (⟳, ⦸).
+    const TEXT = '︎'
     const STATUS_GLYPH: Record<SyncStatus, { glyph: string; label: string } | null> = {
         disabled: null,
         'signed-out': null,
-        syncing: { glyph: '⟳', label: 'Syncing…' },
-        synced: { glyph: '☁︎', label: 'Synced' },
-        conflict: { glyph: '⚠', label: 'Sync conflict' },
-        error: { glyph: '⚠', label: 'Sync error' },
-        offline: { glyph: '⦸', label: 'Offline' },
+        syncing: { glyph: '⟳' + TEXT, label: 'Syncing…' },
+        synced: { glyph: '☁' + TEXT, label: 'Synced' },
+        conflict: { glyph: '⚠' + TEXT, label: 'Sync conflict' },
+        error: { glyph: '⚠' + TEXT, label: 'Sync error' },
+        offline: { glyph: '⦸' + TEXT, label: 'Offline' },
     }
 
     function renderSync(): void {
@@ -193,6 +206,19 @@ export function initLibraryPanel(
                 g.setAttribute('role', 'button')
                 g.setAttribute('aria-label', 'Resolve sync conflict')
                 g.addEventListener('click', () => sync.reopenConflict())
+            } else if (status === 'synced' || status === 'error' || status === 'offline') {
+                // Resting states double as a manual "sync now" trigger: clicking the
+                // glyph reconciles against the remote (pulls another device's
+                // changes, or retries after an error/offline blip) without a reload.
+                // The pass flips the status to `syncing` and back — which is itself
+                // the click feedback. `syncing` is deliberately left non-interactive
+                // (a reconcile is already in flight; a click would be a no-op), as is
+                // `conflict`, which keeps its own reopen behaviour above.
+                g.classList.add('library-sync-action')
+                g.title = 'Sync now'
+                g.setAttribute('role', 'button')
+                g.setAttribute('aria-label', 'Sync now')
+                g.addEventListener('click', () => sync.syncNow())
             } else {
                 g.title = glyph.label
                 g.setAttribute('aria-label', glyph.label)

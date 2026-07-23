@@ -259,7 +259,12 @@ loaded).
   prompt below). In the `conflict` state the ⚠ status glyph is itself a
   re-entry point: clicking it re-opens the chooser (via a `reopenConflict`
   callback) against the live pending conflict, so a prompt dismissed by an
-  overlay click is reachable again without a reload.
+  overlay click is reachable again without a reload. In the resting states
+  (`synced` / `error` / `offline`) the glyph is instead a **manual "sync now"**
+  trigger (`syncNow` → `reconcile`): a focused tab otherwise only reconciles on
+  attach / tab-return, so click the glyph to pull another device's changes
+  without a reload (`SyncService.reconcile` has an in-flight guard, so impatient
+  clicks can't stack overlapping passes).
 
 ### The LWW / baseRev model
 
