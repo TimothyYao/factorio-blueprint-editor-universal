@@ -34,7 +34,8 @@ function template(strings: TemplateStringsArray, ...keys: (number | string)[]) {
 
 const entityInfoTemplate = template`
 Crafting speed: ${'craftingSpeed'} ${'speedMultiplier'}
-Power consumption: ${'energyUsage'} kW ${'energyMultiplier'}`
+Power consumption: ${'energyUsage'} kW ${'energyMultiplier'}
+Productivity bonus: ${'productivityBonus'}`
 
 const SIZE_OF_ITEM_ON_BELT = 0.25
 
@@ -183,12 +184,19 @@ export class EntityInfoPanel extends Panel {
             const fmt = (n: number): string =>
                 `(${Math.sign(n) === 1 ? '+' : '-'}${roundToTwo(Math.abs(n) * 100)}%)`
 
+            // Productivity has no base value to modify (unlike speed/power), so
+            // render it as a bare signed percentage rather than a parenthesised
+            // multiplier.
+            const pct = (n: number): string =>
+                `${Math.sign(n) === -1 ? '-' : '+'}${roundToTwo(Math.abs(n) * 100)}%`
+
             // Show modules effect and some others informations
             this.m_entityInfo.text = entityInfoTemplate({
                 craftingSpeed: roundToFour(newCraftingSpeed),
                 speedMultiplier: speed ? fmt(speed) : '',
                 energyUsage: roundToTwo(newEnergyUsage),
                 energyMultiplier: consumption ? fmt(consumption) : '',
+                productivityBonus: pct(productivity),
             })
 
             this.m_entityInfo.position.set(10, nextY)
