@@ -10,7 +10,7 @@ import G from '../common/globals'
 import util from '../common/util'
 import { ISignal } from '../types'
 import { beaconEffectMultiplier } from '../core/beaconEffects'
-import { getIngredientAmount, getProductAmount } from '../core/recipeAmounts'
+import { getIngredientAmount, getProductAmountWithProductivity } from '../core/recipeAmounts'
 import { Entity } from '../core/Entity'
 import { createCircuitNetworkBadges } from './circuitNetworkBadges'
 import F from './controls/functions'
@@ -235,6 +235,13 @@ export class EntityInfoPanel extends Panel {
                     })
                 )
                 const energy_required = recipe.energy_required || 0.5
+                // Productivity only applies to recipes that opt into it; when
+                // `allow_productivity` is false the engine ignores the bonus
+                // entirely (and, with it, each product's `ignored_by_productivity`
+                // catalyst floor). This mirrors the module filter in
+                // factorioData.ts, which blocks productivity modules on such
+                // recipes in the first place.
+                const effectiveProductivity = recipe.allow_productivity ? productivity : 0
                 // A product/ingredient can express a random yield via
                 // amount_min/amount_max and/or probability with no plain `amount`
                 // (e.g. SE's cryonite crushing sand by-product); resolve each to
@@ -242,7 +249,10 @@ export class EntityInfoPanel extends Panel {
                 // We collapse to a bare { type, name, amount } here — dropping the
                 // randomness fields — so the already-scaled amount survives
                 // CreateRecipe re-resolving it (which would otherwise re-apply the
-                // probability a second time).
+                // probability a second time). Products scale by productivity via
+                // getProductAmountWithProductivity, which honours the catalyst
+                // rule (`ignored_by_productivity`) so e.g. cryonite's water output
+                // — pure catalyst — is left untouched by productivity modules.
                 F.CreateRecipe(
                     this.m_RecipeIOContainer,
                     0,
@@ -258,8 +268,9 @@ export class EntityInfoPanel extends Panel {
                         type: r.type,
                         name: r.name,
                         amount: roundToTwo(
-                            ((getProductAmount(r) * newCraftingSpeed) / energy_required) *
-                                (1 + productivity)
+                            (getProductAmountWithProductivity(r, effectiveProductivity) *
+                                newCraftingSpeed) /
+                                energy_required
                         ),
                     })),
                     1

@@ -8,6 +8,7 @@ import {
     formatProductProbability,
     getIngredientAmount,
     getProductAmount,
+    getProductAmountWithProductivity,
 } from './recipeAmounts'
 
 const product = (partial: Partial<ProductPrototype>): ProductPrototype =>
@@ -52,6 +53,53 @@ describe('getProductAmount', () => {
         const value = getProductAmount(product({}))
         expect(Number.isNaN(value)).toBe(false)
         expect(value).toBe(0)
+    })
+})
+
+describe('getProductAmountWithProductivity', () => {
+    it('returns the base amount when there is no productivity bonus', () => {
+        expect(getProductAmountWithProductivity(product({ amount: 10 }), 0)).toBe(10)
+        // Negative/garbage productivity is treated as none rather than shrinking output.
+        expect(getProductAmountWithProductivity(product({ amount: 10 }), -0.5)).toBe(10)
+    })
+
+    it('scales an ordinary product fully by the productivity bonus', () => {
+        // No catalyst floor: 10 * (1 + 0.5) = 15.
+        expect(getProductAmountWithProductivity(product({ amount: 10 }), 0.5)).toBe(15)
+    })
+
+    it('leaves a pure catalyst product untouched (the cryonite water case)', () => {
+        // amount == ignored_by_productivity -> nothing is above the floor, so
+        // productivity cannot inflate it. This is exactly SE cryonite-crystal water.
+        const water = product({ amount: 2, ignored_by_productivity: 2, ignored_by_stats: 2 })
+        expect(getProductAmountWithProductivity(water, 0.5)).toBe(2)
+        expect(getProductAmountWithProductivity(water, 3)).toBe(2)
+    })
+
+    it('scales only the portion above the catalyst floor', () => {
+        // amount 10, catalyst 4, +50% -> 10 + 0.5 * (10 - 4) = 13.
+        const p = product({ amount: 10, ignored_by_productivity: 4 })
+        expect(getProductAmountWithProductivity(p, 0.5)).toBe(13)
+    })
+
+    it('defaults ignored_by_productivity to ignored_by_stats when absent', () => {
+        // Only ignored_by_stats set (78 SE / 116 SA / 21 vanilla products rely on
+        // this default): the game copies it into ignored_by_productivity.
+        const p = product({ amount: 5, ignored_by_stats: 5 })
+        expect(getProductAmountWithProductivity(p, 1)).toBe(5)
+    })
+
+    it('clamps a catalyst larger than the crafted amount (excess is ignored)', () => {
+        // ignored_by_productivity may exceed the amount; the excess is discarded
+        // rather than producing a negative bonus.
+        const p = product({ amount: 2, ignored_by_productivity: 5 })
+        expect(getProductAmountWithProductivity(p, 1)).toBe(2)
+    })
+
+    it('applies productivity to the expected value of a probabilistic product', () => {
+        // EV = 0.25, no catalyst, +100% -> 0.5.
+        const sand = product({ amount_min: 1, amount_max: 1, probability: 0.25 })
+        expect(getProductAmountWithProductivity(sand, 1)).toBeCloseTo(0.5)
     })
 })
 
@@ -159,5 +207,34 @@ describe('se-cryonite-powder (shipped SE data — the cryonite crushing bug)', (
         const powder = recipe.results.find(r => r.name === 'se-cryonite-powder')
         expect(formatProductAmount(powder)).toBe('1')
         expect(formatProductProbability(powder)).toBeUndefined()
+    })
+})
+
+// The recipe from this task's report: `se-cryonite-crystal` lists water as a
+// product with `ignored_by_productivity: 2` equal to its `amount: 2` — a pure
+// catalyst. Productivity must scale the crystal output but leave the water
+// (i.e. the steam→water ratio) alone.
+describe('se-cryonite-crystal (shipped SE data — catalyst / ignored_by_productivity)', () => {
+    loadData(readFileSync('packages/exporter/data/output/space-exploration/data.json', 'utf8'))
+    const recipe = FD.recipes['se-cryonite-crystal']
+    const crystal = recipe.results.find(r => r.name === 'se-cryonite-crystal')
+    const water = recipe.results.find(r => r.name === 'water')
+
+    it('marks water as a catalyst but not the crystal', () => {
+        expect(recipe.allow_productivity).toBe(true)
+        expect(crystal.amount).toBe(1)
+        expect(water.amount).toBe(2)
+        expect((water as { ignored_by_productivity?: number }).ignored_by_productivity).toBe(2)
+        expect(
+            (crystal as { ignored_by_productivity?: number }).ignored_by_productivity
+        ).toBeUndefined()
+    })
+
+    it('scales the crystal with productivity but never the water', () => {
+        // +40% (e.g. two Productivity Module 3s): crystal 1 -> 1.4, water stays 2.
+        expect(getProductAmountWithProductivity(crystal, 0.4)).toBeCloseTo(1.4)
+        expect(getProductAmountWithProductivity(water, 0.4)).toBe(2)
+        // Even at an extreme bonus the water — the catalyst — is unmoved.
+        expect(getProductAmountWithProductivity(water, 3)).toBe(2)
     })
 })
