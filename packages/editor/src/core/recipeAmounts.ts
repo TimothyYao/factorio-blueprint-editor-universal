@@ -28,6 +28,13 @@ type ProductAmountFields = {
     amount_max?: number
     probability?: number
     extra_count_fraction?: number
+    // Catalyst fields (Factorio 2.0). `ignored_by_productivity` is the amount of
+    // a product that is *not* multiplied by the machine's productivity bonus —
+    // the classic "catalyst" that comes back out of the recipe unchanged. When
+    // it is omitted the game defaults it to `ignored_by_stats`, so we carry that
+    // field too purely to resolve the default.
+    ignored_by_productivity?: number
+    ignored_by_stats?: number
 }
 
 /**
@@ -48,6 +55,40 @@ export const getProductAmount = (product: ProductPrototype): number => {
     const probability = p.probability ?? 1
     const extra = p.extra_count_fraction ?? 0
     return probability * 0.5 * (min + max) + extra
+}
+
+/**
+ * The Expected Value of a product *after* a machine's productivity bonus,
+ * honouring the Factorio 2.0 catalyst rule.
+ *
+ * Productivity does **not** blindly scale the whole output. Each product can
+ * declare `ignored_by_productivity` — a "catalyst" amount that always comes
+ * back out of the recipe regardless of productivity — and only the portion of
+ * the yield *above* that floor is multiplied by the bonus:
+ *
+ *   result = base + productivity * max(0, base - ignored_by_productivity)
+ *
+ * The textbook case is SE's `se-cryonite-crystal`: it lists `water` as a
+ * product with `amount: 2, ignored_by_productivity: 2`, so the water is pure
+ * catalyst (`max(0, 2 - 2) = 0`) — productivity leaves the steam→water ratio
+ * untouched and only multiplies the actual crystal output. Without this the
+ * panel would over-report water production under productivity modules.
+ *
+ * When `ignored_by_productivity` is absent the game defaults it to
+ * `ignored_by_stats` (per the prototype docs), and any excess catalyst beyond
+ * the crafted amount is clamped away (`max(0, …)`), matching the engine's
+ * "excess is ignored" note.
+ */
+export const getProductAmountWithProductivity = (
+    product: ProductPrototype,
+    productivity: number
+): number => {
+    const base = getProductAmount(product)
+    if (productivity <= 0) return base
+    const p = product as ProductAmountFields
+    const ignored = p.ignored_by_productivity ?? p.ignored_by_stats ?? 0
+    const productive = Math.max(0, base - ignored)
+    return base + productivity * productive
 }
 
 /**
