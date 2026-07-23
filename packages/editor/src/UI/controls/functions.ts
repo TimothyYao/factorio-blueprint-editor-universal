@@ -8,6 +8,13 @@ import {
     RenderTexture,
 } from 'pixi.js'
 import FD, { ColorWithAlpha, getColor, getRecipeIconSourceName } from '../../core/factorioData'
+import {
+    abbreviateAmount,
+    formatProductAmount,
+    formatProductProbability,
+    getIngredientAmount,
+    getProductAmount,
+} from '../../core/recipeAmounts'
 import { styles } from '../style'
 import G from '../../common/globals'
 import { IngredientPrototype, IconData, ProductPrototype } from 'factorio:prototype'
@@ -279,23 +286,40 @@ function CreateIcon(
  * @param y - Vertical position of icon from top left corner
  * @param name - Name if item
  * @param amount - Amount to show
+ * @param amountLabel - Optional pre-formatted label (e.g. a `1–5` range) that
+ *   overrides the numeric `amount`. When omitted the numeric amount is
+ *   abbreviated (`Nk`) as before.
+ * @param probabilityLabel - Optional probability badge (e.g. `25%`) rendered at
+ *   the top of the icon, kept separate from the bottom amount so a wide label
+ *   can't run into the neighbouring icon's amount.
  */
 function CreateIconWithAmount(
     host: Container,
     x: number,
     y: number,
     name: string,
-    amount: number = 1
+    amount: number = 1,
+    amountLabel?: string,
+    probabilityLabel?: string
 ): void {
     const icon = CreateIcon(name, undefined, false)
     icon.position.set(x, y)
     host.addChild(icon)
 
-    const amountString = amount < 1000 ? amount.toString() : `${Math.floor(amount / 1000)}k`
+    // `abbreviateAmount` is NaN-safe, so a product with no plain `amount` (only
+    // amount_min/amount_max/probability) can never render "NaNk"/"undefinedk".
+    const amountString = amountLabel ?? abbreviateAmount(amount)
     const text = new Text({ text: amountString, style: styles.icon.amount })
     text.anchor.set(1, 1)
     text.position.set(x + 33, y + 33)
     host.addChild(text)
+
+    if (probabilityLabel !== undefined) {
+        const prob = new Text({ text: probabilityLabel, style: styles.icon.probability })
+        prob.anchor.set(1, 0)
+        prob.position.set(x + 33, y)
+        host.addChild(prob)
+    }
 }
 
 function CreateRecipe(
@@ -309,7 +333,7 @@ function CreateRecipe(
     let nextX = x
 
     for (const i of ingredients) {
-        CreateIconWithAmount(host, nextX, y, i.name, i.amount)
+        CreateIconWithAmount(host, nextX, y, i.name, getIngredientAmount(i))
         nextX += 36
     }
 
@@ -322,7 +346,18 @@ function CreateRecipe(
     nextX += timeSize.width + 6
 
     for (const r of results) {
-        CreateIconWithAmount(host, nextX, y, r.name, r.amount)
+        // Show the authored yield (amount or min–max range) with its probability
+        // as a separate top badge, rather than flattening a probabilistic output
+        // to one number or running the two labels together.
+        CreateIconWithAmount(
+            host,
+            nextX,
+            y,
+            r.name,
+            getProductAmount(r),
+            formatProductAmount(r),
+            formatProductProbability(r)
+        )
         nextX += 36
     }
 }
