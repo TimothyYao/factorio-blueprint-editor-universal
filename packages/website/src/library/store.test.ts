@@ -62,4 +62,72 @@ describe('migrate', () => {
         expect(migrate(null)).toBeNull()
         expect(migrate({} as never)).toBeNull()
     })
+
+    it('backfills the v2 sync fields on a v1 document', () => {
+        // A v1 doc had only { version, packs } — no rev / updatedAt / writerId. Its
+        // nodes carry per-node updatedAt stamps; updatedAt is seeded from the
+        // newest of those (here 555, on the deeper leaf).
+        const v1 = {
+            version: 1,
+            packs: {
+                'vanilla-2.0': {
+                    pack: 'vanilla-2.0',
+                    scratchpad: {
+                        id: 'scratchpad:vanilla-2.0',
+                        kind: 'blueprint',
+                        name: 'Scratchpad',
+                        encoded: '',
+                        createdAt: 100,
+                        updatedAt: 200,
+                        snapshots: [],
+                    },
+                    children: [
+                        {
+                            id: 'f',
+                            kind: 'folder',
+                            name: 'Logistics',
+                            createdAt: 100,
+                            updatedAt: 300,
+                            children: [
+                                {
+                                    id: 'bp',
+                                    kind: 'blueprint',
+                                    name: 'mall',
+                                    encoded: '0aaa',
+                                    createdAt: 100,
+                                    updatedAt: 555,
+                                    snapshots: [],
+                                },
+                            ],
+                        },
+                    ],
+                    recents: [],
+                },
+            },
+        }
+        const out = migrate(v1 as never)!
+        expect(out.version).toBe(LIBRARY_VERSION)
+        expect(out.rev).toBe(0)
+        expect(out.writerId).toBe('')
+        expect(out.updatedAt).toBe(555) // max per-node updatedAt in the doc
+    })
+
+    it('falls back to updatedAt 0 when a v1 doc has no nodes to date from', () => {
+        const v1 = { version: 1, packs: {} }
+        const out = migrate(v1 as never)!
+        expect(out.rev).toBe(0)
+        expect(out.writerId).toBe('')
+        expect(out.updatedAt).toBe(0)
+    })
+
+    it('leaves an already-v2 document’s sync fields untouched', () => {
+        const state = sampleLibrary() // createLibrary → already v2-shaped
+        state.rev = 7
+        state.updatedAt = 12345
+        state.writerId = 'device-Z'
+        const out = migrate(state)!
+        expect(out.rev).toBe(7)
+        expect(out.updatedAt).toBe(12345)
+        expect(out.writerId).toBe('device-Z')
+    })
 })

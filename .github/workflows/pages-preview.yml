@@ -41,6 +41,15 @@ jobs:
           # /factorio-blueprint-editor/data/<pack>/data.json from the prod deploy.
           VITE_DATA_URL: /factorio-blueprint-editor/data
           SKIP_DATA_COPY: 'true'
+          # Firebase web config for the blueprint library's cloud sync (Phase 6).
+          # GitHub repo *variables*, not secrets — Firebase web config is public
+          # (it ships in the client bundle). Unset ⇒ empty ⇒ unconfigured ⇒ a
+          # local-only preview with no sign-in UI. See
+          # packages/website/src/library/firebase.ts.
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
 
       - name: Deploy / remove preview
         uses: rossjrw/pr-preview-action@v1

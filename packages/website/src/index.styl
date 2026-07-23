@@ -456,6 +456,80 @@ body.mobile
         &:hover
             background-color: rgba(255, 255, 255, 0.1)
 
+    // Cloud-sync bar (Phase 6): account + status glyph, or a sign-in button.
+    // Hidden entirely on a local-only (unconfigured) build.
+    .library-sync
+        display: flex
+        align-items: center
+        gap: 8px
+        padding: 8px 16px
+        border-bottom: 1px solid #555
+        &[hidden]
+            display: none
+        .library-sync-email
+            flex: 1 1 auto
+            overflow: hidden
+            text-overflow: ellipsis
+            white-space: nowrap
+            color: #cfe8f4
+            font-size: 12px
+        .library-sync-glyph
+            flex: 0 0 auto
+            // The ☁/⟳/⚠/⦸ text glyphs render tiny at the inherited size; bump them
+            // so they read clearly and sit balanced against the email/button text.
+            font-size: 1.4em
+            line-height: 1
+            // inline-flex + centering keeps the enlarged glyph aligned with the
+            // adjacent text; the padding gives the clickable states (sync-now /
+            // resolve) a comfortable hit-area without nudging the row's baseline.
+            display: inline-flex
+            align-items: center
+            justify-content: center
+            padding: 2px 4px
+            &.library-sync-syncing
+                color: #9fb4c0
+            &.library-sync-synced
+                color: #7fd18a
+            &.library-sync-conflict,
+            &.library-sync-error
+                color: #ffc451
+            &.library-sync-offline
+                color: #d08a8a
+            // In the conflict state the ⚠ becomes a clickable "Resolve…" re-entry
+            // point (see renderSync); give it the button affordance only then.
+            &.library-sync-action
+                cursor: pointer
+                &:hover
+                    filter: brightness(1.2)
+        .library-sync-btn
+            flex: 0 0 auto
+            padding: 5px 10px
+            color: white
+            font-size: 12px
+            background: #43464b
+            border: 1px solid #6a6a6a
+            border-radius: 4px
+            cursor: pointer
+            &:hover
+                filter: brightness(1.15)
+
+    // Conflict-chooser explanation line (the first-attach case only).
+    .library-conflict-explain
+        margin-top: 8px
+        color: #cfe8f4
+        font-size: 12px
+
+    // Conflict-chooser timestamps (inside the .library-dialog modal).
+    .library-conflict-times
+        margin-top: 8px
+        color: #9fb4c0
+        font-size: 12px
+
+    // The conflict-chooser's non-destructive "sign out" abort — de-emphasised
+    // relative to the two keep/take choices.
+    .library-conflict-signout
+        opacity: 0.85
+
     .library-actions
         display: flex
         gap: 8px

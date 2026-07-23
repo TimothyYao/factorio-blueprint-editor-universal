@@ -202,8 +202,166 @@ A single `LibraryState` document, in `packages/website/src/library/`:
     - [ ] **5c — render icons** in the panel (atlas/sprite extraction). Storing /
           round-tripping icons is free (5a); drawing them is the separate hard bit.
           _(deferred — not planned unless it becomes cheap)_
-- [ ] **Phase 6 — External backend.** OAuth-locked remote store (e.g. Firebase)
-      behind the `LibraryStore` interface; sync/merge story.
+- [ ] **Phase 6 — External backend.** OAuth-locked remote store (Firebase)
+      alongside the `LibraryStore`; last-write-wins sync. _(in progress — the
+      Firebase integration slice has landed; see "Phase 6 — cloud sync" below.
+      Live-project setup + the emulator-debugging slice remain.)_
+
+## Phase 6 — cloud sync (Firebase)
+
+The library document — a single JSON doc — now has an optional Firebase remote
+alongside the local IndexedDB store. Signed-in users get their library mirrored
+to the cloud and reconciled across devices; **signed out or on an unconfigured
+build it's exactly the previous local-only editor** (no sign-in UI, no SDK even
+loaded).
+
+### Files
+
+- **`library/firebase.ts`** — the _only_ file that imports the `firebase` SDK,
+  via **dynamic `import()`** inside a lazy init, so (a) an unconfigured build
+  never loads it and (b) Vite code-splits it into its own lazy chunk (it does not
+  bloat the entry chunk). Owns config (`firebaseConfigured()`), auth (`signIn`
+  via Google **popup-first, with a redirect fallback**; `signOutUser`; `onAuth`,
+  which wires `onAuthStateChanged` and also completes `getRedirectResult` on
+  return — so the fallback path finishes cleanly), and `createRemote(uid)`, the
+  `RemoteLibraryDoc` over the Firestore doc.
+
+    > **Why popup-first (not redirect).** This static deployment serves the app
+    > from `trisiak.github.io` while the auth handler lives on a _different_ origin
+    > (`authDomain` = `*.firebaseapp.com`). The redirect flow stores its result
+    > under that authDomain origin and reads it back through a cross-origin iframe;
+    > Chrome 115+'s **third-party storage partitioning** partitions that iframe's
+    > storage away from the top-level site, so `getRedirectResult` silently resolves
+    > `null` and the user lands back signed out. Firebase's recommended fix is to
+    > serve the same-origin `/__/auth` handler, but GitHub Pages can't proxy it — so
+    > `signIn` uses `signInWithPopup`, whose credential returns over `postMessage` to
+    > the still-open opener (a same-origin handle) and never touches partitioned
+    > storage. Redirect is retained only as a fallback for `auth/popup-blocked` /
+    > `auth/operation-not-supported-in-this-environment` (a user-dismissed or
+    > double-clicked popup is _not_ a fallback trigger). Don't flip this back to
+    > redirect-first without a same-origin auth handler in place.
+
+- **`library/syncService.ts`** — orchestration, **no firebase imports** (so it's
+  node-unit-tested with a fake remote). `SyncedLibraryStore` is a `LibraryStore`
+  decorator handed to the controller: it writes local first (durability), then
+  debounces a remote push (~2 s trailing, `flush()` on tab-hide). `SyncService`
+  owns the attached remote, the per-user base revision, the status callback, and
+  the `reconcile` / push / pull / conflict flows, driving the pure `resolveSync`
+  from `sync.ts`.
+- **`library/sync.ts`** — the pure last-write-wins resolver (landed earlier):
+  `resolveSync(local, remote, baseRev, writerId)` → push / pull / conflict / noop.
+- **`index.ts`** — wiring only: wraps the store, subscribes `onAuth` (attach a
+  per-uid remote + reconcile on sign-in; detach on sign-out), reconciles on
+  `visibilitychange`→visible, flushes on →hidden, and on a pull re-inits the
+  controller + panel and (guardedly) reopens the active entry onto the canvas.
+- **`library/libraryPanel.ts`** — the header sync widget (Sign in / account +
+  status glyph + Sign out) and the conflict chooser modal (see the conflict
+  prompt below). In the `conflict` state the ⚠ status glyph is itself a
+  re-entry point: clicking it re-opens the chooser (via a `reopenConflict`
+  callback) against the live pending conflict, so a prompt dismissed by an
+  overlay click is reachable again without a reload. In the resting states
+  (`synced` / `error` / `offline`) the glyph is instead a **manual "sync now"**
+  trigger (`syncNow` → `reconcile`): a focused tab otherwise only reconciles on
+  attach / tab-return, so click the glyph to pull another device's changes
+  without a reload (`SyncService.reconcile` has an in-flight guard, so impatient
+  clicks can't stack overlapping passes).
+
+### The LWW / baseRev model
+
+Sync is **whole-document last-write-wins**, keyed off the doc-level `rev` (a
+monotonic counter stamped by `stampWrite` on every persisted write) and
+`writerId` (which install wrote last). `baseRev` is the remote `rev` this device
+last synced against, tracked **outside** the document in `localStorage`
+(`fbe:library:sync`, JSON `{ uid, baseRev }`) — **per-user**, so switching
+accounts never reuses a stale base. `resolveSync` compares `remote.rev` /
+`local.rev` against `baseRev` (and uses `writerId` to fast-forward our own remote
+echoes) to decide push / pull / conflict / noop. Remote writes go through a
+Firestore **transaction** that rejects (`'stale'`) if the remote `rev` moved
+since we resolved, closing the two-device push/push race; on `'stale'` the
+service reloads and re-resolves.
+
+### Conflicts and the conflict prompt
+
+A conflict is surfaced to the user with keep-mine / take-theirs (keep-mine
+re-stamps the local doc as a strictly-newer winner — rev bumped past the
+remote's, fresh writer/clock — so it dominates other devices instead of being
+regress-pushed away; take-theirs pulls). `resolveSync` raises `conflict` in two
+structurally different situations, carried through as `SyncDecision.conflictKind`
+→ `ConflictInfo.kind` so the prompt words itself correctly rather than parsing
+the `reason` string:
+
+- **`diverged`** — both sides advanced from a shared base; the cloud copy is
+  genuinely later work from another device. Prompt: _"Cloud copy is newer — it
+  was changed on another device."_ with both `updatedAt` timestamps.
+- **`first-attach`** — never synced from this device (`baseRev` null); the local
+  and remote libraries are unrelated histories, so _neither_ is "newer". Prompt:
+  _"This device and the cloud have different libraries."_ plus a line noting you
+  signed in on a device that already has its own library and keeping one discards
+  the other. The timestamps are still shown but framed neutrally (this device /
+  cloud), with no "newer" claim.
+
+Both kinds also offer a third, **non-destructive "Neither — sign out"** abort,
+for a user who signed in with messy/incompatible local state and wants to back up
+first. At the conflict path the service has neither pulled nor pushed, so **local
+IndexedDB and the cloud doc are both untouched**; sign-out (→ `onAuth(null)` →
+`SyncService.detach()`) just clears the pending conflict and returns to
+signed-out, leaving both stores exactly as they were. Sign-out is an app-level
+action wired in `index.ts` (`handleConflict`), not a resolver outcome — the
+widened prompt choice (`keep-mine | take-theirs | sign-out`) lives only at the
+panel seam; `SyncService.ConflictChoice` stays the two real resolutions.
+
+A prompt dismissed by an overlay/backdrop click leaves the status at ⚠
+`conflict`; clicking that glyph re-opens the chooser against the live pending
+conflict (`SyncService.getConflict()`, kept fresh by `raiseConflict`'s
+replace-latest dedupe). The panel guards against stacking a second modal.
+
+### Config (Vite env vars)
+
+Firebase web config is **public** (it ships in the client bundle by design), so
+these are ordinary build-time values passed as GitHub repo **variables** (not
+secrets) in `pages-prod.yml` / `pages-preview.yml`. All four are required; any
+missing ⇒ unconfigured ⇒ local-only build:
+
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_APP_ID`
+
+Plus `VITE_FIREBASE_USE_EMULATORS` (truthy) for local debugging against the
+emulators.
+
+### Firestore doc shape
+
+Path `users/{uid}/library/state` (the even-segment _document_ under the
+odd-segment `users/{uid}/library` _collection_). Stored as a **JSON string
+field**: `{ json: JSON.stringify(state), rev, updatedAt, writerId }`, with the
+three sync-metadata fields mirrored top-level. Rationale: Firestore rejects
+nested arrays and `undefined` values (both legitimately present in the library
+doc, e.g. `icons` / optional fields); a JSON-string round-trip sidesteps both and
+preserves the exact local shape, while the top-level `rev` lets the transactional
+save check staleness without parsing `json`.
+
+**Caveat — 1 MiB doc cap.** Firestore caps a document at 1 MiB; a library that
+grows past that fails to save. The failure surfaces as a sync `error` (the panel
+glyph), not a crash. Chunking large libraries is out of scope for this whole-doc
+LWW model.
+
+### Emulators
+
+`firebase.json` + `firestore.rules` sit at the repo root. `firebase
+emulators:start` runs **auth on 9099** and **Firestore on 8091** (`8091`, not the
+default 8080, which collides with the vite dev/preview server). Build with
+`VITE_FIREBASE_USE_EMULATORS=true` and the editor points at those ports.
+
+### One-time Firebase project setup checklist
+
+1. Create a Firebase project; add a **Web app** and copy its config into the four
+   `VITE_FIREBASE_*` repo variables.
+2. **Authentication → Sign-in method → enable Google.**
+3. **Authentication → Settings → Authorized domains →** add the Pages origin
+   (`trisiak.github.io`) so the popup (and redirect-fallback) sign-in is allowed.
+4. **Firestore →** create the database, then deploy the rules:
+   `firebase deploy --only firestore:rules` (from `firestore.rules`).
 
 ## Deferred
 

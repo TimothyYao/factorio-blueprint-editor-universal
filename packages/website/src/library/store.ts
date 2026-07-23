@@ -11,7 +11,7 @@
 // is intentionally thin and verified by running the app; the unit tests cover the
 // model and the in-memory store.
 
-import { LibraryState, LIBRARY_VERSION } from './model'
+import { LibraryState, LibraryNode, LIBRARY_VERSION } from './model'
 
 /** Backend-agnostic persistence for the single library document. */
 export interface LibraryStore {
@@ -23,14 +23,37 @@ export interface LibraryStore {
     clear(): Promise<void>
 }
 
+/** The newest per-node `updatedAt` anywhere in the doc, or 0 if empty. */
+function latestUpdatedAt(state: LibraryState): number {
+    let max = 0
+    const visit = (n: LibraryNode): void => {
+        if (n.updatedAt > max) max = n.updatedAt
+        if (n.kind === 'folder') n.children.forEach(visit)
+    }
+    for (const pack of Object.values(state.packs)) {
+        if (pack.scratchpad && pack.scratchpad.updatedAt > max) max = pack.scratchpad.updatedAt
+        pack.children?.forEach(visit)
+    }
+    return max
+}
+
 /**
- * Bring a loaded document up to the current version. There are no older versions
- * yet, so this just guards the shape and stamps the version; future migrations
- * slot in here.
+ * Bring a loaded document up to the current version, then stamp the version.
+ *
+ * v1 → v2 added the doc-level sync fields (`rev` / `updatedAt` / `writerId`) that
+ * last-write-wins needs (see `sync.ts`). A v1 doc has none, so we backfill:
+ * `rev: 0` (pre-sync, treated as revision zero), `writerId: ''` (the same neutral
+ * "never stamped by an identified device" sentinel `createLibrary` uses), and
+ * `updatedAt` seeded from the newest per-node stamp we can find (fall back to 0)
+ * so the very first sync has a sane "last changed" time for pre-sync data.
+ * Already-present fields (a v2 doc) are left untouched.
  */
 export function migrate(state: LibraryState | null): LibraryState | null {
     if (!state || typeof state !== 'object') return null
     if (!state.packs) return null
+    if (typeof state.rev !== 'number') state.rev = 0
+    if (typeof state.writerId !== 'string') state.writerId = ''
+    if (typeof state.updatedAt !== 'number') state.updatedAt = latestUpdatedAt(state)
     state.version = LIBRARY_VERSION
     return state
 }

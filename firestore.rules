@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// Blueprint library — Firestore security rules (Phase 6 cloud sync).
+//
+// The library document lives at users/{uid}/library/state (see
+// packages/website/src/library/firebase.ts). Each user may read and write only
+// their own subtree — a signed-in request whose auth uid matches the {uid} path
+// segment. No cross-user access, no anonymous access.
+//
+// Deploy with `firebase deploy --only firestore:rules` (or load into the
+// emulator via firebase.json). See docs/blueprint-library.md (Phase 6) for the
+// one-time project setup checklist.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

@@ -129,6 +129,41 @@ test.describe('blueprint library', () => {
         await expect(panel(page).locator('.library-folder', { hasText: 'Imported' })).toBeVisible()
     })
 
+    test('local-only fallback: no sign-in control, and the library still works', async ({
+        page,
+    }) => {
+        // The e2e build ships without VITE_FIREBASE_* config, so cloud sync is
+        // "unconfigured" — firebaseConfigured() is false and the panel renders no
+        // sync chrome (pixel-identical to the pre-Phase-6 local-only editor).
+        page.on('dialog', dialog => dialog.accept('Local project'))
+        await page.goto(`/?test&source=${encodeURIComponent(CHEST)}`)
+        await waitForReady(page)
+        await expect.poll(() => entityCount(page)).toBe(1)
+
+        await openPanel(page)
+        // No cloud-sync UI at all: the sync bar is hidden and there's no sign-in.
+        await expect(panel(page).locator('.library-sync')).toBeHidden()
+        await expect(panel(page).getByRole('button', { name: /sign in/i })).toHaveCount(0)
+
+        // …and the library is fully functional: a Save As round-trips through the
+        // local store — reopen after a New project brings the entity back.
+        await panel(page)
+            .getByRole('button', { name: /save as/i })
+            .click()
+        await expect(indicator(page)).toHaveText('Local project')
+        await panel(page)
+            .getByRole('button', { name: /new project/i })
+            .click()
+        await expect.poll(() => entityCount(page)).toBe(0)
+        await panel(page)
+            .locator('.library-row', { hasText: 'Local project' })
+            .getByRole('button', { name: 'Open', exact: true })
+            .first()
+            .click()
+        await expect.poll(() => entityCount(page)).toBe(1)
+        await expect(indicator(page)).toHaveText('Local project')
+    })
+
     test('new project discards live scratchpad work after confirming', async ({ page }) => {
         // Build an entity straight onto the (empty) scratchpad via the quickbar —
         // the only at-risk work "New project" warns about. Mirrors desktopBuild.

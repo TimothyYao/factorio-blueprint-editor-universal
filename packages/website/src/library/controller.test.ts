@@ -16,12 +16,19 @@ function fixtures(): { now: Now; id: IdGen } {
     return { now: () => (t += 1), id: () => `id${n++}` }
 }
 
-function newController(store = new InMemoryLibraryStore()): {
+// A fixed writer id keeps the stamped sync metadata deterministic across a
+// controller and any reload of it (real installs read this from localStorage).
+const WRITER = 'device-A'
+
+function newController(
+    store = new InMemoryLibraryStore(),
+    writerId = WRITER
+): {
     ctl: LibraryController
     store: InMemoryLibraryStore
 } {
     const { now, id } = fixtures()
-    return { ctl: new LibraryController(store, 'vanilla-2.0', now, id), store }
+    return { ctl: new LibraryController(store, 'vanilla-2.0', now, id, writerId), store }
 }
 
 describe('LibraryController.init', () => {
@@ -332,6 +339,42 @@ describe('cross-pack copy / move (Phase 2)', () => {
         const b = new LibraryController(store, 'space-age', now, id)
         await b.init()
         expect(b.getActiveId()).toBe(clone!.id)
+    })
+})
+
+describe('sync stamping (Phase 6)', () => {
+    it('stamps rev / writerId / updatedAt on every persisted mutation', async () => {
+        const { ctl } = newController()
+        await ctl.init() // init alone doesn't persist → rev stays 0
+        expect(ctl.getState().rev).toBe(0)
+        expect(ctl.getState().writerId).toBe('')
+
+        await ctl.autosave('0draft') // first persisted write
+        expect(ctl.getState().rev).toBe(1)
+        expect(ctl.getState().writerId).toBe(WRITER)
+        const firstStamp = ctl.getState().updatedAt
+
+        await ctl.saveAs('proj', '0v1') // another persisted mutation
+        expect(ctl.getState().rev).toBe(2)
+        expect(ctl.getState().writerId).toBe(WRITER)
+        expect(ctl.getState().updatedAt).toBeGreaterThan(firstStamp)
+    })
+
+    it('carries the incrementing rev through the store across a reload', async () => {
+        const store = new InMemoryLibraryStore()
+        const a = newController(store).ctl
+        await a.init()
+        await a.saveAs('a', '0a') // rev 1
+        await a.save('0a2') // rev 2
+        expect(a.getState().rev).toBe(2)
+
+        // A reload sees the persisted rev and keeps counting from there.
+        const b = newController(store, 'device-B').ctl
+        await b.init()
+        expect(b.getState().rev).toBe(2)
+        await b.autosave('0a3')
+        expect(b.getState().rev).toBe(3)
+        expect(b.getState().writerId).toBe('device-B') // now attributed to B
     })
 })
 
