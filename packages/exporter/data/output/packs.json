@@ -23,7 +23,13 @@
             "elevated-rails",
             "quality",
             "space-age"
-        ]
+        ],
+        "artifacts": [
+            "editor",
+            "browser"
+        ],
+        "browserSchemaVersion": 1,
+        "generated": "2026-07-24T15:30:35Z"
     },
     {
         "id": "space-exploration",
