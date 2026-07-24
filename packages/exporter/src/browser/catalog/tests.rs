@@ -92,12 +92,14 @@ const FIXTURE: &str = r#"{
     "chemical-plant":           { "type": "item", "name": "chemical-plant",           "stack_size": 50,  "subgroup": "production-machine", "order": "b", "place_result": "chemical-plant" },
     "no-fluid-crafter":         { "type": "item", "name": "no-fluid-crafter",         "stack_size": 50,  "subgroup": "production-machine", "order": "c", "place_result": "no-fluid-crafter" },
     "hidden-item":              { "type": "item", "name": "hidden-item",              "stack_size": 1,   "subgroup": "raw-material", "order": "z", "hidden": true },
-    "flag-hidden-item":         { "type": "item", "name": "flag-hidden-item",         "stack_size": 1,   "subgroup": "raw-material", "order": "z", "flags": ["hidden"] }
+    "flag-hidden-item":         { "type": "item", "name": "flag-hidden-item",         "stack_size": 1,   "subgroup": "raw-material", "order": "z", "flags": ["hidden"] },
+    "parameter-0":              { "type": "item", "name": "parameter-0",              "stack_size": 1,   "subgroup": "raw-material", "order": "z", "parameter": true }
   },
   "fluid": {
     "water":         { "type": "fluid", "name": "water",         "subgroup": "fluid", "order": "a" },
     "petroleum-gas": { "type": "fluid", "name": "petroleum-gas", "subgroup": "fluid", "order": "b" },
-    "hidden-fluid":  { "type": "fluid", "name": "hidden-fluid",  "subgroup": "fluid", "order": "z", "hidden": true }
+    "hidden-fluid":  { "type": "fluid", "name": "hidden-fluid",  "subgroup": "fluid", "order": "z", "hidden": true },
+    "parameter-0":   { "type": "fluid", "name": "parameter-0",   "subgroup": "fluid", "order": "z", "parameter": true }
   },
   "assembling-machine": {
     "assembling-machine-1": { "type": "assembling-machine", "name": "assembling-machine-1", "crafting_categories": ["crafting"], "crafting_speed": 0.5, "energy_usage": "75kW", "module_slots": 2 },
@@ -130,6 +132,8 @@ const FIXTURE: &str = r#"{
       "ingredients": [ { "type": "item", "name": "iron-plate", "amount": 1 } ],
       "results":     [ { "type": "item", "name": "iron-gear-wheel", "amount": 1 } ] },
     "hidden-recipe": { "type": "recipe", "name": "hidden-recipe", "category": "crafting", "hidden": true,
+      "ingredients": [], "results": [] },
+    "parameter-0": { "type": "recipe", "name": "parameter-0", "category": "parameters", "parameter": true,
       "ingredients": [], "results": [] }
   },
   "technology": {
@@ -227,9 +231,14 @@ fn hidden_prototypes_excluded_and_counted() {
     assert!(cat.fluids.iter().all(|f| f.id != "hidden-fluid"));
     assert!(cat.recipes.iter().all(|r| r.id != "hidden-recipe"));
     assert!(cat.technologies.iter().all(|t| t.id != "hidden-tech"));
-    assert_eq!(counts.items, 2); // hidden-item + flag-hidden-item
-    assert_eq!(counts.fluids, 1);
-    assert_eq!(counts.recipes, 1);
+    // The 2.0 parametrized-blueprint placeholders (parameter: true) count as
+    // hidden in every category — they are UI machinery, not content.
+    assert!(cat.items.iter().all(|i| i.id != "parameter-0"));
+    assert!(cat.fluids.iter().all(|f| f.id != "parameter-0"));
+    assert!(cat.recipes.iter().all(|r| r.id != "parameter-0"));
+    assert_eq!(counts.items, 3); // hidden-item + flag-hidden-item + parameter-0
+    assert_eq!(counts.fluids, 2); // hidden-fluid + parameter-0
+    assert_eq!(counts.recipes, 2); // hidden-recipe + parameter-0
     assert_eq!(counts.technologies, 1);
 }
 

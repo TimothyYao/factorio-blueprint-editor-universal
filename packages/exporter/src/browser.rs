@@ -93,6 +93,17 @@ pub async fn run_browser(
         counts.technologies,
     );
 
+    // --- 5b. Recipes without an own icon still have a game-composed effective
+    // icon in the dump: --dump-icon-sprites renders EVERY recipe, applying the
+    // main-product fallback itself. Prefer those renders, so a recipe whose
+    // products are all hidden (rocket-part) doesn't reach consumers icon-less;
+    // the consumer-side first-result fallback remains for anything the dump
+    // didn't render. Content-dedup collapses the duplicates on the sheet.
+    let filled = fill_recipe_icons_from_dump(&mut cat.recipes, &script_output.join("recipe"));
+    if filled > 0 {
+        println!("Filled {filled} recipe icon(s) from the dump's composed renders");
+    }
+
     // --- 6. Compose the icon sheet, resolve missing icons ---------------------
     let icon_ids = catalog::referenced_icon_ids(&cat);
     let (icon_sheet, missing) = icons::compose_icons(&icon_ids, &script_output, &browser_dir)?;
@@ -117,6 +128,19 @@ pub async fn run_browser(
 
     println!("Browser artifact done for pack '{}'", pack.id);
     Ok(())
+}
+
+/// Point every icon-less recipe at the dump's `recipe/<id>.png` when that
+/// render exists. Returns how many were filled.
+fn fill_recipe_icons_from_dump(recipes: &mut [catalog::Recipe], recipe_dir: &Path) -> usize {
+    let mut filled = 0;
+    for r in recipes {
+        if r.icon_id.is_none() && recipe_dir.join(format!("{}.png", r.id)).is_file() {
+            r.icon_id = Some(format!("recipe/{}", r.id));
+            filled += 1;
+        }
+    }
+    filled
 }
 
 /// Split `missing` iconIds by kind and apply the contract's fallbacks: recipe

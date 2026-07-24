@@ -132,19 +132,25 @@ pub struct ItemProto {
     pub place_result: Option<String>,
     #[serde(default)]
     pub hidden: bool,
+    #[serde(default)]
+    pub parameter: bool,
     #[serde(default, deserialize_with = "lua_seq")]
     pub flags: Vec<String>,
 }
 
 impl ItemProto {
     /// 2.0 marks hidden items with a dedicated `hidden` bool; older data (and
-    /// some mods) still use the `"hidden"` item flag — honor both.
+    /// some mods) still use the `"hidden"` item flag — honor both. `parameter`
+    /// marks 2.0's parametrized-blueprint placeholders (parameter-0…9): real
+    /// prototypes, but pure UI machinery — never browsable content.
     fn is_hidden(&self) -> bool {
-        self.hidden || self.flags.iter().any(|f| f == "hidden")
+        self.hidden || self.parameter || self.flags.iter().any(|f| f == "hidden")
     }
 }
 
 /// A fluid prototype (`data.json`-verified: `type`, `name`, `subgroup`, `order`).
+/// `parameter` marks the parametrized-blueprint placeholder fluids — hidden,
+/// like their item twins.
 #[derive(Deserialize, Clone)]
 pub struct FluidProto {
     pub name: String,
@@ -154,6 +160,8 @@ pub struct FluidProto {
     pub order: Option<String>,
     #[serde(default)]
     pub hidden: bool,
+    #[serde(default)]
+    pub parameter: bool,
 }
 
 /// A crafting-machine entity. `data.json`-verified: `crafting_categories` (array
@@ -219,6 +227,8 @@ pub struct RecipeProto {
     pub energy_required: Option<f64>,
     #[serde(default)]
     pub hidden: bool,
+    #[serde(default)]
+    pub parameter: bool,
     #[serde(default)]
     pub main_product: Option<String>,
     #[serde(default, deserialize_with = "lua_seq")]
@@ -863,7 +873,7 @@ pub fn build_catalog(
     // -- Fluids ----------------------------------------------------------------
     let mut fluid_rows: Vec<(SortKey, Fluid)> = Vec::new();
     for proto in raw.fluid.values() {
-        if proto.hidden {
+        if proto.hidden || proto.parameter {
             counts.fluids += 1;
             continue;
         }
@@ -907,7 +917,7 @@ pub fn build_catalog(
     // -- Recipes ---------------------------------------------------------------
     let mut recipe_rows: Vec<(SortKey, Recipe)> = Vec::new();
     for proto in raw.recipe.values() {
-        if proto.hidden {
+        if proto.hidden || proto.parameter {
             counts.recipes += 1;
             continue;
         }

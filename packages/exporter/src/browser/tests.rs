@@ -135,3 +135,33 @@ fn iso8601_formatting() {
     assert_eq!(iso8601_utc(1_609_459_200), "2021-01-01T00:00:00Z");
     assert_eq!(iso8601_utc(1_721_822_400), "2024-07-24T12:00:00Z");
 }
+
+#[test]
+fn recipe_icons_filled_from_dump_renders() {
+    let root = scratch("recipe-icons");
+    // The dump rendered an effective icon for `covered` but not `uncovered`;
+    // `own-icon` already points at its own icon and must not be touched.
+    std::fs::write(root.join("covered.png"), b"png-bytes").unwrap();
+    let mk = |id: &str, icon_id: Option<&str>| catalog::Recipe {
+        id: id.to_string(),
+        label: id.to_string(),
+        description: None,
+        time: serde_json::json!(0.5),
+        category: "crafting".to_string(),
+        ingredients: vec![],
+        results: vec![],
+        producers: vec![],
+        icon_id: icon_id.map(|s| s.to_string()),
+    };
+    let mut recipes = vec![
+        mk("covered", None),
+        mk("uncovered", None),
+        mk("own-icon", Some("recipe/own-icon")),
+    ];
+    let filled = fill_recipe_icons_from_dump(&mut recipes, &root);
+    assert_eq!(filled, 1);
+    assert_eq!(recipes[0].icon_id.as_deref(), Some("recipe/covered"));
+    assert_eq!(recipes[1].icon_id, None); // consumer-side fallback remains
+    assert_eq!(recipes[2].icon_id.as_deref(), Some("recipe/own-icon"));
+    std::fs::remove_dir_all(&root).ok();
+}
