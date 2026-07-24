@@ -27,6 +27,15 @@ macro_rules! get_env_var {
 #[derive(Deserialize, Clone)]
 pub struct Pack {
     pub id: String,
+    /// Human label from the manifest (e.g. "Vanilla 2.0"). The editor reads it;
+    /// the browser catalog mirrors it into `pack.label`. Optional so a minimal
+    /// manifest entry still deserializes.
+    #[serde(default)]
+    pub label: Option<String>,
+    /// Marketing/game version string from the manifest (e.g. "2.0"). Mirrored
+    /// into the browser catalog's `pack.factorioVersion`.
+    #[serde(default, rename = "factorioVersion")]
+    pub factorio_version: Option<String>,
     #[serde(default)]
     pub mods: Vec<String>,
     #[serde(default)]
@@ -47,7 +56,7 @@ impl Pack {
 /// live under `<factorio>/data/<mod>`, portal mods are extracted to
 /// `<factorio>/mods/<mod>`. Sprite refs and locale paths are mod-relative, so
 /// everything downstream funnels through this one lookup.
-fn mod_root(factorio_data: &Path, mods_root: &Path, mod_name: &str) -> PathBuf {
+pub fn mod_root(factorio_data: &Path, mods_root: &Path, mod_name: &str) -> PathBuf {
     let shipped = factorio_data.join(mod_name);
     if shipped.is_dir() {
         shipped
@@ -113,10 +122,11 @@ struct ModList {
 /// every known mod enabled iff it's in `pack.mods`, plus our `export-data` mod
 /// (always enabled — it's what produces `data.json`). `core` is implicit and
 /// never listed.
-async fn write_mod_list(
+pub async fn write_mod_list(
     mods_root: &Path,
     pack: &Pack,
     all_mods: &[String],
+    include_export_data: bool,
 ) -> Result<(), Box<dyn Error>> {
     let mut mods: Vec<ModListEntry> = all_mods
         .iter()
@@ -125,9 +135,15 @@ async fn write_mod_list(
             enabled: pack.mods.contains(name),
         })
         .collect();
+    // The injected export-data mod is needed by the editor dump (its
+    // data-final-fixes writes data.json) but must be OFF for the browser dump
+    // runs: it extends data.raw with thousands of FBE-DATA-* placeholder
+    // prototypes (polluting data-raw-dump.json) whose "-" icon paths are an
+    // untested hazard for --dump-icon-sprites. The dumps should see exactly the
+    // pack's declared mod set, nothing more.
     mods.push(ModListEntry {
         name: "export-data".to_string(),
-        enabled: true,
+        enabled: include_export_data,
     });
 
     let json = serde_json::to_vec_pretty(&ModList { mods })?;
@@ -173,9 +189,9 @@ async fn verify_active_mods(path: &Path, pack: &Pack) -> Result<(), Box<dyn Erro
 }
 
 #[derive(Deserialize)]
-struct Info {
+pub struct Info {
     // name: String,
-    version: String,
+    pub version: String,
     // title: String,
     // author: String,
     // contact: String,
@@ -183,7 +199,7 @@ struct Info {
     // dependencies: Vec<String>,
 }
 
-async fn get_info(path: &Path) -> Result<Info, Box<dyn Error>> {
+pub async fn get_info(path: &Path) -> Result<Info, Box<dyn Error>> {
     let contents = tokio::fs::read_to_string(path).await?;
     let p: Info = serde_json::from_str(&contents)?;
     Ok(p)
@@ -224,54 +240,69 @@ async fn make_img_pow2<'a>(
     }
 }
 
-async fn content_to_lines(path: &Path) -> Result<String, Box<dyn Error>> {
-    let file = tokio::fs::File::open(path).await?;
-    let buf = tokio::io::BufReader::new(file);
-    use tokio::io::AsyncBufReadExt;
-    let mut lines_stream = buf.lines();
-
-    let mut content = String::new();
+/// Parse one Factorio `.cfg` locale file's textual content into `(key, value)`
+/// pairs, in file order. The key is the game's dotted form — a `[item-name]`
+/// section header + a `iron-plate=Iron plate` line yields the key
+/// `item-name.iron-plate`; a bare `key=value` outside any section keeps its
+/// plain name. Values are returned RAW (no escaping applied) — each caller
+/// escapes for its own target. Blank and `;`-comment lines are skipped, exactly
+/// as the game's own `[section] key=value` reader treats them.
+///
+/// This is the single parse both artifact paths share: the editor artifact's
+/// Lua-table emitter (`content_to_lines`) and the browser artifact's Rust-side
+/// lookup (`generate_locale_map`). They therefore see byte-identical keys and
+/// values in identical order — the property `content_to_lines` must preserve so
+/// the editor's `locale.lua` stays unchanged.
+fn parse_locale_pairs(content: &str) -> Vec<(String, String)> {
+    let mut pairs = Vec::new();
     let mut group = String::new();
-    while let Some(line) = lines_stream.next_line().await? {
+    for line in content.lines() {
         if line.is_empty() || line.starts_with(';') {
             continue;
         }
-        if line.starts_with('[') {
-            group = line[1..line.len() - 1].to_string();
+        if let Some(rest) = line.strip_prefix('[') {
+            // A well-formed header is `[group]`; tolerate a missing `]` (and a
+            // bare `[`, which the old slice-based parse panicked on) — a broken
+            // header yields a nonsense group key either way, never a crash.
+            group = rest.strip_suffix(']').unwrap_or(rest).to_string();
             continue;
         }
         let Some(idx) = line.find('=') else { continue };
-        let sep = match group.len() {
-            0 => "",
-            _ => ".",
-        };
-        let val = line[idx + 1..].to_string().replace("'", r"\'");
-        let subgroup = &line[..idx];
-
-        use std::fmt::Write;
-        write!(&mut content, "['{group}{sep}{subgroup}']='{val}',")?;
+        let sep = if group.is_empty() { "" } else { "." };
+        let key = format!("{group}{sep}{}", &line[..idx]);
+        let value = line[idx + 1..].to_string();
+        pairs.push((key, value));
     }
+    pairs
+}
 
+/// Serialize a `.cfg` file into the Lua-table fragment `['key']='value',…` the
+/// editor's `locale.lua` is built from. Single quotes in values are escaped
+/// (`'` → `\'`) so the emitted Lua string literals stay valid. Kept
+/// byte-for-byte compatible with the previous hand-rolled reader — the editor
+/// artifact depends on this exact output.
+async fn content_to_lines(path: &Path) -> Result<String, Box<dyn Error>> {
+    let raw = tokio::fs::read_to_string(path).await?;
+    let mut content = String::new();
+    use std::fmt::Write;
+    for (key, value) in parse_locale_pairs(&raw) {
+        let val = value.replace('\'', r"\'");
+        write!(&mut content, "['{key}']='{val}',")?;
+    }
     Ok(content)
 }
 
-/// Build the locale lookup table for exactly the mods a pack enables.
-///
-/// Only each enabled mod's top-level `locale/en/*.cfg` files are read. The
-/// previous recursive `**/locale/en/*.cfg` glob also swept up campaign/tutorial
-/// locale (which overrides entity names — e.g. the tutorial renames
-/// `crash-site-chest-1` to "Escape pod") and the locale of mods that ship on
-/// disk but are disabled for this pack (the DLC dirs bleeding into a vanilla
-/// dump) — with the winner decided by filesystem readdir order. Mods are
-/// processed as `core` + the pack's `mods` in manifest order (keep that order
-/// in `packs.json` aligned with Factorio's load order, so e.g. Space Age's
-/// renames override base just like in the game), files sorted within each mod,
-/// so duplicate keys resolve deterministically: last write wins.
-async fn generate_locale(
+/// Collect the ordered list of `.cfg` locale files to read for a pack: `core`
+/// then the pack's `mods` in manifest order, and within each mod its top-level
+/// `locale/en/*.cfg` sorted by name. This ordering is what makes duplicate-key
+/// resolution deterministic (last write wins, mirroring Factorio's load order —
+/// see `generate_locale`'s comment). Shared by the Lua emitter and the Rust map
+/// so both resolve overrides identically.
+async fn collect_locale_paths(
     factorio_data: &Path,
     mods_root: &Path,
     enabled_mods: &[String],
-) -> Result<String, Box<dyn Error>> {
+) -> Result<Vec<PathBuf>, Box<dyn Error>> {
     let mut paths = Vec::<PathBuf>::new();
     for mod_name in std::iter::once("core").chain(enabled_mods.iter().map(String::as_str)) {
         let dir = mod_root(factorio_data, mods_root, mod_name).join("locale/en");
@@ -291,6 +322,27 @@ async fn generate_locale(
         files.sort();
         paths.append(&mut files);
     }
+    Ok(paths)
+}
+
+/// Build the locale lookup table for exactly the mods a pack enables.
+///
+/// Only each enabled mod's top-level `locale/en/*.cfg` files are read. The
+/// previous recursive `**/locale/en/*.cfg` glob also swept up campaign/tutorial
+/// locale (which overrides entity names — e.g. the tutorial renames
+/// `crash-site-chest-1` to "Escape pod") and the locale of mods that ship on
+/// disk but are disabled for this pack (the DLC dirs bleeding into a vanilla
+/// dump) — with the winner decided by filesystem readdir order. Mods are
+/// processed as `core` + the pack's `mods` in manifest order (keep that order
+/// in `packs.json` aligned with Factorio's load order, so e.g. Space Age's
+/// renames override base just like in the game), files sorted within each mod,
+/// so duplicate keys resolve deterministically: last write wins.
+async fn generate_locale(
+    factorio_data: &Path,
+    mods_root: &Path,
+    enabled_mods: &[String],
+) -> Result<String, Box<dyn Error>> {
+    let paths = collect_locale_paths(factorio_data, mods_root, enabled_mods).await?;
     // Parallel reads, but concatenated in `paths` order — order is what makes
     // the override behavior deterministic.
     let content = futures::future::try_join_all(paths.iter().map(|path| content_to_lines(path)))
@@ -299,8 +351,47 @@ async fn generate_locale(
     Ok(format!("return {{{}}}", content))
 }
 
-pub async fn extract(
-    output_dir: &Path,
+/// Rust-side equivalent of `generate_locale`, for the browser artifact: instead
+/// of emitting a Lua table it builds a `HashMap` keyed exactly as the game keys
+/// locale entries (`item-name.iron-plate`, `item-description.iron-plate`,
+/// `recipe-name.…`, `technology-name.…`, `entity-name.…`, …). Same file set and
+/// same order as the Lua path, so overrides resolve identically: files are read
+/// in `collect_locale_paths` order and duplicate keys keep the LAST value —
+/// matching how a Lua table literal `{['k']=a, ['k']=b}` keeps `b`, i.e. the
+/// last-wins the Lua emitter already relied on.
+///
+/// This is the browser catalog's FALLBACK locale source. Names/descriptions are
+/// taken from `--dump-prototype-locale` first (engine-resolved, handles the
+/// `__1__`-style parametric strings this naive `.cfg` reader does not); this map
+/// only fills gaps — most importantly descriptions, whose presence in the dump
+/// output is unverified until a real run.
+pub async fn generate_locale_map(
+    factorio_data: &Path,
+    mods_root: &Path,
+    enabled_mods: &[String],
+) -> Result<HashMap<String, String>, Box<dyn Error>> {
+    let paths = collect_locale_paths(factorio_data, mods_root, enabled_mods).await?;
+    // Read in parallel but fold in `paths` order so last-write-wins is
+    // deterministic (the parallel reads don't affect fold order).
+    let contents =
+        futures::future::try_join_all(paths.iter().map(tokio::fs::read_to_string)).await?;
+    let mut map = HashMap::new();
+    for content in &contents {
+        for (key, value) in parse_locale_pairs(content) {
+            map.insert(key, value);
+        }
+    }
+    Ok(map)
+}
+
+/// Install the injected `export-data` mod (its `info.json` with the load-order
+/// dependencies, `locale.lua`, `data-final-fixes.lua`, and the scenario's
+/// `control.lua`) and write `mod-list.json` enabling exactly this pack's mods.
+/// This is the on-disk setup Factorio needs before *any* launch for this pack —
+/// the editor `extract` run and the browser artifact's dump runs both call it,
+/// so `--browser-only` gets the same correctly-configured install without the
+/// editor's long atlas build. Idempotent (plain overwrites); safe to re-run.
+pub async fn prepare_export_data_mod(
     base_factorio_dir: &Path,
     pack: &Pack,
     all_mods: &[String],
@@ -309,9 +400,6 @@ pub async fn extract(
     let mods_root = base_factorio_dir.join("mods");
     let mod_dir = mods_root.join("export-data");
     let scenario_dir = mod_dir.join("scenarios/export-data");
-    let extracted_data_path = base_factorio_dir.join("script-output/data.json");
-    let active_mods_path = base_factorio_dir.join("script-output/active-mods.json");
-    let factorio_executable = base_factorio_dir.join("bin/x64/factorio");
 
     // The export-data mod dumps `data.raw` from its own data-final-fixes. It
     // must load LAST, or that snapshot is taken before other mods' own
@@ -347,7 +435,24 @@ pub async fn extract(
     tokio::fs::write(scenario_dir.join("control.lua"), script).await?;
 
     // Enable exactly this pack's mods (+ our export-data mod) for the run.
-    write_mod_list(&mods_root, pack, all_mods).await?;
+    write_mod_list(&mods_root, pack, all_mods, true).await?;
+    Ok(())
+}
+
+pub async fn extract(
+    output_dir: &Path,
+    base_factorio_dir: &Path,
+    pack: &Pack,
+    all_mods: &[String],
+) -> Result<(), Box<dyn Error>> {
+    let factorio_data = base_factorio_dir.join("data");
+    let mods_root = base_factorio_dir.join("mods");
+    let extracted_data_path = base_factorio_dir.join("script-output/data.json");
+    let active_mods_path = base_factorio_dir.join("script-output/active-mods.json");
+    let factorio_executable = base_factorio_dir.join("bin/x64/factorio");
+
+    // Install the export-data mod + write mod-list.json for this pack.
+    prepare_export_data_mod(base_factorio_dir, pack, all_mods).await?;
 
     println!("Generating defines.lua");
 
@@ -601,12 +706,12 @@ async fn compress_next_img(
 
             let basisu_executable = "./basisu";
             let status = Command::new(basisu_executable)
-                // .args(&["-comp_level", "2"])
-                .args(&["-no_multithreading"])
-                // .args(&["-ktx2"])
-                .args(&["-mipmap"])
-                .args(&["-file", path.to_str().ok_or("PathBuf to &str failed")?])
-                .args(&[
+                // .args(["-comp_level", "2"])
+                .args(["-no_multithreading"])
+                // .args(["-ktx2"])
+                .args(["-mipmap"])
+                .args(["-file", path.to_str().ok_or("PathBuf to &str failed")?])
+                .args([
                     "-output_file",
                     out_path.to_str().ok_or("PathBuf to &str failed")?,
                 ])
@@ -913,9 +1018,7 @@ async fn download(
     }
 
     use futures::stream::TryStreamExt;
-    let stream = res
-        .bytes_stream()
-        .map_err(|e| futures::io::Error::new(futures::io::ErrorKind::Other, e));
+    let stream = res.bytes_stream().map_err(futures::io::Error::other);
 
     let stream = stream.inspect_ok(|chunk| {
         pb.inc(chunk.len() as u64);

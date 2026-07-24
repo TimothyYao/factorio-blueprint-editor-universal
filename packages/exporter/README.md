@@ -76,6 +76,69 @@ What a run does:
 When the run finishes it serves `data/output/` on `http://localhost:8081`. Point
 the website at it (`VITE_DATA_URL`) or just commit the new `data/output/<id>/`.
 
+## Browser artifact
+
+Alongside the editor's `data.json` + `.basis` atlas, every run also produces a
+**browser artifact** under `data/output/<id>/browser/` — a compact, curated
+catalog + a CSS-friendly icon sheet, for the DOM consumers (the Factorio Item
+Browser fork, and fbe's own blueprint-library panel). It's a few MB per pack, not
+the tens-to-hundreds of MB the editor atlas is, and it's built from **Factorio's
+own dump flags** rather than the injected `export-data` mod:
+
+```
+browser/
+  catalog.json    items / fluids / recipes / technologies (labels, descriptions,
+                  order, machine stats, baked recipe producers, real research-unit
+                  counts) — display-ordered, hidden prototypes excluded
+  icons.webp      icon sheet: 64 px cells on a 2 px gutter (66 px stride),
+                  lossless WebP (PNG fallback → icons.png if WebP encoding fails,
+                  the name then flows through icons.json's sheet.file)
+  icons.json      iconId → sheet rect map (icons are content-deduped)
+```
+
+It runs **three separate Factorio invocations** (the dump flags don't combine),
+each preceded by stale-output deletion and verified by its output files appearing
+(Factorio's exit code is not a reliable success signal — the icon dump can crash
+on shutdown *after* writing every file):
+
+1. `--dump-data`             → `script-output/data-raw-dump.json` (the catalog)
+2. `--dump-prototype-locale` → `script-output/<cat>-locale.json` (names, and
+   descriptions when present — otherwise names/descriptions fall back to the same
+   `locale/en/*.cfg` resolution the editor artifact uses)
+3. `--dump-icon-sprites`     → `script-output/<folder>/<name>.png` (composed into
+   the sheet)
+
+> **`--dump-icon-sprites` needs a graphics backend.** Unlike the other two flags
+> it renders sprites to PNG and spawns a game window, so it won't run truly
+> headless. On a desktop it just works; on a headless box run the whole exporter
+> under `xvfb-run`, e.g. `xvfb-run -a cargo run -- --pack vanilla-2.0`.
+
+The dump runs rewrite `mod-list.json` with the injected `export-data` mod
+**disabled** — it extends `data.raw` with placeholder prototypes the dumps must
+not see; a later editor run re-enables it.
+
+The manifest (`data/output/packs.json`) is updated additively per pack after a
+successful run (written atomically via tmp-and-rename): `artifacts`
+(`["editor","browser"]` — truthfully, `"browser"` only once this run produced
+it), `browserSchemaVersion` (currently `1`), and `generated` (a UTC ISO-8601
+timestamp, doubling as a cache-buster). Existing fields and key order are
+preserved, though the serializer normalizes formatting (inline arrays expand) —
+a one-time diff on first touch, stable after that.
+
+`--browser-only` skips the long editor atlas build but still runs
+setup/download/mod-install (cached; the dumps need the install) and the browser
+step — handy for iterating on the catalog/icons against an already-generated
+pack. `--skip-browser` is the inverse: editor pipeline only, no dump runs — the
+escape hatch for a truly headless editor-only regen (no graphics backend
+needed). The two flags are mutually exclusive.
+
+```bash
+cargo run -- --pack vanilla-2.0 --browser-only
+```
+
+A plain `cargo run -- --pack <id>` produces **both** the editor and browser
+artifacts.
+
 ## Adding a new pack
 
 1. Add an entry to `packs.json` with a new `id` and its `mods` (load order).
