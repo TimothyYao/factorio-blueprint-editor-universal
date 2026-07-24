@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generated": "2026-07-24T15:33:22Z",
+  "generated": "2026-07-24T17:48:08Z",
   "pack": {
     "id": "space-exploration",
     "label": "Space Exploration (2.0)",
@@ -6694,86 +6694,6 @@
       "iconId": "item/se-delivery-cannon-weapon-capsule"
     },
     {
-      "id": "parameter-0",
-      "label": "Parameter 0",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-0"
-    },
-    {
-      "id": "parameter-1",
-      "label": "Parameter 1",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-1"
-    },
-    {
-      "id": "parameter-2",
-      "label": "Parameter 2",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-2"
-    },
-    {
-      "id": "parameter-3",
-      "label": "Parameter 3",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-3"
-    },
-    {
-      "id": "parameter-4",
-      "label": "Parameter 4",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-4"
-    },
-    {
-      "id": "parameter-5",
-      "label": "Parameter 5",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-5"
-    },
-    {
-      "id": "parameter-6",
-      "label": "Parameter 6",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-6"
-    },
-    {
-      "id": "parameter-7",
-      "label": "Parameter 7",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-7"
-    },
-    {
-      "id": "parameter-8",
-      "label": "Parameter 8",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-8"
-    },
-    {
-      "id": "parameter-9",
-      "label": "Parameter 9",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-9"
-    },
-    {
       "id": "copper-wire",
       "label": "Copper wire",
       "description": "Used to manually connect and disconnect electric poles and power switches with Left-click.",
@@ -7077,76 +6997,6 @@
       "group": "intermediate-products",
       "subgroup": "thermofluid",
       "iconId": "fluid/se-space-coolant-supercooled"
-    },
-    {
-      "id": "parameter-0",
-      "label": "Parameter 0",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-0"
-    },
-    {
-      "id": "parameter-1",
-      "label": "Parameter 1",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-1"
-    },
-    {
-      "id": "parameter-2",
-      "label": "Parameter 2",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-2"
-    },
-    {
-      "id": "parameter-3",
-      "label": "Parameter 3",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-3"
-    },
-    {
-      "id": "parameter-4",
-      "label": "Parameter 4",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-4"
-    },
-    {
-      "id": "parameter-5",
-      "label": "Parameter 5",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-5"
-    },
-    {
-      "id": "parameter-6",
-      "label": "Parameter 6",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-6"
-    },
-    {
-      "id": "parameter-7",
-      "label": "Parameter 7",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-7"
-    },
-    {
-      "id": "parameter-8",
-      "label": "Parameter 8",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-8"
-    },
-    {
-      "id": "parameter-9",
-      "label": "Parameter 9",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-9"
     }
   ],
   "recipes": [
@@ -7176,7 +7026,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/steel-chest"
     },
     {
       "id": "passive-provider-chest",
@@ -7214,7 +7065,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/passive-provider-chest"
     },
     {
       "id": "active-provider-chest",
@@ -7252,7 +7104,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/active-provider-chest"
     },
     {
       "id": "storage-chest",
@@ -7290,7 +7143,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/storage-chest"
     },
     {
       "id": "buffer-chest",
@@ -7328,7 +7182,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/buffer-chest"
     },
     {
       "id": "requester-chest",
@@ -7366,7 +7221,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/requester-chest"
     },
     {
       "id": "iron-chest",
@@ -7394,7 +7250,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/iron-chest"
     },
     {
       "id": "wooden-chest",
@@ -7422,7 +7279,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/wooden-chest"
     },
     {
       "id": "aai-strongbox",
@@ -7450,7 +7308,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-strongbox"
     },
     {
       "id": "aai-strongbox-passive-provider",
@@ -7488,7 +7347,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-strongbox-passive-provider"
     },
     {
       "id": "aai-strongbox-active-provider",
@@ -7526,7 +7386,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-strongbox-active-provider"
     },
     {
       "id": "aai-strongbox-storage",
@@ -7564,7 +7425,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-strongbox-storage"
     },
     {
       "id": "aai-strongbox-buffer",
@@ -7602,7 +7464,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-strongbox-buffer"
     },
     {
       "id": "aai-strongbox-requester",
@@ -7640,7 +7503,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-strongbox-requester"
     },
     {
       "id": "se-linked-container",
@@ -7698,7 +7562,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-linked-container"
     },
     {
       "id": "aai-storehouse",
@@ -7731,7 +7596,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-storehouse"
     },
     {
       "id": "aai-storehouse-passive-provider",
@@ -7769,7 +7635,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-storehouse-passive-provider"
     },
     {
       "id": "aai-storehouse-active-provider",
@@ -7807,7 +7674,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-storehouse-active-provider"
     },
     {
       "id": "aai-storehouse-storage",
@@ -7845,7 +7713,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-storehouse-storage"
     },
     {
       "id": "aai-storehouse-buffer",
@@ -7883,7 +7752,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-storehouse-buffer"
     },
     {
       "id": "aai-storehouse-requester",
@@ -7921,7 +7791,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-storehouse-requester"
     },
     {
       "id": "aai-warehouse",
@@ -7954,7 +7825,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-warehouse"
     },
     {
       "id": "aai-warehouse-passive-provider",
@@ -7992,7 +7864,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-warehouse-passive-provider"
     },
     {
       "id": "aai-warehouse-active-provider",
@@ -8030,7 +7903,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-warehouse-active-provider"
     },
     {
       "id": "aai-warehouse-storage",
@@ -8068,7 +7942,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-warehouse-storage"
     },
     {
       "id": "aai-warehouse-buffer",
@@ -8106,7 +7981,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-warehouse-buffer"
     },
     {
       "id": "aai-warehouse-requester",
@@ -8144,7 +8020,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-warehouse-requester"
     },
     {
       "id": "transport-belt",
@@ -8177,7 +8054,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/transport-belt"
     },
     {
       "id": "fast-transport-belt",
@@ -8210,7 +8088,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/fast-transport-belt"
     },
     {
       "id": "express-transport-belt",
@@ -8246,7 +8125,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/express-transport-belt"
     },
     {
       "id": "se-space-transport-belt",
@@ -8285,7 +8165,8 @@
       "producers": [
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-transport-belt"
     },
     {
       "id": "se-deep-space-transport-belt-black",
@@ -8338,7 +8219,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-transport-belt-black"
     },
     {
       "id": "se-deep-space-transport-belt-blue",
@@ -8371,7 +8253,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-transport-belt-blue"
     },
     {
       "id": "se-deep-space-transport-belt-cyan",
@@ -8404,7 +8287,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-transport-belt-cyan"
     },
     {
       "id": "se-deep-space-transport-belt-green",
@@ -8437,7 +8321,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-transport-belt-green"
     },
     {
       "id": "se-deep-space-transport-belt-magenta",
@@ -8470,7 +8355,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-transport-belt-magenta"
     },
     {
       "id": "se-deep-space-transport-belt-red",
@@ -8503,7 +8389,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-transport-belt-red"
     },
     {
       "id": "se-deep-space-transport-belt-white",
@@ -8536,7 +8423,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-transport-belt-white"
     },
     {
       "id": "se-deep-space-transport-belt-yellow",
@@ -8569,7 +8457,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-transport-belt-yellow"
     },
     {
       "id": "underground-belt",
@@ -8602,7 +8491,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/underground-belt"
     },
     {
       "id": "fast-underground-belt",
@@ -8635,7 +8525,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/fast-underground-belt"
     },
     {
       "id": "express-underground-belt",
@@ -8671,7 +8562,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/express-underground-belt"
     },
     {
       "id": "se-space-underground-belt",
@@ -8705,7 +8597,8 @@
       "producers": [
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-underground-belt"
     },
     {
       "id": "se-deep-space-underground-belt-black",
@@ -8758,7 +8651,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-underground-belt-black"
     },
     {
       "id": "se-deep-space-underground-belt-blue",
@@ -8791,7 +8685,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-underground-belt-blue"
     },
     {
       "id": "se-deep-space-underground-belt-cyan",
@@ -8824,7 +8719,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-underground-belt-cyan"
     },
     {
       "id": "se-deep-space-underground-belt-green",
@@ -8857,7 +8753,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-underground-belt-green"
     },
     {
       "id": "se-deep-space-underground-belt-magenta",
@@ -8890,7 +8787,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-underground-belt-magenta"
     },
     {
       "id": "se-deep-space-underground-belt-red",
@@ -8923,7 +8821,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-underground-belt-red"
     },
     {
       "id": "se-deep-space-underground-belt-white",
@@ -8956,7 +8855,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-underground-belt-white"
     },
     {
       "id": "se-deep-space-underground-belt-yellow",
@@ -8989,7 +8889,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-underground-belt-yellow"
     },
     {
       "id": "splitter",
@@ -9027,7 +8928,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/splitter"
     },
     {
       "id": "fast-splitter",
@@ -9065,7 +8967,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/fast-splitter"
     },
     {
       "id": "express-splitter",
@@ -9106,7 +9009,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/express-splitter"
     },
     {
       "id": "se-space-splitter",
@@ -9145,7 +9049,8 @@
       "producers": [
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-splitter"
     },
     {
       "id": "se-deep-space-splitter-black",
@@ -9198,7 +9103,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-splitter-black"
     },
     {
       "id": "se-deep-space-splitter-blue",
@@ -9231,7 +9137,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-splitter-blue"
     },
     {
       "id": "se-deep-space-splitter-cyan",
@@ -9264,7 +9171,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-splitter-cyan"
     },
     {
       "id": "se-deep-space-splitter-green",
@@ -9297,7 +9205,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-splitter-green"
     },
     {
       "id": "se-deep-space-splitter-magenta",
@@ -9330,7 +9239,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-splitter-magenta"
     },
     {
       "id": "se-deep-space-splitter-red",
@@ -9363,7 +9273,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-splitter-red"
     },
     {
       "id": "se-deep-space-splitter-white",
@@ -9396,7 +9307,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-splitter-white"
     },
     {
       "id": "se-deep-space-splitter-yellow",
@@ -9429,7 +9341,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-deep-space-splitter-yellow"
     },
     {
       "id": "burner-inserter",
@@ -9462,7 +9375,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/burner-inserter"
     },
     {
       "id": "pipe",
@@ -9490,7 +9404,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/pipe"
     },
     {
       "id": "pipe-to-ground",
@@ -9523,7 +9438,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/pipe-to-ground"
     },
     {
       "id": "se-space-pipe",
@@ -9562,7 +9478,8 @@
       "producers": [
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-pipe"
     },
     {
       "id": "se-space-pipe-to-ground",
@@ -9590,7 +9507,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-pipe-to-ground"
     },
     {
       "id": "se-space-pipe-long-j-3",
@@ -9618,7 +9536,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-pipe-long-j-3"
     },
     {
       "id": "se-space-pipe-long-j-5",
@@ -9646,7 +9565,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-pipe-long-j-5"
     },
     {
       "id": "se-space-pipe-long-j-7",
@@ -9674,7 +9594,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-pipe-long-j-7"
     },
     {
       "id": "se-space-pipe-long-s-9",
@@ -9702,7 +9623,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-pipe-long-s-9"
     },
     {
       "id": "se-space-pipe-long-s-15",
@@ -9730,7 +9652,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-pipe-long-s-15"
     },
     {
       "id": "storage-tank",
@@ -9763,7 +9686,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/storage-tank"
     },
     {
       "id": "inserter",
@@ -9796,7 +9720,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/inserter"
     },
     {
       "id": "pump",
@@ -9834,7 +9759,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/pump"
     },
     {
       "id": "long-handed-inserter",
@@ -9872,7 +9798,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/long-handed-inserter"
     },
     {
       "id": "fast-inserter",
@@ -9910,7 +9837,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/fast-inserter"
     },
     {
       "id": "bulk-inserter",
@@ -9953,7 +9881,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/bulk-inserter"
     },
     {
       "id": "small-electric-pole",
@@ -9986,7 +9915,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/small-electric-pole"
     },
     {
       "id": "small-iron-electric-pole",
@@ -10019,7 +9949,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/small-iron-electric-pole"
     },
     {
       "id": "medium-electric-pole",
@@ -10062,7 +9993,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/medium-electric-pole"
     },
     {
       "id": "big-electric-pole",
@@ -10105,7 +10037,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/big-electric-pole"
     },
     {
       "id": "substation",
@@ -10148,7 +10081,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/substation"
     },
     {
       "id": "se-addon-power-pole",
@@ -10416,7 +10350,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/rail-ramp"
     },
     {
       "id": "rail-support",
@@ -10449,7 +10384,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/rail-support"
     },
     {
       "id": "se-space-rail-ramp",
@@ -10487,7 +10423,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-rail-ramp"
     },
     {
       "id": "se-space-rail-support",
@@ -10564,7 +10501,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/rail"
     },
     {
       "id": "se-space-rail",
@@ -10602,7 +10540,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-rail"
     },
     {
       "id": "train-stop",
@@ -10645,7 +10584,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/train-stop"
     },
     {
       "id": "rail-signal",
@@ -10678,7 +10618,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/rail-signal"
     },
     {
       "id": "rail-chain-signal",
@@ -10711,7 +10652,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/rail-chain-signal"
     },
     {
       "id": "locomotive",
@@ -10754,7 +10696,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/locomotive"
     },
     {
       "id": "cargo-wagon",
@@ -10792,7 +10735,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/cargo-wagon"
     },
     {
       "id": "fluid-wagon",
@@ -10835,7 +10779,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/fluid-wagon"
     },
     {
       "id": "artillery-wagon",
@@ -10883,7 +10828,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/artillery-wagon"
     },
     {
       "id": "car",
@@ -10921,7 +10867,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/car"
     },
     {
       "id": "tank",
@@ -10964,7 +10911,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/tank"
     },
     {
       "id": "ironclad",
@@ -11002,7 +10950,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/ironclad"
     },
     {
       "id": "spidertron",
@@ -11065,7 +11014,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/spidertron"
     },
     {
       "id": "logistic-robot",
@@ -11098,7 +11048,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/logistic-robot"
     },
     {
       "id": "construction-robot",
@@ -11131,7 +11082,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/construction-robot"
     },
     {
       "id": "roboport",
@@ -11174,7 +11126,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/roboport"
     },
     {
       "id": "se-supercharger",
@@ -11261,7 +11214,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/small-lamp"
     },
     {
       "id": "arithmetic-combinator",
@@ -11294,7 +11248,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/arithmetic-combinator"
     },
     {
       "id": "decider-combinator",
@@ -11327,7 +11282,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/decider-combinator"
     },
     {
       "id": "selector-combinator",
@@ -11360,7 +11316,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/selector-combinator"
     },
     {
       "id": "constant-combinator",
@@ -11393,7 +11350,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/constant-combinator"
     },
     {
       "id": "power-switch",
@@ -11431,7 +11389,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/power-switch"
     },
     {
       "id": "programmable-speaker",
@@ -11474,7 +11433,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/programmable-speaker"
     },
     {
       "id": "display-panel",
@@ -11507,7 +11467,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/display-panel"
     },
     {
       "id": "landfill",
@@ -11535,7 +11496,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/landfill"
     },
     {
       "id": "landfill-sand",
@@ -11751,7 +11713,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-signal-sender"
     },
     {
       "id": "aai-signal-receiver",
@@ -11794,7 +11757,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/aai-signal-receiver"
     },
     {
       "id": "stone-brick",
@@ -11820,7 +11784,8 @@
         "steel-furnace",
         "electric-furnace",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/stone-brick"
     },
     {
       "id": "concrete",
@@ -11861,7 +11826,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/concrete"
     },
     {
       "id": "hazard-concrete",
@@ -11889,7 +11855,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/hazard-concrete"
     },
     {
       "id": "refined-concrete",
@@ -11930,7 +11897,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/refined-concrete"
     },
     {
       "id": "refined-hazard-concrete",
@@ -11958,7 +11926,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/refined-hazard-concrete"
     },
     {
       "id": "se-space-platform-scaffold",
@@ -11992,7 +11961,8 @@
       "producers": [
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-platform-scaffold"
     },
     {
       "id": "se-space-platform-plating",
@@ -12026,7 +11996,8 @@
       "producers": [
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-platform-plating"
     },
     {
       "id": "se-delivery-cannon-pack-stone-brick",
@@ -12644,7 +12615,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/burner-turbine"
     },
     {
       "id": "se-electric-boiler",
@@ -12687,7 +12659,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-electric-boiler"
     },
     {
       "id": "boiler",
@@ -12720,7 +12693,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/boiler"
     },
     {
       "id": "steam-engine",
@@ -12758,7 +12732,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/steam-engine"
     },
     {
       "id": "se-big-heat-exchanger",
@@ -12806,7 +12781,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-big-heat-exchanger"
     },
     {
       "id": "se-big-turbine",
@@ -12864,7 +12840,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-big-turbine"
     },
     {
       "id": "se-antimatter-reactor",
@@ -12917,7 +12894,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-antimatter-reactor"
     },
     {
       "id": "nuclear-reactor",
@@ -12960,7 +12938,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/nuclear-reactor"
     },
     {
       "id": "heat-pipe",
@@ -12993,7 +12972,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/heat-pipe"
     },
     {
       "id": "se-naquium-heat-pipe",
@@ -13026,7 +13006,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-naquium-heat-pipe"
     },
     {
       "id": "se-naquium-heat-pipe-long--t--",
@@ -13054,7 +13035,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-naquium-heat-pipe-long--t--"
     },
     {
       "id": "se-naquium-heat-pipe-long--t-----t--",
@@ -13082,7 +13064,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-naquium-heat-pipe-long--t-----t--"
     },
     {
       "id": "heat-exchanger",
@@ -13120,7 +13103,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/heat-exchanger"
     },
     {
       "id": "se-condenser-turbine",
@@ -13212,7 +13196,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/steam-turbine"
     },
     {
       "id": "se-fluid-burner-generator",
@@ -13255,7 +13240,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-fluid-burner-generator"
     },
     {
       "id": "solar-panel",
@@ -13298,7 +13284,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/solar-panel"
     },
     {
       "id": "se-space-solar-panel",
@@ -13433,7 +13420,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/accumulator"
     },
     {
       "id": "se-space-accumulator",
@@ -13539,7 +13527,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/burner-mining-drill"
     },
     {
       "id": "electric-mining-drill",
@@ -13577,7 +13566,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/electric-mining-drill"
     },
     {
       "id": "area-mining-drill",
@@ -13620,7 +13610,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/area-mining-drill"
     },
     {
       "id": "offshore-pump",
@@ -13653,7 +13644,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/offshore-pump"
     },
     {
       "id": "pumpjack",
@@ -13696,7 +13688,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/pumpjack"
     },
     {
       "id": "se-core-miner-drill",
@@ -13768,7 +13761,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/stone-furnace"
     },
     {
       "id": "steel-furnace",
@@ -13806,7 +13800,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/steel-furnace"
     },
     {
       "id": "electric-furnace",
@@ -13849,7 +13844,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/electric-furnace"
     },
     {
       "id": "industrial-furnace",
@@ -13897,7 +13893,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/industrial-furnace"
     },
     {
       "id": "se-casting-machine",
@@ -13940,7 +13937,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-casting-machine"
     },
     {
       "id": "se-space-thermodynamics-laboratory",
@@ -14022,7 +14020,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/equipment-gantry"
     },
     {
       "id": "equipment-gantry-remover",
@@ -14060,7 +14059,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/equipment-gantry-remover"
     },
     {
       "id": "se-pulveriser",
@@ -14240,7 +14240,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/burner-assembling-machine"
     },
     {
       "id": "assembling-machine-1",
@@ -14278,7 +14279,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/assembling-machine-1"
     },
     {
       "id": "assembling-machine-2",
@@ -14321,7 +14323,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/assembling-machine-2"
     },
     {
       "id": "assembling-machine-3",
@@ -14369,7 +14372,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/assembling-machine-3"
     },
     {
       "id": "se-space-assembling-machine",
@@ -14511,7 +14515,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/oil-refinery"
     },
     {
       "id": "chemical-plant",
@@ -14559,7 +14564,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/chemical-plant"
     },
     {
       "id": "fuel-processor",
@@ -14597,7 +14603,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/fuel-processor"
     },
     {
       "id": "se-lifesupport-facility",
@@ -14871,7 +14878,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-fuel-refinery"
     },
     {
       "id": "centrifuge",
@@ -14919,7 +14927,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/centrifuge"
     },
     {
       "id": "se-space-radiation-laboratory",
@@ -15485,7 +15494,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-nexus"
     },
     {
       "id": "se-space-supercomputer-1",
@@ -15889,7 +15899,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/beacon"
     },
     {
       "id": "se-compact-beacon",
@@ -16143,7 +16154,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-energy-transmitter-emitter"
     },
     {
       "id": "se-energy-transmitter-chamber",
@@ -16186,7 +16198,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-energy-transmitter-chamber"
     },
     {
       "id": "se-energy-transmitter-injector",
@@ -16234,7 +16247,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-energy-transmitter-injector"
     },
     {
       "id": "se-energy-receiver",
@@ -16292,7 +16306,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-energy-receiver"
     },
     {
       "id": "se-dimensional-anchor",
@@ -16340,7 +16355,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-dimensional-anchor"
     },
     {
       "id": "se-space-science-lab",
@@ -16423,7 +16439,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/burner-lab"
     },
     {
       "id": "lab",
@@ -16466,7 +16483,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/lab"
     },
     {
       "id": "speed-module",
@@ -16499,7 +16517,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/speed-module"
     },
     {
       "id": "speed-module-2",
@@ -16537,7 +16556,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/speed-module-2"
     },
     {
       "id": "speed-module-3",
@@ -16575,7 +16595,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/speed-module-3"
     },
     {
       "id": "speed-module-4",
@@ -16613,7 +16634,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/speed-module-4"
     },
     {
       "id": "speed-module-5",
@@ -16651,7 +16673,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/speed-module-5"
     },
     {
       "id": "speed-module-6",
@@ -16689,7 +16712,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/speed-module-6"
     },
     {
       "id": "speed-module-7",
@@ -16727,7 +16751,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/speed-module-7"
     },
     {
       "id": "speed-module-8",
@@ -16768,7 +16793,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/speed-module-8"
     },
     {
       "id": "speed-module-9",
@@ -16809,7 +16835,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/speed-module-9"
     },
     {
       "id": "efficiency-module",
@@ -16842,7 +16869,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/efficiency-module"
     },
     {
       "id": "efficiency-module-2",
@@ -16880,7 +16908,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/efficiency-module-2"
     },
     {
       "id": "efficiency-module-3",
@@ -16918,7 +16947,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/efficiency-module-3"
     },
     {
       "id": "efficiency-module-4",
@@ -16956,7 +16986,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/efficiency-module-4"
     },
     {
       "id": "efficiency-module-5",
@@ -16994,7 +17025,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/efficiency-module-5"
     },
     {
       "id": "efficiency-module-6",
@@ -17032,7 +17064,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/efficiency-module-6"
     },
     {
       "id": "efficiency-module-7",
@@ -17070,7 +17103,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/efficiency-module-7"
     },
     {
       "id": "efficiency-module-8",
@@ -17111,7 +17145,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/efficiency-module-8"
     },
     {
       "id": "efficiency-module-9",
@@ -17152,7 +17187,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/efficiency-module-9"
     },
     {
       "id": "productivity-module",
@@ -17185,7 +17221,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/productivity-module"
     },
     {
       "id": "productivity-module-2",
@@ -17223,7 +17260,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/productivity-module-2"
     },
     {
       "id": "productivity-module-3",
@@ -17261,7 +17299,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/productivity-module-3"
     },
     {
       "id": "productivity-module-4",
@@ -17299,7 +17338,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/productivity-module-4"
     },
     {
       "id": "productivity-module-5",
@@ -17337,7 +17377,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/productivity-module-5"
     },
     {
       "id": "productivity-module-6",
@@ -17375,7 +17416,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/productivity-module-6"
     },
     {
       "id": "productivity-module-7",
@@ -17413,7 +17455,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/productivity-module-7"
     },
     {
       "id": "productivity-module-8",
@@ -17454,7 +17497,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/productivity-module-8"
     },
     {
       "id": "productivity-module-9",
@@ -17495,7 +17539,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/productivity-module-9"
     },
     {
       "id": "se-melting-water-ice",
@@ -17594,7 +17639,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-water-ice"
     },
     {
       "id": "se-space-water-decontamination",
@@ -17753,7 +17799,8 @@
       ],
       "producers": [
         "se-space-decontamination-facility"
-      ]
+      ],
+      "iconId": "recipe/se-space-water"
     },
     {
       "id": "se-delivery-cannon-pack-se-water-ice",
@@ -18021,7 +18068,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/sulfur"
     },
     {
       "id": "sulfuric-acid",
@@ -18055,7 +18103,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/sulfuric-acid"
     },
     {
       "id": "plastic-bar",
@@ -18084,7 +18133,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/plastic-bar"
     },
     {
       "id": "explosives",
@@ -18118,7 +18168,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/explosives"
     },
     {
       "id": "se-methane-ice",
@@ -18147,7 +18198,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-methane-ice"
     },
     {
       "id": "se-delivery-cannon-pack-se-core-fragment-omni",
@@ -18662,7 +18714,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/lubricant"
     },
     {
       "id": "se-cryonite-lubricant",
@@ -18767,7 +18820,8 @@
       ],
       "producers": [
         "fuel-processor"
-      ]
+      ],
+      "iconId": "recipe/processed-fuel"
     },
     {
       "id": "se-processed-fuel-from-solid-fuel",
@@ -18896,7 +18950,8 @@
       ],
       "producers": [
         "se-fuel-refinery"
-      ]
+      ],
+      "iconId": "recipe/rocket-fuel"
     },
     {
       "id": "se-rocket-fuel-from-water-copper",
@@ -18983,7 +19038,8 @@
       ],
       "producers": [
         "se-fuel-refinery"
-      ]
+      ],
+      "iconId": "recipe/se-liquid-rocket-fuel"
     },
     {
       "id": "nuclear-fuel",
@@ -19012,7 +19068,8 @@
       "producers": [
         "centrifuge",
         "se-space-radiation-laboratory"
-      ]
+      ],
+      "iconId": "recipe/nuclear-fuel"
     },
     {
       "id": "se-delivery-cannon-pack-processed-fuel",
@@ -19549,7 +19606,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/stone-tablet"
     },
     {
       "id": "sand",
@@ -19577,7 +19635,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/sand"
     },
     {
       "id": "se-pulverised-sand",
@@ -19601,7 +19660,8 @@
       "producers": [
         "se-space-mechanical-laboratory",
         "se-pulveriser"
-      ]
+      ],
+      "iconId": "recipe/se-pulverised-sand"
     },
     {
       "id": "glass",
@@ -19628,7 +19688,8 @@
         "electric-furnace",
         "industrial-furnace",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/glass"
     },
     {
       "id": "se-glass-vulcanite",
@@ -19696,7 +19757,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-heat-shielding"
     },
     {
       "id": "se-heat-shielding-iridium",
@@ -19909,7 +19971,8 @@
       "producers": [
         "industrial-furnace",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-molten-iron"
     },
     {
       "id": "se-core-fragment-iron-ore",
@@ -19995,7 +20058,8 @@
         "electric-furnace",
         "industrial-furnace",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/iron-plate"
     },
     {
       "id": "se-iron-ingot-to-plate",
@@ -20081,7 +20145,8 @@
         "electric-furnace",
         "industrial-furnace",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/steel-plate"
     },
     {
       "id": "se-steel-ingot-to-plate",
@@ -20313,7 +20378,8 @@
       "producers": [
         "industrial-furnace",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-molten-copper"
     },
     {
       "id": "se-core-fragment-copper-ore",
@@ -20399,7 +20465,8 @@
         "electric-furnace",
         "industrial-furnace",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/copper-plate"
     },
     {
       "id": "se-copper-ingot-to-plate",
@@ -20688,7 +20755,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/uranium-fuel-cell"
     },
     {
       "id": "nuclear-fuel-reprocessing",
@@ -20904,7 +20972,8 @@
       "producers": [
         "se-space-mechanical-laboratory",
         "se-pulveriser"
-      ]
+      ],
+      "iconId": "recipe/se-vulcanite-crushed"
     },
     {
       "id": "se-vulcanite-enriched",
@@ -20949,7 +21018,8 @@
       "producers": [
         "centrifuge",
         "se-space-radiation-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-vulcanite-enriched"
     },
     {
       "id": "se-vulcanite-block",
@@ -20993,7 +21063,8 @@
       "producers": [
         "industrial-furnace",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-vulcanite-block"
     },
     {
       "id": "se-vulcanite-ion-exchange-beads",
@@ -21032,7 +21103,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-vulcanite-ion-exchange-beads"
     },
     {
       "id": "se-pyroflux",
@@ -21061,7 +21133,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-pyroflux"
     },
     {
       "id": "se-pyroflux-steam",
@@ -21348,7 +21421,8 @@
       "producers": [
         "se-space-mechanical-laboratory",
         "se-pulveriser"
-      ]
+      ],
+      "iconId": "recipe/se-cryonite-powder"
     },
     {
       "id": "se-cryonite-crystal",
@@ -21382,7 +21456,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-cryonite-crystal"
     },
     {
       "id": "se-cryonite-ion-exchange-beads",
@@ -21421,7 +21496,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-cryonite-ion-exchange-beads"
     },
     {
       "id": "se-cryonite-rod",
@@ -21455,7 +21531,8 @@
       "producers": [
         "industrial-furnace",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-cryonite-rod"
     },
     {
       "id": "se-cryonite-slush",
@@ -21484,7 +21561,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-cryonite-slush"
     },
     {
       "id": "se-delivery-cannon-pack-se-core-fragment-se-cryonite",
@@ -21703,7 +21781,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-beryllium-sulfate"
     },
     {
       "id": "se-beryllium-hydroxide",
@@ -21737,7 +21816,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-beryllium-hydroxide"
     },
     {
       "id": "se-beryllium-powder",
@@ -21766,7 +21846,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-beryllium-powder"
     },
     {
       "id": "se-molten-beryllium",
@@ -21795,7 +21876,8 @@
       "producers": [
         "industrial-furnace",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-molten-beryllium"
     },
     {
       "id": "se-beryllium-ingot",
@@ -21824,7 +21906,8 @@
       "producers": [
         "se-casting-machine",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-beryllium-ingot"
     },
     {
       "id": "se-beryllium-ingot-no-vulcanite",
@@ -21890,7 +21973,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-beryllium-plate"
     },
     {
       "id": "se-delivery-cannon-pack-se-core-fragment-se-beryllium-ore",
@@ -22099,7 +22183,8 @@
       "producers": [
         "se-space-mechanical-laboratory",
         "se-pulveriser"
-      ]
+      ],
+      "iconId": "recipe/se-holmium-ore-crushed"
     },
     {
       "id": "se-holmium-chloride",
@@ -22152,7 +22237,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-holmium-chloride"
     },
     {
       "id": "se-holmium-powder",
@@ -22181,7 +22267,8 @@
       "producers": [
         "centrifuge",
         "se-space-radiation-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-holmium-powder"
     },
     {
       "id": "se-molten-holmium",
@@ -22210,7 +22297,8 @@
       "producers": [
         "industrial-furnace",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-molten-holmium"
     },
     {
       "id": "se-holmium-ingot",
@@ -22239,7 +22327,8 @@
       "producers": [
         "se-casting-machine",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-holmium-ingot"
     },
     {
       "id": "se-holmium-ingot-no-vulcanite",
@@ -22305,7 +22394,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-holmium-plate"
     },
     {
       "id": "se-delivery-cannon-pack-se-core-fragment-se-holmium-ore",
@@ -22526,7 +22616,8 @@
       "producers": [
         "se-space-mechanical-laboratory",
         "se-pulveriser"
-      ]
+      ],
+      "iconId": "recipe/se-iridium-ore-crushed"
     },
     {
       "id": "se-iridium-powder",
@@ -22579,7 +22670,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-iridium-powder"
     },
     {
       "id": "se-iridium-blastcake",
@@ -22608,7 +22700,8 @@
       "producers": [
         "centrifuge",
         "se-space-radiation-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-iridium-blastcake"
     },
     {
       "id": "se-iridium-ingot",
@@ -22642,7 +22735,8 @@
       "producers": [
         "industrial-furnace",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-iridium-ingot"
     },
     {
       "id": "se-iridium-plate",
@@ -22670,7 +22764,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-iridium-plate"
     },
     {
       "id": "se-delivery-cannon-pack-se-core-fragment-se-iridium-ore",
@@ -22849,7 +22944,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-vitalic-epoxy"
     },
     {
       "id": "se-self-sealing-gel",
@@ -22887,7 +22983,8 @@
       ],
       "producers": [
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-self-sealing-gel"
     },
     {
       "id": "se-core-fragment-se-vitamelange",
@@ -22955,7 +23052,8 @@
       "producers": [
         "se-space-mechanical-laboratory",
         "se-pulveriser"
-      ]
+      ],
+      "iconId": "recipe/se-vitamelange-nugget"
     },
     {
       "id": "se-vitamelange-bloom",
@@ -22989,7 +23087,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-vitamelange-bloom"
     },
     {
       "id": "se-vitamelange-spice",
@@ -23029,7 +23128,8 @@
       "producers": [
         "industrial-furnace",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-vitamelange-spice"
     },
     {
       "id": "se-vitamelange-extract",
@@ -23068,7 +23168,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-vitamelange-extract"
     },
     {
       "id": "se-vitalic-acid",
@@ -23097,7 +23198,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-vitalic-acid"
     },
     {
       "id": "se-vitalic-reagent",
@@ -23131,7 +23233,8 @@
       "producers": [
         "centrifuge",
         "se-space-radiation-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-vitalic-reagent"
     },
     {
       "id": "se-delivery-cannon-pack-se-core-fragment-se-vitamelange",
@@ -23322,7 +23425,8 @@
       "producers": [
         "se-space-mechanical-laboratory",
         "se-pulveriser"
-      ]
+      ],
+      "iconId": "recipe/se-naquium-ore-crushed"
     },
     {
       "id": "se-naquium-refined",
@@ -23383,7 +23487,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-naquium-refined"
     },
     {
       "id": "se-naquium-powder",
@@ -23443,7 +23548,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-naquium-powder"
     },
     {
       "id": "se-naquium-crystal",
@@ -23494,7 +23600,8 @@
       "producers": [
         "centrifuge",
         "se-space-radiation-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-naquium-crystal"
     },
     {
       "id": "se-naquium-ingot",
@@ -23538,7 +23645,8 @@
       "producers": [
         "industrial-furnace",
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-naquium-ingot"
     },
     {
       "id": "se-naquium-plate",
@@ -23577,7 +23685,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-naquium-plate"
     },
     {
       "id": "se-delivery-cannon-pack-se-naquium-ore",
@@ -24432,7 +24541,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/iron-gear-wheel"
     },
     {
       "id": "iron-stick",
@@ -24460,7 +24570,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/iron-stick"
     },
     {
       "id": "barrel",
@@ -24488,7 +24599,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/barrel"
     },
     {
       "id": "flying-robot-frame",
@@ -24531,7 +24643,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/flying-robot-frame"
     },
     {
       "id": "motor",
@@ -24564,7 +24677,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/motor"
     },
     {
       "id": "engine-unit",
@@ -24602,7 +24716,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/engine-unit"
     },
     {
       "id": "electric-motor",
@@ -24640,7 +24755,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/electric-motor"
     },
     {
       "id": "electric-engine-unit",
@@ -24681,7 +24797,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/electric-engine-unit"
     },
     {
       "id": "copper-cable",
@@ -24709,7 +24826,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/copper-cable"
     },
     {
       "id": "se-holmium-cable",
@@ -24740,7 +24858,8 @@
         "se-space-assembling-machine",
         "se-space-manufactory",
         "se-space-electromagnetics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-holmium-cable"
     },
     {
       "id": "se-superconductive-cable",
@@ -24815,7 +24934,8 @@
         "se-space-assembling-machine",
         "se-space-manufactory",
         "se-space-electromagnetics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-holmium-solenoid"
     },
     {
       "id": "se-dynamic-emitter",
@@ -24853,7 +24973,8 @@
       ],
       "producers": [
         "se-space-electromagnetics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-dynamic-emitter"
     },
     {
       "id": "battery",
@@ -24887,7 +25008,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/battery"
     },
     {
       "id": "electronic-circuit",
@@ -24920,7 +25042,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/electronic-circuit"
     },
     {
       "id": "electronic-circuit-wood",
@@ -24992,7 +25115,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/advanced-circuit"
     },
     {
       "id": "processing-unit",
@@ -25028,7 +25152,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/processing-unit"
     },
     {
       "id": "se-processing-unit-holmium",
@@ -25108,7 +25233,8 @@
       ],
       "producers": [
         "se-space-electromagnetics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-quantum-processor"
     },
     {
       "id": "se-naquium-processor",
@@ -25182,7 +25308,8 @@
       ],
       "producers": [
         "se-space-gravimetrics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-naquium-processor"
     },
     {
       "id": "se-naquium-processor-alt",
@@ -25256,7 +25383,8 @@
       ],
       "producers": [
         "se-space-gravimetrics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-naquium-processor-alt"
     },
     {
       "id": "low-density-structure",
@@ -25299,7 +25427,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/low-density-structure"
     },
     {
       "id": "se-low-density-structure-beryllium",
@@ -25626,7 +25755,8 @@
       ],
       "producers": [
         "se-space-material-fabricator"
-      ]
+      ],
+      "iconId": "recipe/se-naquium-cube"
     },
     {
       "id": "se-naquium-tessaract",
@@ -25700,7 +25830,8 @@
       ],
       "producers": [
         "se-space-gravimetrics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-naquium-tessaract"
     },
     {
       "id": "se-naquium-tessaract-alt",
@@ -25774,7 +25905,8 @@
       ],
       "producers": [
         "se-space-gravimetrics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-naquium-tessaract-alt"
     },
     {
       "id": "se-delivery-cannon-pack-low-density-structure",
@@ -25836,7 +25968,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-heavy-girder"
     },
     {
       "id": "se-heavy-bearing",
@@ -25872,7 +26005,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-heavy-bearing"
     },
     {
       "id": "se-heavy-composite",
@@ -25910,7 +26044,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-heavy-composite"
     },
     {
       "id": "se-heavy-assembly",
@@ -25951,7 +26086,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-heavy-assembly"
     },
     {
       "id": "se-aeroframe-pole",
@@ -25984,7 +26120,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-aeroframe-pole"
     },
     {
       "id": "se-aeroframe-scaffold",
@@ -26017,7 +26154,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-aeroframe-scaffold"
     },
     {
       "id": "se-aeroframe-bulkhead",
@@ -26055,7 +26193,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-aeroframe-bulkhead"
     },
     {
       "id": "se-lattice-pressure-vessel",
@@ -26093,7 +26232,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-lattice-pressure-vessel"
     },
     {
       "id": "se-bioscrubber",
@@ -26132,7 +26272,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-bioscrubber"
     },
     {
       "id": "satellite",
@@ -26190,7 +26331,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/satellite"
     },
     {
       "id": "rocket-part",
@@ -26228,7 +26370,8 @@
       ],
       "producers": [
         "rocket-silo"
-      ]
+      ],
+      "iconId": "recipe/rocket-part"
     },
     {
       "id": "rocket-control-unit",
@@ -26271,7 +26414,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/rocket-control-unit"
     },
     {
       "id": "se-cargo-rocket-cargo-pod",
@@ -26314,7 +26458,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-cargo-rocket-cargo-pod"
     },
     {
       "id": "se-cargo-rocket-fuel-tank",
@@ -26357,7 +26502,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-cargo-rocket-fuel-tank"
     },
     {
       "id": "se-cargo-rocket-section",
@@ -26405,7 +26551,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-cargo-rocket-section"
     },
     {
       "id": "se-cargo-rocket-section-beryllium",
@@ -26565,7 +26712,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-probe-rocket"
     },
     {
       "id": "se-space-probe-rocket-deploy",
@@ -26588,7 +26736,8 @@
       ],
       "producers": [
         "se-space-probe-rocket-silo"
-      ]
+      ],
+      "iconId": "recipe/se-space-probe-rocket-deploy"
     },
     {
       "id": "se-delivery-cannon-capsule",
@@ -26631,7 +26780,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-delivery-cannon-capsule"
     },
     {
       "id": "se-delivery-cannon-capsule-iridium",
@@ -26708,7 +26858,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-elevator-cable"
     },
     {
       "id": "se-space-elevator-cable-nano",
@@ -28279,7 +28430,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-arcosphere-collector"
     },
     {
       "id": "se-arcosphere-fracture",
@@ -31407,7 +31559,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/rocket-silo"
     },
     {
       "id": "se-space-probe-rocket-silo",
@@ -31460,7 +31613,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-probe-rocket-silo"
     },
     {
       "id": "se-rocket-launch-pad",
@@ -31523,7 +31677,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-rocket-launch-pad"
     },
     {
       "id": "cargo-landing-pad",
@@ -31566,7 +31721,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/cargo-landing-pad"
     },
     {
       "id": "se-space-capsule",
@@ -31624,7 +31780,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-capsule"
     },
     {
       "id": "se-space-capsule-refurbish",
@@ -31716,7 +31873,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-delivery-cannon"
     },
     {
       "id": "se-delivery-cannon-chest",
@@ -31759,7 +31917,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-delivery-cannon-chest"
     },
     {
       "id": "se-spaceship-console",
@@ -31807,7 +31966,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-spaceship-console"
     },
     {
       "id": "se-spaceship-floor",
@@ -31840,7 +32000,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-spaceship-floor"
     },
     {
       "id": "se-spaceship-wall",
@@ -31883,7 +32044,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-spaceship-wall"
     },
     {
       "id": "se-spaceship-gate",
@@ -31926,7 +32088,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-spaceship-gate"
     },
     {
       "id": "se-spaceship-rocket-engine",
@@ -31974,7 +32137,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-spaceship-rocket-engine"
     },
     {
       "id": "se-spaceship-rocket-booster-tank",
@@ -32027,7 +32191,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-spaceship-rocket-booster-tank"
     },
     {
       "id": "se-spaceship-ion-engine",
@@ -32070,7 +32235,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-spaceship-ion-engine"
     },
     {
       "id": "se-spaceship-ion-booster-tank",
@@ -32118,7 +32284,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-spaceship-ion-booster-tank"
     },
     {
       "id": "se-spaceship-antimatter-engine",
@@ -32176,7 +32343,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-spaceship-antimatter-engine"
     },
     {
       "id": "se-spaceship-antimatter-booster-tank",
@@ -32234,7 +32402,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-spaceship-antimatter-booster-tank"
     },
     {
       "id": "se-spaceship-clamp",
@@ -32277,7 +32446,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-spaceship-clamp"
     },
     {
       "id": "se-space-elevator",
@@ -32330,7 +32500,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-space-elevator"
     },
     {
       "id": "automation-science-pack",
@@ -32363,7 +32534,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/automation-science-pack"
     },
     {
       "id": "logistic-science-pack",
@@ -32395,7 +32567,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/logistic-science-pack"
     },
     {
       "id": "military-science-pack",
@@ -32432,7 +32605,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/military-science-pack"
     },
     {
       "id": "chemical-science-pack",
@@ -32470,7 +32644,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/chemical-science-pack"
     },
     {
       "id": "se-rocket-science-pack",
@@ -35040,7 +35215,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-astronomic-science-pack-1"
     },
     {
       "id": "se-astronomic-science-pack-2",
@@ -35098,7 +35274,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-astronomic-science-pack-2"
     },
     {
       "id": "se-astronomic-science-pack-3",
@@ -35156,7 +35333,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-astronomic-science-pack-3"
     },
     {
       "id": "se-astronomic-science-pack-4",
@@ -35214,7 +35392,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-astronomic-science-pack-4"
     },
     {
       "id": "se-biological-catalogue-1",
@@ -36399,7 +36578,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-biological-science-pack-1"
     },
     {
       "id": "se-biological-science-pack-2",
@@ -36457,7 +36637,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-biological-science-pack-2"
     },
     {
       "id": "se-biological-science-pack-3",
@@ -36515,7 +36696,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-biological-science-pack-3"
     },
     {
       "id": "se-biological-science-pack-4",
@@ -36578,7 +36760,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-biological-science-pack-4"
     },
     {
       "id": "se-energy-catalogue-1",
@@ -37769,7 +37952,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-energy-science-pack-1"
     },
     {
       "id": "se-energy-science-pack-2",
@@ -37827,7 +38011,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-energy-science-pack-2"
     },
     {
       "id": "se-energy-science-pack-3",
@@ -37885,7 +38070,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-energy-science-pack-3"
     },
     {
       "id": "se-energy-science-pack-4",
@@ -37943,7 +38129,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-energy-science-pack-4"
     },
     {
       "id": "se-material-catalogue-1",
@@ -39279,7 +39466,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-material-science-pack-1"
     },
     {
       "id": "se-material-science-pack-2",
@@ -39337,7 +39525,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-material-science-pack-2"
     },
     {
       "id": "se-material-science-pack-3",
@@ -39395,7 +39584,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-material-science-pack-3"
     },
     {
       "id": "se-material-science-pack-4",
@@ -39453,7 +39643,8 @@
       ],
       "producers": [
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-material-science-pack-4"
     },
     {
       "id": "se-deep-catalogue-1",
@@ -39507,7 +39698,8 @@
       "producers": [
         "se-space-supercomputer-3",
         "se-space-supercomputer-4"
-      ]
+      ],
+      "iconId": "recipe/se-deep-catalogue-1"
     },
     {
       "id": "se-deep-catalogue-2",
@@ -39561,7 +39753,8 @@
       "producers": [
         "se-space-supercomputer-3",
         "se-space-supercomputer-4"
-      ]
+      ],
+      "iconId": "recipe/se-deep-catalogue-2"
     },
     {
       "id": "se-deep-catalogue-3",
@@ -39615,7 +39808,8 @@
       "producers": [
         "se-space-supercomputer-3",
         "se-space-supercomputer-4"
-      ]
+      ],
+      "iconId": "recipe/se-deep-catalogue-3"
     },
     {
       "id": "se-deep-catalogue-4",
@@ -39668,7 +39862,8 @@
       ],
       "producers": [
         "se-space-supercomputer-4"
-      ]
+      ],
+      "iconId": "recipe/se-deep-catalogue-4"
     },
     {
       "id": "se-nano-engineering-data",
@@ -40635,7 +40830,8 @@
       ],
       "producers": [
         "se-nexus"
-      ]
+      ],
+      "iconId": "recipe/se-interstellar-data"
     },
     {
       "id": "se-teleportation-data",
@@ -40816,7 +41012,8 @@
       ],
       "producers": [
         "se-space-supercomputer-4"
-      ]
+      ],
+      "iconId": "recipe/se-rhga-data"
     },
     {
       "id": "se-deep-space-science-pack-1",
@@ -41290,7 +41487,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/repair-pack"
     },
     {
       "id": "submachine-gun",
@@ -41328,7 +41526,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/submachine-gun"
     },
     {
       "id": "shotgun",
@@ -41371,7 +41570,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/shotgun"
     },
     {
       "id": "combat-shotgun",
@@ -41414,7 +41614,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/combat-shotgun"
     },
     {
       "id": "se-railgun",
@@ -41447,7 +41648,8 @@
       ],
       "producers": [
         "se-space-electromagnetics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-railgun"
     },
     {
       "id": "rocket-launcher",
@@ -41485,7 +41687,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/rocket-launcher"
     },
     {
       "id": "flamethrower",
@@ -41518,7 +41721,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/flamethrower"
     },
     {
       "id": "se-biogun",
@@ -41556,7 +41760,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-biogun"
     },
     {
       "id": "se-cryogun",
@@ -41589,7 +41794,8 @@
       ],
       "producers": [
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-cryogun"
     },
     {
       "id": "grappling-gun",
@@ -41627,7 +41833,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/grappling-gun"
     },
     {
       "id": "se-tesla-gun",
@@ -41665,7 +41872,8 @@
       ],
       "producers": [
         "se-space-electromagnetics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-tesla-gun"
     },
     {
       "id": "firearm-magazine",
@@ -41693,7 +41901,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/firearm-magazine"
     },
     {
       "id": "piercing-rounds-magazine",
@@ -41731,7 +41940,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/piercing-rounds-magazine"
     },
     {
       "id": "uranium-rounds-magazine",
@@ -41764,7 +41974,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/uranium-rounds-magazine"
     },
     {
       "id": "shotgun-shell",
@@ -41797,7 +42008,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/shotgun-shell"
     },
     {
       "id": "piercing-shotgun-shell",
@@ -41835,7 +42047,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/piercing-shotgun-shell"
     },
     {
       "id": "se-railgun-ammo",
@@ -41863,7 +42076,8 @@
       ],
       "producers": [
         "se-space-electromagnetics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-railgun-ammo"
     },
     {
       "id": "cannon-shell",
@@ -41901,7 +42115,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/cannon-shell"
     },
     {
       "id": "explosive-cannon-shell",
@@ -41939,7 +42154,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/explosive-cannon-shell"
     },
     {
       "id": "mortar-bomb",
@@ -41977,7 +42193,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/mortar-bomb"
     },
     {
       "id": "mortar-cluster-bomb",
@@ -42015,7 +42232,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/mortar-cluster-bomb"
     },
     {
       "id": "uranium-cannon-shell",
@@ -42048,7 +42266,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/uranium-cannon-shell"
     },
     {
       "id": "explosive-uranium-cannon-shell",
@@ -42081,7 +42300,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/explosive-uranium-cannon-shell"
     },
     {
       "id": "artillery-shell",
@@ -42119,7 +42339,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/artillery-shell"
     },
     {
       "id": "rocket",
@@ -42152,7 +42373,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/rocket"
     },
     {
       "id": "explosive-rocket",
@@ -42185,7 +42407,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/explosive-rocket"
     },
     {
       "id": "atomic-bomb",
@@ -42228,7 +42451,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/atomic-bomb"
     },
     {
       "id": "se-plague-bomb",
@@ -42271,7 +42495,8 @@
       ],
       "producers": [
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-plague-bomb"
     },
     {
       "id": "se-delivery-cannon-weapon-pack-se-iridium-piledriver",
@@ -42398,7 +42623,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/flamethrower-ammo"
     },
     {
       "id": "grappling-gun-ammo",
@@ -42431,7 +42657,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/grappling-gun-ammo"
     },
     {
       "id": "se-bloater-ammo",
@@ -42465,7 +42692,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-bloater-ammo"
     },
     {
       "id": "se-pheromone-ammo",
@@ -42499,7 +42727,8 @@
       "producers": [
         "chemical-plant",
         "se-space-biochemical-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-pheromone-ammo"
     },
     {
       "id": "se-cryogun-ammo",
@@ -42532,7 +42761,8 @@
       ],
       "producers": [
         "se-space-thermodynamics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-cryogun-ammo"
     },
     {
       "id": "se-tesla-ammo",
@@ -42560,7 +42790,8 @@
       ],
       "producers": [
         "se-space-electromagnetics-laboratory"
-      ]
+      ],
+      "iconId": "recipe/se-tesla-ammo"
     },
     {
       "id": "grenade",
@@ -42593,7 +42824,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/grenade"
     },
     {
       "id": "cluster-grenade",
@@ -42631,7 +42863,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/cluster-grenade"
     },
     {
       "id": "poison-capsule",
@@ -42669,7 +42902,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/poison-capsule"
     },
     {
       "id": "slowdown-capsule",
@@ -42707,7 +42941,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/slowdown-capsule"
     },
     {
       "id": "cliff-explosives",
@@ -42745,7 +42980,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/cliff-explosives"
     },
     {
       "id": "defender-capsule",
@@ -42783,7 +43019,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/defender-capsule"
     },
     {
       "id": "distractor-capsule",
@@ -42816,7 +43053,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/distractor-capsule"
     },
     {
       "id": "destroyer-capsule",
@@ -42849,7 +43087,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/destroyer-capsule"
     },
     {
       "id": "se-capsule-small-biter",
@@ -42882,7 +43121,8 @@
       ],
       "producers": [
         "se-space-growth-facility"
-      ]
+      ],
+      "iconId": "recipe/se-capsule-small-biter"
     },
     {
       "id": "se-capsule-medium-biter",
@@ -42915,7 +43155,8 @@
       ],
       "producers": [
         "se-space-growth-facility"
-      ]
+      ],
+      "iconId": "recipe/se-capsule-medium-biter"
     },
     {
       "id": "se-capsule-big-biter",
@@ -42948,7 +43189,8 @@
       ],
       "producers": [
         "se-space-growth-facility"
-      ]
+      ],
+      "iconId": "recipe/se-capsule-big-biter"
     },
     {
       "id": "se-capsule-behemoth-biter",
@@ -42981,7 +43223,8 @@
       ],
       "producers": [
         "se-space-growth-facility"
-      ]
+      ],
+      "iconId": "recipe/se-capsule-behemoth-biter"
     },
     {
       "id": "se-capsule-small-spitter",
@@ -43014,7 +43257,8 @@
       ],
       "producers": [
         "se-space-growth-facility"
-      ]
+      ],
+      "iconId": "recipe/se-capsule-small-spitter"
     },
     {
       "id": "se-capsule-medium-spitter",
@@ -43047,7 +43291,8 @@
       ],
       "producers": [
         "se-space-growth-facility"
-      ]
+      ],
+      "iconId": "recipe/se-capsule-medium-spitter"
     },
     {
       "id": "se-capsule-big-spitter",
@@ -43080,7 +43325,8 @@
       ],
       "producers": [
         "se-space-growth-facility"
-      ]
+      ],
+      "iconId": "recipe/se-capsule-big-spitter"
     },
     {
       "id": "se-capsule-behemoth-spitter",
@@ -43113,7 +43359,8 @@
       ],
       "producers": [
         "se-space-growth-facility"
-      ]
+      ],
+      "iconId": "recipe/se-capsule-behemoth-spitter"
     },
     {
       "id": "light-armor",
@@ -43141,7 +43388,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/light-armor"
     },
     {
       "id": "heavy-armor",
@@ -43179,7 +43427,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/heavy-armor"
     },
     {
       "id": "modular-armor",
@@ -43217,7 +43466,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/modular-armor"
     },
     {
       "id": "power-armor",
@@ -43260,7 +43510,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/power-armor"
     },
     {
       "id": "power-armor-mk2",
@@ -43313,7 +43564,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/power-armor-mk2"
     },
     {
       "id": "se-thruster-suit",
@@ -43366,7 +43618,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-thruster-suit"
     },
     {
       "id": "se-thruster-suit-2",
@@ -43414,7 +43667,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-thruster-suit-2"
     },
     {
       "id": "se-thruster-suit-3",
@@ -43482,7 +43736,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-thruster-suit-3"
     },
     {
       "id": "se-thruster-suit-4",
@@ -43555,7 +43810,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-thruster-suit-4"
     },
     {
       "id": "equipment-gantry-insert",
@@ -43621,7 +43877,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/solar-panel-equipment"
     },
     {
       "id": "se-rtg-equipment",
@@ -43659,7 +43916,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-rtg-equipment"
     },
     {
       "id": "fission-reactor-equipment",
@@ -43707,7 +43965,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/fission-reactor-equipment"
     },
     {
       "id": "se-fusion-reactor-equipment",
@@ -43755,7 +44014,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-fusion-reactor-equipment"
     },
     {
       "id": "se-antimatter-reactor-equipment",
@@ -43803,7 +44063,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-antimatter-reactor-equipment"
     },
     {
       "id": "battery-equipment",
@@ -43836,7 +44097,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/battery-equipment"
     },
     {
       "id": "battery-mk2-equipment",
@@ -43874,7 +44136,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/battery-mk2-equipment"
     },
     {
       "id": "energy-shield-equipment",
@@ -43917,7 +44180,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/energy-shield-equipment"
     },
     {
       "id": "energy-shield-mk2-equipment",
@@ -43970,7 +44234,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/energy-shield-mk2-equipment"
     },
     {
       "id": "energy-shield-mk3-equipment",
@@ -44008,7 +44273,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/energy-shield-mk3-equipment"
     },
     {
       "id": "energy-shield-mk4-equipment",
@@ -44046,7 +44312,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/energy-shield-mk4-equipment"
     },
     {
       "id": "energy-shield-mk5-equipment",
@@ -44089,7 +44356,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/energy-shield-mk5-equipment"
     },
     {
       "id": "energy-shield-mk6-equipment",
@@ -44132,7 +44400,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/energy-shield-mk6-equipment"
     },
     {
       "id": "jetpack-1",
@@ -44170,7 +44439,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/jetpack-1"
     },
     {
       "id": "jetpack-2",
@@ -44213,7 +44483,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/jetpack-2"
     },
     {
       "id": "jetpack-3",
@@ -44256,7 +44527,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/jetpack-3"
     },
     {
       "id": "jetpack-4",
@@ -44299,7 +44571,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/jetpack-4"
     },
     {
       "id": "se-adaptive-armour-equipment-1",
@@ -44337,7 +44610,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-adaptive-armour-equipment-1"
     },
     {
       "id": "se-adaptive-armour-equipment-2",
@@ -44380,7 +44654,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-adaptive-armour-equipment-2"
     },
     {
       "id": "se-adaptive-armour-equipment-3",
@@ -44423,7 +44698,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-adaptive-armour-equipment-3"
     },
     {
       "id": "se-adaptive-armour-equipment-4",
@@ -44466,7 +44742,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-adaptive-armour-equipment-4"
     },
     {
       "id": "se-adaptive-armour-equipment-5",
@@ -44509,7 +44786,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-adaptive-armour-equipment-5"
     },
     {
       "id": "belt-immunity-equipment",
@@ -44542,7 +44820,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/belt-immunity-equipment"
     },
     {
       "id": "exoskeleton-equipment",
@@ -44580,7 +44859,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/exoskeleton-equipment"
     },
     {
       "id": "se-lifesupport-equipment-1",
@@ -44618,7 +44898,8 @@
       ],
       "producers": [
         "se-lifesupport-facility"
-      ]
+      ],
+      "iconId": "recipe/se-lifesupport-equipment-1"
     },
     {
       "id": "se-lifesupport-equipment-2",
@@ -44656,7 +44937,8 @@
       ],
       "producers": [
         "se-lifesupport-facility"
-      ]
+      ],
+      "iconId": "recipe/se-lifesupport-equipment-2"
     },
     {
       "id": "se-lifesupport-equipment-3",
@@ -44689,7 +44971,8 @@
       ],
       "producers": [
         "se-lifesupport-facility"
-      ]
+      ],
+      "iconId": "recipe/se-lifesupport-equipment-3"
     },
     {
       "id": "se-lifesupport-equipment-4",
@@ -44727,7 +45010,8 @@
       ],
       "producers": [
         "se-lifesupport-facility"
-      ]
+      ],
+      "iconId": "recipe/se-lifesupport-equipment-4"
     },
     {
       "id": "personal-roboport-equipment",
@@ -44770,7 +45054,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/personal-roboport-equipment"
     },
     {
       "id": "personal-roboport-mk2-equipment",
@@ -44808,7 +45093,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/personal-roboport-mk2-equipment"
     },
     {
       "id": "night-vision-equipment",
@@ -44841,7 +45127,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/night-vision-equipment"
     },
     {
       "id": "personal-laser-defense-equipment",
@@ -44884,7 +45171,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/personal-laser-defense-equipment"
     },
     {
       "id": "discharge-defense-equipment",
@@ -44922,7 +45210,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/discharge-defense-equipment"
     },
     {
       "id": "stone-wall",
@@ -44950,7 +45239,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/stone-wall"
     },
     {
       "id": "gate",
@@ -44993,7 +45283,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/gate"
     },
     {
       "id": "concrete-wall",
@@ -45026,7 +45317,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/concrete-wall"
     },
     {
       "id": "concrete-gate",
@@ -45064,7 +45356,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/concrete-gate"
     },
     {
       "id": "se-delivery-cannon-artillery-targeter-se-iridium-piledriver",
@@ -45097,7 +45390,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-delivery-cannon-artillery-targeter-se-iridium-piledriver"
     },
     {
       "id": "se-delivery-cannon-artillery-targeter-atomic-bomb",
@@ -45130,7 +45424,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-delivery-cannon-artillery-targeter-atomic-bomb"
     },
     {
       "id": "se-delivery-cannon-artillery-targeter-se-plague-bomb",
@@ -45163,7 +45458,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-delivery-cannon-artillery-targeter-se-plague-bomb"
     },
     {
       "id": "steel-wall",
@@ -45196,7 +45492,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/steel-wall"
     },
     {
       "id": "steel-gate",
@@ -45234,7 +45531,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/steel-gate"
     },
     {
       "id": "radar",
@@ -45277,7 +45575,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/radar"
     },
     {
       "id": "land-mine",
@@ -45310,7 +45609,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/land-mine"
     },
     {
       "id": "shield-projector",
@@ -45358,7 +45658,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/shield-projector"
     },
     {
       "id": "gun-turret",
@@ -45396,7 +45697,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/gun-turret"
     },
     {
       "id": "laser-turret",
@@ -45444,7 +45746,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/laser-turret"
     },
     {
       "id": "flamethrower-turret",
@@ -45487,7 +45790,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/flamethrower-turret"
     },
     {
       "id": "artillery-turret",
@@ -45530,7 +45834,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/artillery-turret"
     },
     {
       "id": "se-meteor-point-defence",
@@ -45578,7 +45883,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-meteor-point-defence"
     },
     {
       "id": "se-meteor-point-defence-ammo",
@@ -45611,7 +45917,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-meteor-point-defence-ammo"
     },
     {
       "id": "se-meteor-defence",
@@ -45664,7 +45971,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-meteor-defence"
     },
     {
       "id": "se-meteor-defence-ammo",
@@ -45702,7 +46010,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-meteor-defence-ammo"
     },
     {
       "id": "se-energy-beam-defence",
@@ -45755,7 +46064,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-energy-beam-defence"
     },
     {
       "id": "se-delivery-cannon-weapon",
@@ -45808,7 +46118,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
+      ],
+      "iconId": "recipe/se-delivery-cannon-weapon"
     },
     {
       "id": "se-delivery-cannon-weapon-capsule",
@@ -45856,107 +46167,8 @@
         "assembling-machine-3",
         "se-space-assembling-machine",
         "se-space-manufactory"
-      ]
-    },
-    {
-      "id": "parameter-0",
-      "label": "Parameter 0",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-0"
-    },
-    {
-      "id": "parameter-1",
-      "label": "Parameter 1",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-1"
-    },
-    {
-      "id": "parameter-2",
-      "label": "Parameter 2",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-2"
-    },
-    {
-      "id": "parameter-3",
-      "label": "Parameter 3",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-3"
-    },
-    {
-      "id": "parameter-4",
-      "label": "Parameter 4",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-4"
-    },
-    {
-      "id": "parameter-5",
-      "label": "Parameter 5",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-5"
-    },
-    {
-      "id": "parameter-6",
-      "label": "Parameter 6",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-6"
-    },
-    {
-      "id": "parameter-7",
-      "label": "Parameter 7",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-7"
-    },
-    {
-      "id": "parameter-8",
-      "label": "Parameter 8",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-8"
-    },
-    {
-      "id": "parameter-9",
-      "label": "Parameter 9",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-9"
+      ],
+      "iconId": "recipe/se-delivery-cannon-weapon-capsule"
     }
   ],
   "technologies": [

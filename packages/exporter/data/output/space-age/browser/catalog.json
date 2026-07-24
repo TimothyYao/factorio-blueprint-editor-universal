@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generated": "2026-07-24T15:30:35Z",
+  "generated": "2026-07-24T17:45:48Z",
   "pack": {
     "id": "space-age",
     "label": "Space Age (2.0)",
@@ -2513,86 +2513,6 @@
       "iconId": "item/railgun-turret"
     },
     {
-      "id": "parameter-0",
-      "label": "Parameter 0",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-0"
-    },
-    {
-      "id": "parameter-1",
-      "label": "Parameter 1",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-1"
-    },
-    {
-      "id": "parameter-2",
-      "label": "Parameter 2",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-2"
-    },
-    {
-      "id": "parameter-3",
-      "label": "Parameter 3",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-3"
-    },
-    {
-      "id": "parameter-4",
-      "label": "Parameter 4",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-4"
-    },
-    {
-      "id": "parameter-5",
-      "label": "Parameter 5",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-5"
-    },
-    {
-      "id": "parameter-6",
-      "label": "Parameter 6",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-6"
-    },
-    {
-      "id": "parameter-7",
-      "label": "Parameter 7",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-7"
-    },
-    {
-      "id": "parameter-8",
-      "label": "Parameter 8",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-8"
-    },
-    {
-      "id": "parameter-9",
-      "label": "Parameter 9",
-      "stackSize": 1,
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "item/parameter-9"
-    },
-    {
       "id": "copper-wire",
       "label": "Copper wire",
       "description": "Used to manually connect and disconnect electric poles and power switches with Left-click.",
@@ -2801,76 +2721,6 @@
       "group": "fluids",
       "subgroup": "fluid",
       "iconId": "fluid/fusion-plasma"
-    },
-    {
-      "id": "parameter-0",
-      "label": "Parameter 0",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-0"
-    },
-    {
-      "id": "parameter-1",
-      "label": "Parameter 1",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-1"
-    },
-    {
-      "id": "parameter-2",
-      "label": "Parameter 2",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-2"
-    },
-    {
-      "id": "parameter-3",
-      "label": "Parameter 3",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-3"
-    },
-    {
-      "id": "parameter-4",
-      "label": "Parameter 4",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-4"
-    },
-    {
-      "id": "parameter-5",
-      "label": "Parameter 5",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-5"
-    },
-    {
-      "id": "parameter-6",
-      "label": "Parameter 6",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-6"
-    },
-    {
-      "id": "parameter-7",
-      "label": "Parameter 7",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-7"
-    },
-    {
-      "id": "parameter-8",
-      "label": "Parameter 8",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-8"
-    },
-    {
-      "id": "parameter-9",
-      "label": "Parameter 9",
-      "group": "other",
-      "subgroup": "parameters",
-      "iconId": "fluid/parameter-9"
     }
   ],
   "recipes": [
@@ -2897,7 +2747,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/wooden-chest"
     },
     {
       "id": "iron-chest",
@@ -2922,7 +2773,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/iron-chest"
     },
     {
       "id": "steel-chest",
@@ -2947,7 +2799,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/steel-chest"
     },
     {
       "id": "storage-tank",
@@ -2977,7 +2830,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/storage-tank"
     },
     {
       "id": "transport-belt",
@@ -3008,7 +2862,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/transport-belt"
     },
     {
       "id": "fast-transport-belt",
@@ -3039,7 +2894,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/fast-transport-belt"
     },
     {
       "id": "express-transport-belt",
@@ -3074,7 +2930,8 @@
         "foundry",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/express-transport-belt"
     },
     {
       "id": "turbo-transport-belt",
@@ -3107,7 +2964,8 @@
       ],
       "producers": [
         "foundry"
-      ]
+      ],
+      "iconId": "recipe/turbo-transport-belt"
     },
     {
       "id": "underground-belt",
@@ -3138,7 +2996,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/underground-belt"
     },
     {
       "id": "fast-underground-belt",
@@ -3169,7 +3028,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/fast-underground-belt"
     },
     {
       "id": "express-underground-belt",
@@ -3204,7 +3064,8 @@
         "foundry",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/express-underground-belt"
     },
     {
       "id": "turbo-underground-belt",
@@ -3237,7 +3098,8 @@
       ],
       "producers": [
         "foundry"
-      ]
+      ],
+      "iconId": "recipe/turbo-underground-belt"
     },
     {
       "id": "splitter",
@@ -3273,7 +3135,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/splitter"
     },
     {
       "id": "fast-splitter",
@@ -3309,7 +3172,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/fast-splitter"
     },
     {
       "id": "express-splitter",
@@ -3349,7 +3213,8 @@
         "foundry",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/express-splitter"
     },
     {
       "id": "turbo-splitter",
@@ -3387,7 +3252,8 @@
       ],
       "producers": [
         "foundry"
-      ]
+      ],
+      "iconId": "recipe/turbo-splitter"
     },
     {
       "id": "burner-inserter",
@@ -3417,7 +3283,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/burner-inserter"
     },
     {
       "id": "inserter",
@@ -3452,7 +3319,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/inserter"
     },
     {
       "id": "long-handed-inserter",
@@ -3487,7 +3355,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/long-handed-inserter"
     },
     {
       "id": "fast-inserter",
@@ -3522,7 +3391,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/fast-inserter"
     },
     {
       "id": "bulk-inserter",
@@ -3562,7 +3432,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/bulk-inserter"
     },
     {
       "id": "stack-inserter",
@@ -3602,7 +3473,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/stack-inserter"
     },
     {
       "id": "small-electric-pole",
@@ -3633,7 +3505,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/small-electric-pole"
     },
     {
       "id": "medium-electric-pole",
@@ -3669,7 +3542,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/medium-electric-pole"
     },
     {
       "id": "big-electric-pole",
@@ -3705,7 +3579,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/big-electric-pole"
     },
     {
       "id": "substation",
@@ -3741,7 +3616,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/substation"
     },
     {
       "id": "pipe",
@@ -3766,7 +3642,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/pipe"
     },
     {
       "id": "pipe-to-ground",
@@ -3796,7 +3673,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/pipe-to-ground"
     },
     {
       "id": "casting-pipe",
@@ -3884,7 +3762,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/pump"
     },
     {
       "id": "rail",
@@ -3919,7 +3798,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/rail"
     },
     {
       "id": "rail-ramp",
@@ -3954,7 +3834,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/rail-ramp"
     },
     {
       "id": "rail-support",
@@ -3984,7 +3865,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/rail-support"
     },
     {
       "id": "train-stop",
@@ -4024,7 +3906,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/train-stop"
     },
     {
       "id": "rail-signal",
@@ -4054,7 +3937,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/rail-signal"
     },
     {
       "id": "rail-chain-signal",
@@ -4084,7 +3968,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/rail-chain-signal"
     },
     {
       "id": "locomotive",
@@ -4119,7 +4004,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/locomotive"
     },
     {
       "id": "cargo-wagon",
@@ -4154,7 +4040,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/cargo-wagon"
     },
     {
       "id": "fluid-wagon",
@@ -4194,7 +4081,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/fluid-wagon"
     },
     {
       "id": "artillery-wagon",
@@ -4239,7 +4127,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/artillery-wagon"
     },
     {
       "id": "car",
@@ -4274,7 +4163,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/car"
     },
     {
       "id": "tank",
@@ -4314,7 +4204,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/tank"
     },
     {
       "id": "spidertron",
@@ -4359,7 +4250,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/spidertron"
     },
     {
       "id": "logistic-robot",
@@ -4389,7 +4281,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/logistic-robot"
     },
     {
       "id": "construction-robot",
@@ -4419,7 +4312,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/construction-robot"
     },
     {
       "id": "active-provider-chest",
@@ -4454,7 +4348,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/active-provider-chest"
     },
     {
       "id": "passive-provider-chest",
@@ -4489,7 +4384,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/passive-provider-chest"
     },
     {
       "id": "storage-chest",
@@ -4524,7 +4420,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/storage-chest"
     },
     {
       "id": "buffer-chest",
@@ -4559,7 +4456,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/buffer-chest"
     },
     {
       "id": "requester-chest",
@@ -4594,7 +4492,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/requester-chest"
     },
     {
       "id": "roboport",
@@ -4629,7 +4528,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/roboport"
     },
     {
       "id": "small-lamp",
@@ -4664,7 +4564,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/small-lamp"
     },
     {
       "id": "arithmetic-combinator",
@@ -4694,7 +4595,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/arithmetic-combinator"
     },
     {
       "id": "decider-combinator",
@@ -4724,7 +4626,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/decider-combinator"
     },
     {
       "id": "selector-combinator",
@@ -4754,7 +4657,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/selector-combinator"
     },
     {
       "id": "constant-combinator",
@@ -4784,7 +4688,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/constant-combinator"
     },
     {
       "id": "power-switch",
@@ -4819,7 +4724,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/power-switch"
     },
     {
       "id": "programmable-speaker",
@@ -4859,7 +4765,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/programmable-speaker"
     },
     {
       "id": "display-panel",
@@ -4889,7 +4796,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/display-panel"
     },
     {
       "id": "stone-brick",
@@ -4914,7 +4822,8 @@
         "stone-furnace",
         "steel-furnace",
         "electric-furnace"
-      ]
+      ],
+      "iconId": "recipe/stone-brick"
     },
     {
       "id": "concrete",
@@ -4948,7 +4857,8 @@
       "producers": [
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/concrete"
     },
     {
       "id": "hazard-concrete",
@@ -4973,7 +4883,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/hazard-concrete"
     },
     {
       "id": "refined-concrete",
@@ -5012,7 +4923,8 @@
       "producers": [
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/refined-concrete"
     },
     {
       "id": "refined-hazard-concrete",
@@ -5037,7 +4949,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/refined-hazard-concrete"
     },
     {
       "id": "landfill",
@@ -5062,7 +4975,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/landfill"
     },
     {
       "id": "artificial-yumako-soil",
@@ -5253,7 +5167,8 @@
       "producers": [
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/ice-platform"
     },
     {
       "id": "foundation",
@@ -5297,7 +5212,8 @@
       "producers": [
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/foundation"
     },
     {
       "id": "cliff-explosives",
@@ -5337,7 +5253,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/cliff-explosives"
     },
     {
       "id": "repair-pack",
@@ -5367,7 +5284,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/repair-pack"
     },
     {
       "id": "boiler",
@@ -5397,7 +5315,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/boiler"
     },
     {
       "id": "steam-engine",
@@ -5432,7 +5351,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/steam-engine"
     },
     {
       "id": "solar-panel",
@@ -5468,7 +5388,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/solar-panel"
     },
     {
       "id": "accumulator",
@@ -5499,7 +5420,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/accumulator"
     },
     {
       "id": "nuclear-reactor",
@@ -5539,7 +5461,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/nuclear-reactor"
     },
     {
       "id": "heat-pipe",
@@ -5569,7 +5492,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/heat-pipe"
     },
     {
       "id": "heat-exchanger",
@@ -5604,7 +5528,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/heat-exchanger"
     },
     {
       "id": "steam-turbine",
@@ -5639,7 +5564,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/steam-turbine"
     },
     {
       "id": "fusion-reactor",
@@ -5672,7 +5598,8 @@
       ],
       "producers": [
         "cryogenic-plant"
-      ]
+      ],
+      "iconId": "recipe/fusion-reactor"
     },
     {
       "id": "fusion-generator",
@@ -5705,7 +5632,8 @@
       ],
       "producers": [
         "cryogenic-plant"
-      ]
+      ],
+      "iconId": "recipe/fusion-generator"
     },
     {
       "id": "burner-mining-drill",
@@ -5740,7 +5668,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/burner-mining-drill"
     },
     {
       "id": "electric-mining-drill",
@@ -5775,7 +5704,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/electric-mining-drill"
     },
     {
       "id": "big-mining-drill",
@@ -5818,7 +5748,8 @@
       ],
       "producers": [
         "foundry"
-      ]
+      ],
+      "iconId": "recipe/big-mining-drill"
     },
     {
       "id": "offshore-pump",
@@ -5848,7 +5779,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/offshore-pump"
     },
     {
       "id": "pumpjack",
@@ -5888,7 +5820,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/pumpjack"
     },
     {
       "id": "stone-furnace",
@@ -5913,7 +5846,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/stone-furnace"
     },
     {
       "id": "steel-furnace",
@@ -5943,7 +5877,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/steel-furnace"
     },
     {
       "id": "electric-furnace",
@@ -5978,7 +5913,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/electric-furnace"
     },
     {
       "id": "foundry",
@@ -6023,7 +5959,8 @@
         "foundry",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/foundry"
     },
     {
       "id": "recycler",
@@ -6063,7 +6000,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/recycler"
     },
     {
       "id": "agricultural-tower",
@@ -6103,7 +6041,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/agricultural-tower"
     },
     {
       "id": "biochamber",
@@ -6148,7 +6087,8 @@
         "biochamber",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/biochamber"
     },
     {
       "id": "captive-biter-spawner",
@@ -6186,7 +6126,8 @@
       ],
       "producers": [
         "cryogenic-plant"
-      ]
+      ],
+      "iconId": "recipe/captive-biter-spawner"
     },
     {
       "id": "assembling-machine-1",
@@ -6221,7 +6162,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/assembling-machine-1"
     },
     {
       "id": "assembling-machine-2",
@@ -6261,7 +6203,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/assembling-machine-2"
     },
     {
       "id": "assembling-machine-3",
@@ -6291,7 +6234,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/assembling-machine-3"
     },
     {
       "id": "oil-refinery",
@@ -6336,7 +6280,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/oil-refinery"
     },
     {
       "id": "chemical-plant",
@@ -6376,7 +6321,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/chemical-plant"
     },
     {
       "id": "centrifuge",
@@ -6416,7 +6362,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/centrifuge"
     },
     {
       "id": "electromagnetic-plant",
@@ -6456,7 +6403,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/electromagnetic-plant"
     },
     {
       "id": "cryogenic-plant",
@@ -6496,7 +6444,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "cryogenic-plant"
-      ]
+      ],
+      "iconId": "recipe/cryogenic-plant"
     },
     {
       "id": "lab",
@@ -6531,7 +6480,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/lab"
     },
     {
       "id": "biolab",
@@ -6576,7 +6526,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/biolab"
     },
     {
       "id": "lightning-rod",
@@ -6612,7 +6563,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/lightning-rod"
     },
     {
       "id": "lightning-collector",
@@ -6650,7 +6602,8 @@
       ],
       "producers": [
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/lightning-collector"
     },
     {
       "id": "heating-tower",
@@ -6685,7 +6638,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/heating-tower"
     },
     {
       "id": "beacon",
@@ -6726,7 +6680,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/beacon"
     },
     {
       "id": "speed-module",
@@ -6757,7 +6712,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/speed-module"
     },
     {
       "id": "speed-module-2",
@@ -6793,7 +6749,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/speed-module-2"
     },
     {
       "id": "speed-module-3",
@@ -6834,7 +6791,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/speed-module-3"
     },
     {
       "id": "efficiency-module",
@@ -6865,7 +6823,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/efficiency-module"
     },
     {
       "id": "efficiency-module-2",
@@ -6901,7 +6860,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/efficiency-module-2"
     },
     {
       "id": "efficiency-module-3",
@@ -6942,7 +6902,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/efficiency-module-3"
     },
     {
       "id": "productivity-module",
@@ -6973,7 +6934,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/productivity-module"
     },
     {
       "id": "productivity-module-2",
@@ -7009,7 +6971,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/productivity-module-2"
     },
     {
       "id": "productivity-module-3",
@@ -7050,7 +7013,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/productivity-module-3"
     },
     {
       "id": "quality-module",
@@ -7081,7 +7045,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/quality-module"
     },
     {
       "id": "quality-module-2",
@@ -7117,7 +7082,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/quality-module-2"
     },
     {
       "id": "quality-module-3",
@@ -7158,7 +7124,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/quality-module-3"
     },
     {
       "id": "basic-oil-processing",
@@ -7454,7 +7421,8 @@
       ],
       "producers": [
         "chemical-plant"
-      ]
+      ],
+      "iconId": "recipe/lubricant"
     },
     {
       "id": "sulfuric-acid",
@@ -7488,7 +7456,8 @@
       "producers": [
         "chemical-plant",
         "cryogenic-plant"
-      ]
+      ],
+      "iconId": "recipe/sulfuric-acid"
     },
     {
       "id": "acid-neutralisation",
@@ -7592,7 +7561,8 @@
         "stone-furnace",
         "steel-furnace",
         "electric-furnace"
-      ]
+      ],
+      "iconId": "recipe/iron-plate"
     },
     {
       "id": "copper-plate",
@@ -7617,7 +7587,8 @@
         "stone-furnace",
         "steel-furnace",
         "electric-furnace"
-      ]
+      ],
+      "iconId": "recipe/copper-plate"
     },
     {
       "id": "steel-plate",
@@ -7642,7 +7613,8 @@
         "stone-furnace",
         "steel-furnace",
         "electric-furnace"
-      ]
+      ],
+      "iconId": "recipe/steel-plate"
     },
     {
       "id": "plastic-bar",
@@ -7671,7 +7643,8 @@
       "producers": [
         "chemical-plant",
         "cryogenic-plant"
-      ]
+      ],
+      "iconId": "recipe/plastic-bar"
     },
     {
       "id": "sulfur",
@@ -7700,7 +7673,8 @@
       "producers": [
         "chemical-plant",
         "cryogenic-plant"
-      ]
+      ],
+      "iconId": "recipe/sulfur"
     },
     {
       "id": "battery",
@@ -7734,7 +7708,8 @@
       "producers": [
         "chemical-plant",
         "cryogenic-plant"
-      ]
+      ],
+      "iconId": "recipe/battery"
     },
     {
       "id": "explosives",
@@ -7768,7 +7743,8 @@
       "producers": [
         "chemical-plant",
         "cryogenic-plant"
-      ]
+      ],
+      "iconId": "recipe/explosives"
     },
     {
       "id": "carbon",
@@ -8397,7 +8373,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/iron-gear-wheel"
     },
     {
       "id": "iron-stick",
@@ -8422,7 +8399,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/iron-stick"
     },
     {
       "id": "copper-cable",
@@ -8448,7 +8426,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/copper-cable"
     },
     {
       "id": "barrel",
@@ -8473,7 +8452,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/barrel"
     },
     {
       "id": "electronic-circuit",
@@ -8504,7 +8484,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/electronic-circuit"
     },
     {
       "id": "advanced-circuit",
@@ -8540,7 +8521,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/advanced-circuit"
     },
     {
       "id": "processing-unit",
@@ -8575,7 +8557,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/processing-unit"
     },
     {
       "id": "engine-unit",
@@ -8610,7 +8593,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/engine-unit"
     },
     {
       "id": "electric-engine-unit",
@@ -8644,7 +8628,8 @@
       "producers": [
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/electric-engine-unit"
     },
     {
       "id": "flying-robot-frame",
@@ -8684,7 +8669,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/flying-robot-frame"
     },
     {
       "id": "low-density-structure",
@@ -8719,7 +8705,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/low-density-structure"
     },
     {
       "id": "rocket-fuel",
@@ -8749,7 +8736,8 @@
         "biochamber",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/rocket-fuel"
     },
     {
       "id": "uranium-processing",
@@ -8815,7 +8803,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/uranium-fuel-cell"
     },
     {
       "id": "nuclear-fuel-reprocessing",
@@ -8901,7 +8890,8 @@
       ],
       "producers": [
         "centrifuge"
-      ]
+      ],
+      "iconId": "recipe/nuclear-fuel"
     },
     {
       "id": "molten-iron-from-lava",
@@ -9273,7 +9263,8 @@
       "producers": [
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/tungsten-carbide"
     },
     {
       "id": "tungsten-plate",
@@ -9301,7 +9292,8 @@
       ],
       "producers": [
         "foundry"
-      ]
+      ],
+      "iconId": "recipe/tungsten-plate"
     },
     {
       "id": "scrap-recycling",
@@ -9425,7 +9417,8 @@
       ],
       "producers": [
         "chemical-plant"
-      ]
+      ],
+      "iconId": "recipe/holmium-solution"
     },
     {
       "id": "holmium-plate",
@@ -9450,7 +9443,8 @@
         "foundry",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/holmium-plate"
     },
     {
       "id": "superconductor",
@@ -9488,7 +9482,8 @@
       ],
       "producers": [
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/superconductor"
     },
     {
       "id": "electrolyte",
@@ -9521,7 +9516,8 @@
       ],
       "producers": [
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/electrolyte"
     },
     {
       "id": "supercapacitor",
@@ -9564,7 +9560,8 @@
       ],
       "producers": [
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/supercapacitor"
     },
     {
       "id": "yumako-processing",
@@ -10055,7 +10052,8 @@
       ],
       "producers": [
         "biochamber"
-      ]
+      ],
+      "iconId": "recipe/carbon-fiber"
     },
     {
       "id": "biter-egg",
@@ -10321,7 +10319,8 @@
       ],
       "producers": [
         "cryogenic-plant"
-      ]
+      ],
+      "iconId": "recipe/fluoroketone"
     },
     {
       "id": "fluoroketone-cooling",
@@ -10379,7 +10378,8 @@
       "producers": [
         "chemical-plant",
         "cryogenic-plant"
-      ]
+      ],
+      "iconId": "recipe/lithium"
     },
     {
       "id": "lithium-plate",
@@ -10404,7 +10404,8 @@
         "stone-furnace",
         "steel-furnace",
         "electric-furnace"
-      ]
+      ],
+      "iconId": "recipe/lithium-plate"
     },
     {
       "id": "quantum-processor",
@@ -10457,7 +10458,8 @@
       ],
       "producers": [
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/quantum-processor"
     },
     {
       "id": "fusion-power-cell",
@@ -10490,7 +10492,8 @@
       ],
       "producers": [
         "cryogenic-plant"
-      ]
+      ],
+      "iconId": "recipe/fusion-power-cell"
     },
     {
       "id": "automation-science-pack",
@@ -10520,7 +10523,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/automation-science-pack"
     },
     {
       "id": "logistic-science-pack",
@@ -10550,7 +10554,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/logistic-science-pack"
     },
     {
       "id": "military-science-pack",
@@ -10585,7 +10590,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/military-science-pack"
     },
     {
       "id": "chemical-science-pack",
@@ -10620,7 +10626,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/chemical-science-pack"
     },
     {
       "id": "production-science-pack",
@@ -10655,7 +10662,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/production-science-pack"
     },
     {
       "id": "utility-science-pack",
@@ -10690,7 +10698,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/utility-science-pack"
     },
     {
       "id": "space-science-pack",
@@ -10759,7 +10768,8 @@
       ],
       "producers": [
         "foundry"
-      ]
+      ],
+      "iconId": "recipe/metallurgic-science-pack"
     },
     {
       "id": "agricultural-science-pack",
@@ -10787,7 +10797,8 @@
       ],
       "producers": [
         "biochamber"
-      ]
+      ],
+      "iconId": "recipe/agricultural-science-pack"
     },
     {
       "id": "electromagnetic-science-pack",
@@ -10825,7 +10836,8 @@
       ],
       "producers": [
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/electromagnetic-science-pack"
     },
     {
       "id": "cryogenic-science-pack",
@@ -10863,7 +10875,8 @@
       ],
       "producers": [
         "cryogenic-plant"
-      ]
+      ],
+      "iconId": "recipe/cryogenic-science-pack"
     },
     {
       "id": "promethium-science-pack",
@@ -10896,7 +10909,8 @@
       ],
       "producers": [
         "cryogenic-plant"
-      ]
+      ],
+      "iconId": "recipe/promethium-science-pack"
     },
     {
       "id": "rocket-silo",
@@ -10941,7 +10955,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/rocket-silo"
     },
     {
       "id": "space-platform-foundation",
@@ -10971,7 +10986,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/space-platform-foundation"
     },
     {
       "id": "rocket-part",
@@ -11004,7 +11020,8 @@
       ],
       "producers": [
         "rocket-silo"
-      ]
+      ],
+      "iconId": "recipe/rocket-part"
     },
     {
       "id": "cargo-bay",
@@ -11039,7 +11056,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/cargo-bay"
     },
     {
       "id": "cargo-landing-pad",
@@ -11074,7 +11092,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/cargo-landing-pad"
     },
     {
       "id": "asteroid-collector",
@@ -11109,7 +11128,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/asteroid-collector"
     },
     {
       "id": "crusher",
@@ -11144,7 +11164,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/crusher"
     },
     {
       "id": "thruster",
@@ -11179,7 +11200,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/thruster"
     },
     {
       "id": "space-platform-starter-pack",
@@ -11214,7 +11236,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/space-platform-starter-pack"
     },
     {
       "id": "metallic-asteroid-crushing",
@@ -11548,7 +11571,8 @@
       ],
       "producers": [
         "chemical-plant"
-      ]
+      ],
+      "iconId": "recipe/thruster-fuel"
     },
     {
       "id": "advanced-thruster-fuel",
@@ -11610,7 +11634,8 @@
       ],
       "producers": [
         "chemical-plant"
-      ]
+      ],
+      "iconId": "recipe/thruster-oxidizer"
     },
     {
       "id": "advanced-thruster-oxidizer",
@@ -11679,7 +11704,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/submachine-gun"
     },
     {
       "id": "railgun",
@@ -11717,7 +11743,8 @@
       ],
       "producers": [
         "cryogenic-plant"
-      ]
+      ],
+      "iconId": "recipe/railgun"
     },
     {
       "id": "teslagun",
@@ -11755,7 +11782,8 @@
       ],
       "producers": [
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/teslagun"
     },
     {
       "id": "shotgun",
@@ -11795,7 +11823,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/shotgun"
     },
     {
       "id": "combat-shotgun",
@@ -11835,7 +11864,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/combat-shotgun"
     },
     {
       "id": "rocket-launcher",
@@ -11870,7 +11900,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/rocket-launcher"
     },
     {
       "id": "flamethrower",
@@ -11900,7 +11931,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/flamethrower"
     },
     {
       "id": "firearm-magazine",
@@ -11925,7 +11957,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/firearm-magazine"
     },
     {
       "id": "piercing-rounds-magazine",
@@ -11960,7 +11993,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/piercing-rounds-magazine"
     },
     {
       "id": "uranium-rounds-magazine",
@@ -11990,7 +12024,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/uranium-rounds-magazine"
     },
     {
       "id": "shotgun-shell",
@@ -12020,7 +12055,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/shotgun-shell"
     },
     {
       "id": "piercing-shotgun-shell",
@@ -12055,7 +12091,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/piercing-shotgun-shell"
     },
     {
       "id": "cannon-shell",
@@ -12090,7 +12127,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/cannon-shell"
     },
     {
       "id": "explosive-cannon-shell",
@@ -12125,7 +12163,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/explosive-cannon-shell"
     },
     {
       "id": "uranium-cannon-shell",
@@ -12155,7 +12194,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/uranium-cannon-shell"
     },
     {
       "id": "explosive-uranium-cannon-shell",
@@ -12185,7 +12225,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/explosive-uranium-cannon-shell"
     },
     {
       "id": "artillery-shell",
@@ -12225,7 +12266,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/artillery-shell"
     },
     {
       "id": "rocket",
@@ -12255,7 +12297,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/rocket"
     },
     {
       "id": "explosive-rocket",
@@ -12285,7 +12328,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/explosive-rocket"
     },
     {
       "id": "atomic-bomb",
@@ -12320,7 +12364,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/atomic-bomb"
     },
     {
       "id": "capture-robot-rocket",
@@ -12360,7 +12405,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/capture-robot-rocket"
     },
     {
       "id": "flamethrower-ammo",
@@ -12388,7 +12434,8 @@
       ],
       "producers": [
         "chemical-plant"
-      ]
+      ],
+      "iconId": "recipe/flamethrower-ammo"
     },
     {
       "id": "railgun-ammo",
@@ -12423,7 +12470,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/railgun-ammo"
     },
     {
       "id": "tesla-ammo",
@@ -12456,7 +12504,8 @@
       ],
       "producers": [
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/tesla-ammo"
     },
     {
       "id": "grenade",
@@ -12486,7 +12535,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/grenade"
     },
     {
       "id": "cluster-grenade",
@@ -12521,7 +12571,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/cluster-grenade"
     },
     {
       "id": "poison-capsule",
@@ -12556,7 +12607,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/poison-capsule"
     },
     {
       "id": "slowdown-capsule",
@@ -12591,7 +12643,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/slowdown-capsule"
     },
     {
       "id": "defender-capsule",
@@ -12626,7 +12679,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/defender-capsule"
     },
     {
       "id": "distractor-capsule",
@@ -12656,7 +12710,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/distractor-capsule"
     },
     {
       "id": "destroyer-capsule",
@@ -12691,7 +12746,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/destroyer-capsule"
     },
     {
       "id": "light-armor",
@@ -12716,7 +12772,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/light-armor"
     },
     {
       "id": "heavy-armor",
@@ -12746,7 +12803,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/heavy-armor"
     },
     {
       "id": "modular-armor",
@@ -12776,7 +12834,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/modular-armor"
     },
     {
       "id": "power-armor",
@@ -12811,7 +12870,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/power-armor"
     },
     {
       "id": "power-armor-mk2",
@@ -12856,7 +12916,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/power-armor-mk2"
     },
     {
       "id": "mech-armor",
@@ -12901,7 +12962,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/mech-armor"
     },
     {
       "id": "solar-panel-equipment",
@@ -12936,7 +12998,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/solar-panel-equipment"
     },
     {
       "id": "fission-reactor-equipment",
@@ -12971,7 +13034,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/fission-reactor-equipment"
     },
     {
       "id": "fusion-reactor-equipment",
@@ -13021,7 +13085,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/fusion-reactor-equipment"
     },
     {
       "id": "battery-equipment",
@@ -13051,7 +13116,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/battery-equipment"
     },
     {
       "id": "battery-mk2-equipment",
@@ -13086,7 +13152,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/battery-mk2-equipment"
     },
     {
       "id": "battery-mk3-equipment",
@@ -13116,7 +13183,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/battery-mk3-equipment"
     },
     {
       "id": "belt-immunity-equipment",
@@ -13146,7 +13214,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/belt-immunity-equipment"
     },
     {
       "id": "exoskeleton-equipment",
@@ -13181,7 +13250,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/exoskeleton-equipment"
     },
     {
       "id": "personal-roboport-equipment",
@@ -13221,7 +13291,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/personal-roboport-equipment"
     },
     {
       "id": "personal-roboport-mk2-equipment",
@@ -13256,7 +13327,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/personal-roboport-mk2-equipment"
     },
     {
       "id": "night-vision-equipment",
@@ -13286,7 +13358,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/night-vision-equipment"
     },
     {
       "id": "toolbelt-equipment",
@@ -13316,7 +13389,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/toolbelt-equipment"
     },
     {
       "id": "energy-shield-equipment",
@@ -13346,7 +13420,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/energy-shield-equipment"
     },
     {
       "id": "energy-shield-mk2-equipment",
@@ -13381,7 +13456,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/energy-shield-mk2-equipment"
     },
     {
       "id": "personal-laser-defense-equipment",
@@ -13416,7 +13492,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/personal-laser-defense-equipment"
     },
     {
       "id": "discharge-defense-equipment",
@@ -13452,7 +13529,8 @@
         "assembling-machine-2",
         "assembling-machine-3",
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/discharge-defense-equipment"
     },
     {
       "id": "stone-wall",
@@ -13477,7 +13555,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/stone-wall"
     },
     {
       "id": "gate",
@@ -13512,7 +13591,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/gate"
     },
     {
       "id": "radar",
@@ -13547,7 +13627,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/radar"
     },
     {
       "id": "land-mine",
@@ -13577,7 +13658,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/land-mine"
     },
     {
       "id": "gun-turret",
@@ -13612,7 +13694,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/gun-turret"
     },
     {
       "id": "laser-turret",
@@ -13647,7 +13730,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/laser-turret"
     },
     {
       "id": "flamethrower-turret",
@@ -13687,7 +13771,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/flamethrower-turret"
     },
     {
       "id": "artillery-turret",
@@ -13727,7 +13812,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/artillery-turret"
     },
     {
       "id": "rocket-turret",
@@ -13772,7 +13858,8 @@
         "assembling-machine-1",
         "assembling-machine-2",
         "assembling-machine-3"
-      ]
+      ],
+      "iconId": "recipe/rocket-turret"
     },
     {
       "id": "tesla-turret",
@@ -13815,7 +13902,8 @@
       ],
       "producers": [
         "electromagnetic-plant"
-      ]
+      ],
+      "iconId": "recipe/tesla-turret"
     },
     {
       "id": "railgun-turret",
@@ -13858,107 +13946,8 @@
       ],
       "producers": [
         "cryogenic-plant"
-      ]
-    },
-    {
-      "id": "parameter-0",
-      "label": "Parameter 0",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-0"
-    },
-    {
-      "id": "parameter-1",
-      "label": "Parameter 1",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-1"
-    },
-    {
-      "id": "parameter-2",
-      "label": "Parameter 2",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-2"
-    },
-    {
-      "id": "parameter-3",
-      "label": "Parameter 3",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-3"
-    },
-    {
-      "id": "parameter-4",
-      "label": "Parameter 4",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-4"
-    },
-    {
-      "id": "parameter-5",
-      "label": "Parameter 5",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-5"
-    },
-    {
-      "id": "parameter-6",
-      "label": "Parameter 6",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-6"
-    },
-    {
-      "id": "parameter-7",
-      "label": "Parameter 7",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-7"
-    },
-    {
-      "id": "parameter-8",
-      "label": "Parameter 8",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-8"
-    },
-    {
-      "id": "parameter-9",
-      "label": "Parameter 9",
-      "time": 0.5,
-      "category": "parameters",
-      "ingredients": [],
-      "results": [],
-      "producers": [],
-      "iconId": "recipe/parameter-9"
+      ],
+      "iconId": "recipe/railgun-turret"
     }
   ],
   "technologies": [

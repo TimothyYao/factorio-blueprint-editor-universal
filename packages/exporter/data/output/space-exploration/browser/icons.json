@@ -9,184 +9,144 @@
   },
   "icons": {
     "fluid/crude-oil": {
-      "x": 726,
+      "x": 66,
       "y": 1254
     },
     "fluid/heavy-oil": {
-      "x": 924,
+      "x": 264,
       "y": 1254
     },
     "fluid/light-oil": {
-      "x": 858,
+      "x": 198,
       "y": 1254
     },
     "fluid/lubricant": {
-      "x": 990,
+      "x": 330,
       "y": 1254
     },
-    "fluid/parameter-0": {
-      "x": 1914,
-      "y": 1188
-    },
-    "fluid/parameter-1": {
-      "x": 1980,
-      "y": 1188
-    },
-    "fluid/parameter-2": {
-      "x": 2046,
-      "y": 1188
-    },
-    "fluid/parameter-3": {
-      "x": 2112,
-      "y": 1188
-    },
-    "fluid/parameter-4": {
-      "x": 2178,
-      "y": 1188
-    },
-    "fluid/parameter-5": {
-      "x": 2244,
-      "y": 1188
-    },
-    "fluid/parameter-6": {
-      "x": 2310,
-      "y": 1188
-    },
-    "fluid/parameter-7": {
-      "x": 2376,
-      "y": 1188
-    },
-    "fluid/parameter-8": {
-      "x": 2442,
-      "y": 1188
-    },
-    "fluid/parameter-9": {
-      "x": 2508,
-      "y": 1188
-    },
     "fluid/petroleum-gas": {
-      "x": 792,
+      "x": 132,
       "y": 1254
     },
     "fluid/se-antimatter-stream": {
-      "x": 2376,
-      "y": 1254
-    },
-    "fluid/se-beryllium-hydroxide": {
-      "x": 1848,
-      "y": 1254
-    },
-    "fluid/se-bio-sludge": {
-      "x": 1452,
-      "y": 1254
-    },
-    "fluid/se-chemical-gel": {
-      "x": 1188,
-      "y": 1254
-    },
-    "fluid/se-contaminated-bio-sludge": {
-      "x": 1518,
-      "y": 1254
-    },
-    "fluid/se-contaminated-space-water": {
-      "x": 528,
-      "y": 1254
-    },
-    "fluid/se-cryonite-slush": {
-      "x": 1782,
-      "y": 1254
-    },
-    "fluid/se-ion-stream": {
-      "x": 2178,
-      "y": 1254
-    },
-    "fluid/se-liquid-rocket-fuel": {
-      "x": 1122,
-      "y": 1254
-    },
-    "fluid/se-methane-gas": {
-      "x": 1056,
-      "y": 1254
-    },
-    "fluid/se-molten-beryllium": {
-      "x": 1914,
-      "y": 1254
-    },
-    "fluid/se-molten-copper": {
-      "x": 1650,
-      "y": 1254
-    },
-    "fluid/se-molten-holmium": {
-      "x": 1980,
-      "y": 1254
-    },
-    "fluid/se-molten-iron": {
-      "x": 1584,
-      "y": 1254
-    },
-    "fluid/se-neural-gel": {
-      "x": 1320,
-      "y": 1254
-    },
-    "fluid/se-neural-gel-2": {
-      "x": 1386,
-      "y": 1254
-    },
-    "fluid/se-nutrient-gel": {
-      "x": 1254,
-      "y": 1254
-    },
-    "fluid/se-particle-stream": {
-      "x": 2310,
-      "y": 1254
-    },
-    "fluid/se-plasma-stream": {
-      "x": 2112,
-      "y": 1254
-    },
-    "fluid/se-proton-stream": {
-      "x": 2244,
-      "y": 1254
-    },
-    "fluid/se-pyroflux": {
       "x": 1716,
       "y": 1254
     },
-    "fluid/se-space-coolant-cold": {
-      "x": 0,
-      "y": 1320
+    "fluid/se-beryllium-hydroxide": {
+      "x": 1188,
+      "y": 1254
     },
-    "fluid/se-space-coolant-hot": {
+    "fluid/se-bio-sludge": {
+      "x": 792,
+      "y": 1254
+    },
+    "fluid/se-chemical-gel": {
+      "x": 528,
+      "y": 1254
+    },
+    "fluid/se-contaminated-bio-sludge": {
+      "x": 858,
+      "y": 1254
+    },
+    "fluid/se-contaminated-space-water": {
       "x": 2442,
+      "y": 1188
+    },
+    "fluid/se-cryonite-slush": {
+      "x": 1122,
       "y": 1254
     },
-    "fluid/se-space-coolant-supercooled": {
-      "x": 66,
-      "y": 1320
-    },
-    "fluid/se-space-coolant-warm": {
-      "x": 2508,
+    "fluid/se-ion-stream": {
+      "x": 1518,
       "y": 1254
     },
-    "fluid/se-space-water": {
+    "fluid/se-liquid-rocket-fuel": {
       "x": 462,
       "y": 1254
     },
-    "fluid/se-vitalic-acid": {
-      "x": 2046,
+    "fluid/se-methane-gas": {
+      "x": 396,
       "y": 1254
     },
-    "fluid/steam": {
-      "x": 594,
+    "fluid/se-molten-beryllium": {
+      "x": 1254,
       "y": 1254
     },
-    "fluid/sulfuric-acid": {
+    "fluid/se-molten-copper": {
+      "x": 990,
+      "y": 1254
+    },
+    "fluid/se-molten-holmium": {
+      "x": 1320,
+      "y": 1254
+    },
+    "fluid/se-molten-iron": {
+      "x": 924,
+      "y": 1254
+    },
+    "fluid/se-neural-gel": {
       "x": 660,
       "y": 1254
     },
-    "fluid/water": {
-      "x": 396,
+    "fluid/se-neural-gel-2": {
+      "x": 726,
       "y": 1254
+    },
+    "fluid/se-nutrient-gel": {
+      "x": 594,
+      "y": 1254
+    },
+    "fluid/se-particle-stream": {
+      "x": 1650,
+      "y": 1254
+    },
+    "fluid/se-plasma-stream": {
+      "x": 1452,
+      "y": 1254
+    },
+    "fluid/se-proton-stream": {
+      "x": 1584,
+      "y": 1254
+    },
+    "fluid/se-pyroflux": {
+      "x": 1056,
+      "y": 1254
+    },
+    "fluid/se-space-coolant-cold": {
+      "x": 1914,
+      "y": 1254
+    },
+    "fluid/se-space-coolant-hot": {
+      "x": 1782,
+      "y": 1254
+    },
+    "fluid/se-space-coolant-supercooled": {
+      "x": 1980,
+      "y": 1254
+    },
+    "fluid/se-space-coolant-warm": {
+      "x": 1848,
+      "y": 1254
+    },
+    "fluid/se-space-water": {
+      "x": 2376,
+      "y": 1188
+    },
+    "fluid/se-vitalic-acid": {
+      "x": 1386,
+      "y": 1254
+    },
+    "fluid/steam": {
+      "x": 2508,
+      "y": 1188
+    },
+    "fluid/sulfuric-acid": {
+      "x": 0,
+      "y": 1254
+    },
+    "fluid/water": {
+      "x": 2310,
+      "y": 1188
     },
     "item/aai-signal-receiver": {
       "x": 198,
@@ -293,8 +253,8 @@
       "y": 1056
     },
     "item/artillery-targeting-remote": {
-      "x": 330,
-      "y": 1254
+      "x": 2244,
+      "y": 1188
     },
     "item/artillery-turret": {
       "x": 1386,
@@ -461,8 +421,8 @@
       "y": 462
     },
     "item/copper-wire": {
-      "x": 0,
-      "y": 1254
+      "x": 1914,
+      "y": 1188
     },
     "item/crude-oil-barrel": {
       "x": 396,
@@ -489,8 +449,8 @@
       "y": 1188
     },
     "item/discharge-defense-remote": {
-      "x": 264,
-      "y": 1254
+      "x": 2178,
+      "y": 1188
     },
     "item/display-panel": {
       "x": 66,
@@ -689,8 +649,8 @@
       "y": 1056
     },
     "item/green-wire": {
-      "x": 66,
-      "y": 1254
+      "x": 1980,
+      "y": 1188
     },
     "item/grenade": {
       "x": 1716,
@@ -860,46 +820,6 @@
       "x": 2376,
       "y": 264
     },
-    "item/parameter-0": {
-      "x": 1914,
-      "y": 1188
-    },
-    "item/parameter-1": {
-      "x": 1980,
-      "y": 1188
-    },
-    "item/parameter-2": {
-      "x": 2046,
-      "y": 1188
-    },
-    "item/parameter-3": {
-      "x": 2112,
-      "y": 1188
-    },
-    "item/parameter-4": {
-      "x": 2178,
-      "y": 1188
-    },
-    "item/parameter-5": {
-      "x": 2244,
-      "y": 1188
-    },
-    "item/parameter-6": {
-      "x": 2310,
-      "y": 1188
-    },
-    "item/parameter-7": {
-      "x": 2376,
-      "y": 1188
-    },
-    "item/parameter-8": {
-      "x": 2442,
-      "y": 1188
-    },
-    "item/parameter-9": {
-      "x": 2508,
-      "y": 1188
-    },
     "item/passive-provider-chest": {
       "x": 66,
       "y": 0
@@ -1049,8 +969,8 @@
       "y": 396
     },
     "item/red-wire": {
-      "x": 132,
-      "y": 1254
+      "x": 2046,
+      "y": 1188
     },
     "item/refined-concrete": {
       "x": 462,
@@ -2977,8 +2897,8 @@
       "y": 132
     },
     "item/spidertron-remote": {
-      "x": 198,
-      "y": 1254
+      "x": 2112,
+      "y": 1188
     },
     "item/splitter": {
       "x": 792,
@@ -3184,113 +3104,485 @@
       "x": 462,
       "y": 0
     },
+    "recipe/aai-signal-receiver": {
+      "x": 198,
+      "y": 198
+    },
+    "recipe/aai-signal-sender": {
+      "x": 132,
+      "y": 198
+    },
+    "recipe/aai-storehouse": {
+      "x": 990,
+      "y": 0
+    },
+    "recipe/aai-storehouse-active-provider": {
+      "x": 1122,
+      "y": 0
+    },
+    "recipe/aai-storehouse-buffer": {
+      "x": 1254,
+      "y": 0
+    },
+    "recipe/aai-storehouse-passive-provider": {
+      "x": 1056,
+      "y": 0
+    },
+    "recipe/aai-storehouse-requester": {
+      "x": 1320,
+      "y": 0
+    },
+    "recipe/aai-storehouse-storage": {
+      "x": 1188,
+      "y": 0
+    },
+    "recipe/aai-strongbox": {
+      "x": 528,
+      "y": 0
+    },
+    "recipe/aai-strongbox-active-provider": {
+      "x": 660,
+      "y": 0
+    },
+    "recipe/aai-strongbox-buffer": {
+      "x": 792,
+      "y": 0
+    },
+    "recipe/aai-strongbox-passive-provider": {
+      "x": 594,
+      "y": 0
+    },
+    "recipe/aai-strongbox-requester": {
+      "x": 858,
+      "y": 0
+    },
+    "recipe/aai-strongbox-storage": {
+      "x": 726,
+      "y": 0
+    },
+    "recipe/aai-warehouse": {
+      "x": 1386,
+      "y": 0
+    },
+    "recipe/aai-warehouse-active-provider": {
+      "x": 1518,
+      "y": 0
+    },
+    "recipe/aai-warehouse-buffer": {
+      "x": 1650,
+      "y": 0
+    },
+    "recipe/aai-warehouse-passive-provider": {
+      "x": 1452,
+      "y": 0
+    },
+    "recipe/aai-warehouse-requester": {
+      "x": 1716,
+      "y": 0
+    },
+    "recipe/aai-warehouse-storage": {
+      "x": 1584,
+      "y": 0
+    },
+    "recipe/accumulator": {
+      "x": 660,
+      "y": 264
+    },
+    "recipe/active-provider-chest": {
+      "x": 132,
+      "y": 0
+    },
+    "recipe/advanced-circuit": {
+      "x": 858,
+      "y": 594
+    },
     "recipe/advanced-oil-processing": {
-      "x": 2244,
+      "x": 1584,
       "y": 1320
+    },
+    "recipe/area-mining-drill": {
+      "x": 990,
+      "y": 264
+    },
+    "recipe/arithmetic-combinator": {
+      "x": 2178,
+      "y": 132
+    },
+    "recipe/artillery-shell": {
+      "x": 990,
+      "y": 1056
+    },
+    "recipe/artillery-turret": {
+      "x": 1386,
+      "y": 1188
+    },
+    "recipe/artillery-wagon": {
+      "x": 1518,
+      "y": 132
+    },
+    "recipe/assembling-machine-1": {
+      "x": 2046,
+      "y": 264
+    },
+    "recipe/assembling-machine-2": {
+      "x": 2112,
+      "y": 264
+    },
+    "recipe/assembling-machine-3": {
+      "x": 2178,
+      "y": 264
+    },
+    "recipe/atomic-bomb": {
+      "x": 1188,
+      "y": 1056
+    },
+    "recipe/automation-science-pack": {
+      "x": 0,
+      "y": 792
+    },
+    "recipe/barrel": {
+      "x": 0,
+      "y": 594
     },
     "recipe/basic-oil-processing": {
-      "x": 2178,
+      "x": 1518,
       "y": 1320
+    },
+    "recipe/battery": {
+      "x": 726,
+      "y": 594
+    },
+    "recipe/battery-equipment": {
+      "x": 1122,
+      "y": 1122
+    },
+    "recipe/battery-mk2-equipment": {
+      "x": 1188,
+      "y": 1122
+    },
+    "recipe/beacon": {
+      "x": 1914,
+      "y": 330
+    },
+    "recipe/belt-immunity-equipment": {
+      "x": 2244,
+      "y": 1122
+    },
+    "recipe/big-electric-pole": {
+      "x": 264,
+      "y": 132
+    },
+    "recipe/boiler": {
+      "x": 2046,
+      "y": 198
+    },
+    "recipe/buffer-chest": {
+      "x": 264,
+      "y": 0
+    },
+    "recipe/bulk-inserter": {
+      "x": 0,
+      "y": 132
+    },
+    "recipe/burner-assembling-machine": {
+      "x": 1980,
+      "y": 264
+    },
+    "recipe/burner-inserter": {
+      "x": 1584,
+      "y": 66
+    },
+    "recipe/burner-lab": {
+      "x": 66,
+      "y": 396
+    },
+    "recipe/burner-mining-drill": {
+      "x": 858,
+      "y": 264
+    },
+    "recipe/burner-turbine": {
+      "x": 1914,
+      "y": 198
+    },
+    "recipe/cannon-shell": {
+      "x": 594,
+      "y": 1056
+    },
+    "recipe/car": {
+      "x": 1584,
+      "y": 132
+    },
+    "recipe/cargo-landing-pad": {
+      "x": 1452,
+      "y": 726
+    },
+    "recipe/cargo-wagon": {
+      "x": 1386,
+      "y": 132
+    },
+    "recipe/centrifuge": {
+      "x": 396,
+      "y": 330
+    },
+    "recipe/chemical-plant": {
+      "x": 2442,
+      "y": 264
+    },
+    "recipe/chemical-science-pack": {
+      "x": 198,
+      "y": 792
+    },
+    "recipe/cliff-explosives": {
+      "x": 1980,
+      "y": 1056
+    },
+    "recipe/cluster-grenade": {
+      "x": 1782,
+      "y": 1056
     },
     "recipe/coal-liquefaction": {
-      "x": 2442,
+      "x": 1782,
       "y": 1320
     },
+    "recipe/combat-shotgun": {
+      "x": 2244,
+      "y": 990
+    },
+    "recipe/concrete": {
+      "x": 330,
+      "y": 198
+    },
+    "recipe/concrete-gate": {
+      "x": 594,
+      "y": 1188
+    },
+    "recipe/concrete-wall": {
+      "x": 528,
+      "y": 1188
+    },
+    "recipe/constant-combinator": {
+      "x": 2376,
+      "y": 132
+    },
+    "recipe/construction-robot": {
+      "x": 1914,
+      "y": 132
+    },
+    "recipe/copper-cable": {
+      "x": 396,
+      "y": 594
+    },
+    "recipe/copper-plate": {
+      "x": 1386,
+      "y": 462
+    },
     "recipe/crude-oil-barrel": {
-      "x": 2112,
+      "x": 1518,
       "y": 1650
     },
+    "recipe/decider-combinator": {
+      "x": 2244,
+      "y": 132
+    },
+    "recipe/defender-capsule": {
+      "x": 2046,
+      "y": 1056
+    },
+    "recipe/destroyer-capsule": {
+      "x": 2178,
+      "y": 1056
+    },
+    "recipe/discharge-defense-equipment": {
+      "x": 330,
+      "y": 1188
+    },
+    "recipe/display-panel": {
+      "x": 66,
+      "y": 198
+    },
+    "recipe/distractor-capsule": {
+      "x": 2112,
+      "y": 1056
+    },
+    "recipe/efficiency-module": {
+      "x": 792,
+      "y": 396
+    },
+    "recipe/efficiency-module-2": {
+      "x": 858,
+      "y": 396
+    },
+    "recipe/efficiency-module-3": {
+      "x": 924,
+      "y": 396
+    },
+    "recipe/efficiency-module-4": {
+      "x": 990,
+      "y": 396
+    },
+    "recipe/efficiency-module-5": {
+      "x": 1056,
+      "y": 396
+    },
+    "recipe/efficiency-module-6": {
+      "x": 1122,
+      "y": 396
+    },
+    "recipe/efficiency-module-7": {
+      "x": 1188,
+      "y": 396
+    },
+    "recipe/efficiency-module-8": {
+      "x": 1254,
+      "y": 396
+    },
+    "recipe/efficiency-module-9": {
+      "x": 1320,
+      "y": 396
+    },
+    "recipe/electric-engine-unit": {
+      "x": 330,
+      "y": 594
+    },
+    "recipe/electric-furnace": {
+      "x": 1386,
+      "y": 264
+    },
+    "recipe/electric-mining-drill": {
+      "x": 924,
+      "y": 264
+    },
+    "recipe/electric-motor": {
+      "x": 264,
+      "y": 594
+    },
+    "recipe/electronic-circuit": {
+      "x": 792,
+      "y": 594
+    },
     "recipe/electronic-circuit-wood": {
-      "x": 1980,
+      "x": 1320,
       "y": 1518
     },
     "recipe/empty-crude-oil-barrel": {
-      "x": 990,
+      "x": 396,
       "y": 1716
     },
     "recipe/empty-heavy-oil-barrel": {
-      "x": 1188,
-      "y": 1716
-    },
-    "recipe/empty-light-oil-barrel": {
-      "x": 1122,
-      "y": 1716
-    },
-    "recipe/empty-lubricant-barrel": {
-      "x": 1254,
-      "y": 1716
-    },
-    "recipe/empty-petroleum-gas-barrel": {
-      "x": 1056,
-      "y": 1716
-    },
-    "recipe/empty-se-beryllium-hydroxide-barrel": {
-      "x": 462,
-      "y": 1716
-    },
-    "recipe/empty-se-bio-sludge-barrel": {
-      "x": 1386,
-      "y": 1716
-    },
-    "recipe/empty-se-chemical-gel-barrel": {
-      "x": 726,
-      "y": 1716
-    },
-    "recipe/empty-se-contaminated-bio-sludge-barrel": {
-      "x": 1452,
-      "y": 1716
-    },
-    "recipe/empty-se-contaminated-space-water-barrel": {
-      "x": 1848,
-      "y": 1716
-    },
-    "recipe/empty-se-cryonite-slush-barrel": {
       "x": 594,
       "y": 1716
     },
-    "recipe/empty-se-liquid-rocket-fuel-barrel": {
-      "x": 660,
-      "y": 1716
-    },
-    "recipe/empty-se-methane-gas-barrel": {
-      "x": 1320,
-      "y": 1716
-    },
-    "recipe/empty-se-neural-gel-2-barrel": {
-      "x": 924,
-      "y": 1716
-    },
-    "recipe/empty-se-neural-gel-barrel": {
-      "x": 858,
-      "y": 1716
-    },
-    "recipe/empty-se-nutrient-gel-barrel": {
-      "x": 792,
-      "y": 1716
-    },
-    "recipe/empty-se-pyroflux-barrel": {
-      "x": 1650,
-      "y": 1716
-    },
-    "recipe/empty-se-space-coolant-hot-barrel": {
-      "x": 1518,
-      "y": 1716
-    },
-    "recipe/empty-se-space-water-barrel": {
-      "x": 1782,
-      "y": 1716
-    },
-    "recipe/empty-se-vitalic-acid-barrel": {
-      "x": 1584,
-      "y": 1716
-    },
-    "recipe/empty-sulfuric-acid-barrel": {
+    "recipe/empty-light-oil-barrel": {
       "x": 528,
       "y": 1716
     },
-    "recipe/empty-water-barrel": {
-      "x": 1716,
+    "recipe/empty-lubricant-barrel": {
+      "x": 660,
       "y": 1716
+    },
+    "recipe/empty-petroleum-gas-barrel": {
+      "x": 462,
+      "y": 1716
+    },
+    "recipe/empty-se-beryllium-hydroxide-barrel": {
+      "x": 2442,
+      "y": 1650
+    },
+    "recipe/empty-se-bio-sludge-barrel": {
+      "x": 792,
+      "y": 1716
+    },
+    "recipe/empty-se-chemical-gel-barrel": {
+      "x": 132,
+      "y": 1716
+    },
+    "recipe/empty-se-contaminated-bio-sludge-barrel": {
+      "x": 858,
+      "y": 1716
+    },
+    "recipe/empty-se-contaminated-space-water-barrel": {
+      "x": 1254,
+      "y": 1716
+    },
+    "recipe/empty-se-cryonite-slush-barrel": {
+      "x": 0,
+      "y": 1716
+    },
+    "recipe/empty-se-liquid-rocket-fuel-barrel": {
+      "x": 66,
+      "y": 1716
+    },
+    "recipe/empty-se-methane-gas-barrel": {
+      "x": 726,
+      "y": 1716
+    },
+    "recipe/empty-se-neural-gel-2-barrel": {
+      "x": 330,
+      "y": 1716
+    },
+    "recipe/empty-se-neural-gel-barrel": {
+      "x": 264,
+      "y": 1716
+    },
+    "recipe/empty-se-nutrient-gel-barrel": {
+      "x": 198,
+      "y": 1716
+    },
+    "recipe/empty-se-pyroflux-barrel": {
+      "x": 1056,
+      "y": 1716
+    },
+    "recipe/empty-se-space-coolant-hot-barrel": {
+      "x": 924,
+      "y": 1716
+    },
+    "recipe/empty-se-space-water-barrel": {
+      "x": 1188,
+      "y": 1716
+    },
+    "recipe/empty-se-vitalic-acid-barrel": {
+      "x": 990,
+      "y": 1716
+    },
+    "recipe/empty-sulfuric-acid-barrel": {
+      "x": 2508,
+      "y": 1650
+    },
+    "recipe/empty-water-barrel": {
+      "x": 1122,
+      "y": 1716
+    },
+    "recipe/energy-shield-equipment": {
+      "x": 1254,
+      "y": 1122
+    },
+    "recipe/energy-shield-mk2-equipment": {
+      "x": 1320,
+      "y": 1122
+    },
+    "recipe/energy-shield-mk3-equipment": {
+      "x": 1386,
+      "y": 1122
+    },
+    "recipe/energy-shield-mk4-equipment": {
+      "x": 1452,
+      "y": 1122
+    },
+    "recipe/energy-shield-mk5-equipment": {
+      "x": 1518,
+      "y": 1122
+    },
+    "recipe/energy-shield-mk6-equipment": {
+      "x": 1584,
+      "y": 1122
+    },
+    "recipe/engine-unit": {
+      "x": 198,
+      "y": 594
+    },
+    "recipe/equipment-gantry": {
+      "x": 1650,
+      "y": 264
     },
     "recipe/equipment-gantry-insert": {
       "x": 1650,
@@ -3300,117 +3592,549 @@
       "x": 1716,
       "y": 264
     },
-    "recipe/heavy-oil-barrel": {
+    "recipe/equipment-gantry-remover": {
+      "x": 1716,
+      "y": 264
+    },
+    "recipe/exoskeleton-equipment": {
       "x": 2310,
+      "y": 1122
+    },
+    "recipe/explosive-cannon-shell": {
+      "x": 660,
+      "y": 1056
+    },
+    "recipe/explosive-rocket": {
+      "x": 1122,
+      "y": 1056
+    },
+    "recipe/explosive-uranium-cannon-shell": {
+      "x": 924,
+      "y": 1056
+    },
+    "recipe/explosives": {
+      "x": 2508,
+      "y": 396
+    },
+    "recipe/express-splitter": {
+      "x": 924,
+      "y": 66
+    },
+    "recipe/express-transport-belt": {
+      "x": 1914,
+      "y": 0
+    },
+    "recipe/express-underground-belt": {
+      "x": 132,
+      "y": 66
+    },
+    "recipe/fast-inserter": {
+      "x": 2508,
+      "y": 66
+    },
+    "recipe/fast-splitter": {
+      "x": 858,
+      "y": 66
+    },
+    "recipe/fast-transport-belt": {
+      "x": 1848,
+      "y": 0
+    },
+    "recipe/fast-underground-belt": {
+      "x": 66,
+      "y": 66
+    },
+    "recipe/firearm-magazine": {
+      "x": 198,
+      "y": 1056
+    },
+    "recipe/fission-reactor-equipment": {
+      "x": 924,
+      "y": 1122
+    },
+    "recipe/flamethrower": {
+      "x": 2442,
+      "y": 990
+    },
+    "recipe/flamethrower-ammo": {
+      "x": 1320,
+      "y": 1056
+    },
+    "recipe/flamethrower-turret": {
+      "x": 1320,
+      "y": 1188
+    },
+    "recipe/fluid-wagon": {
+      "x": 1452,
+      "y": 132
+    },
+    "recipe/flying-robot-frame": {
+      "x": 66,
+      "y": 594
+    },
+    "recipe/fuel-processor": {
+      "x": 2508,
+      "y": 264
+    },
+    "recipe/gate": {
+      "x": 462,
+      "y": 1188
+    },
+    "recipe/glass": {
+      "x": 660,
+      "y": 462
+    },
+    "recipe/grappling-gun": {
+      "x": 66,
+      "y": 1056
+    },
+    "recipe/grappling-gun-ammo": {
+      "x": 1386,
+      "y": 1056
+    },
+    "recipe/grenade": {
+      "x": 1716,
+      "y": 1056
+    },
+    "recipe/gun-turret": {
+      "x": 1188,
+      "y": 1188
+    },
+    "recipe/hazard-concrete": {
+      "x": 396,
+      "y": 198
+    },
+    "recipe/heat-exchanger": {
+      "x": 132,
+      "y": 264
+    },
+    "recipe/heat-pipe": {
+      "x": 2442,
+      "y": 198
+    },
+    "recipe/heavy-armor": {
+      "x": 264,
+      "y": 1122
+    },
+    "recipe/heavy-oil-barrel": {
+      "x": 1716,
       "y": 1650
     },
     "recipe/heavy-oil-cracking": {
-      "x": 2508,
+      "x": 1848,
       "y": 1320
+    },
+    "recipe/industrial-furnace": {
+      "x": 1452,
+      "y": 264
+    },
+    "recipe/inserter": {
+      "x": 2310,
+      "y": 66
+    },
+    "recipe/iron-chest": {
+      "x": 396,
+      "y": 0
+    },
+    "recipe/iron-gear-wheel": {
+      "x": 2442,
+      "y": 528
+    },
+    "recipe/iron-plate": {
+      "x": 990,
+      "y": 462
+    },
+    "recipe/iron-stick": {
+      "x": 2508,
+      "y": 528
+    },
+    "recipe/ironclad": {
+      "x": 1716,
+      "y": 132
+    },
+    "recipe/jetpack-1": {
+      "x": 1650,
+      "y": 1122
+    },
+    "recipe/jetpack-2": {
+      "x": 1716,
+      "y": 1122
+    },
+    "recipe/jetpack-3": {
+      "x": 1782,
+      "y": 1122
+    },
+    "recipe/jetpack-4": {
+      "x": 1848,
+      "y": 1122
     },
     "recipe/kovarex-enrichment-process": {
-      "x": 594,
-      "y": 1452
+      "x": 2508,
+      "y": 1386
+    },
+    "recipe/lab": {
+      "x": 132,
+      "y": 396
+    },
+    "recipe/land-mine": {
+      "x": 1056,
+      "y": 1188
+    },
+    "recipe/landfill": {
+      "x": 2442,
+      "y": 132
     },
     "recipe/landfill-copper-ore": {
-      "x": 198,
-      "y": 1320
+      "x": 2112,
+      "y": 1254
     },
     "recipe/landfill-iron-ore": {
-      "x": 264,
-      "y": 1320
+      "x": 2178,
+      "y": 1254
     },
     "recipe/landfill-sand": {
-      "x": 132,
-      "y": 1320
+      "x": 2046,
+      "y": 1254
     },
     "recipe/landfill-se-beryllium-ore": {
-      "x": 330,
-      "y": 1320
+      "x": 2244,
+      "y": 1254
     },
     "recipe/landfill-se-holmium-ore": {
-      "x": 396,
-      "y": 1320
+      "x": 2310,
+      "y": 1254
     },
     "recipe/landfill-se-iridium-ore": {
-      "x": 462,
-      "y": 1320
+      "x": 2376,
+      "y": 1254
     },
     "recipe/landfill-se-scrap": {
-      "x": 528,
-      "y": 1320
+      "x": 2442,
+      "y": 1254
+    },
+    "recipe/laser-turret": {
+      "x": 1254,
+      "y": 1188
+    },
+    "recipe/light-armor": {
+      "x": 198,
+      "y": 1122
     },
     "recipe/light-oil-barrel": {
-      "x": 2244,
+      "x": 1650,
       "y": 1650
     },
     "recipe/light-oil-cracking": {
-      "x": 2310,
+      "x": 1650,
       "y": 1320
+    },
+    "recipe/locomotive": {
+      "x": 1320,
+      "y": 132
+    },
+    "recipe/logistic-robot": {
+      "x": 1848,
+      "y": 132
+    },
+    "recipe/logistic-science-pack": {
+      "x": 66,
+      "y": 792
+    },
+    "recipe/long-handed-inserter": {
+      "x": 2442,
+      "y": 66
+    },
+    "recipe/low-density-structure": {
+      "x": 1122,
+      "y": 594
+    },
+    "recipe/lubricant": {
+      "x": 330,
+      "y": 1254
     },
     "recipe/lubricant-barrel": {
-      "x": 2376,
+      "x": 1782,
       "y": 1650
     },
+    "recipe/medium-electric-pole": {
+      "x": 198,
+      "y": 132
+    },
+    "recipe/military-science-pack": {
+      "x": 132,
+      "y": 792
+    },
+    "recipe/modular-armor": {
+      "x": 330,
+      "y": 1122
+    },
+    "recipe/mortar-bomb": {
+      "x": 726,
+      "y": 1056
+    },
+    "recipe/mortar-cluster-bomb": {
+      "x": 792,
+      "y": 1056
+    },
+    "recipe/motor": {
+      "x": 132,
+      "y": 594
+    },
+    "recipe/night-vision-equipment": {
+      "x": 198,
+      "y": 1188
+    },
+    "recipe/nuclear-fuel": {
+      "x": 330,
+      "y": 462
+    },
     "recipe/nuclear-fuel-reprocessing": {
-      "x": 660,
+      "x": 0,
       "y": 1452
     },
-    "recipe/oil-processing-heavy": {
+    "recipe/nuclear-reactor": {
       "x": 2376,
+      "y": 198
+    },
+    "recipe/offshore-pump": {
+      "x": 1056,
+      "y": 264
+    },
+    "recipe/oil-processing-heavy": {
+      "x": 1716,
       "y": 1320
     },
-    "recipe/parameter-0": {
-      "x": 1914,
-      "y": 1188
-    },
-    "recipe/parameter-1": {
-      "x": 1980,
-      "y": 1188
-    },
-    "recipe/parameter-2": {
-      "x": 2046,
-      "y": 1188
-    },
-    "recipe/parameter-3": {
-      "x": 2112,
-      "y": 1188
-    },
-    "recipe/parameter-4": {
-      "x": 2178,
-      "y": 1188
-    },
-    "recipe/parameter-5": {
-      "x": 2244,
-      "y": 1188
-    },
-    "recipe/parameter-6": {
-      "x": 2310,
-      "y": 1188
-    },
-    "recipe/parameter-7": {
+    "recipe/oil-refinery": {
       "x": 2376,
+      "y": 264
+    },
+    "recipe/passive-provider-chest": {
+      "x": 66,
+      "y": 0
+    },
+    "recipe/personal-laser-defense-equipment": {
+      "x": 264,
       "y": 1188
     },
-    "recipe/parameter-8": {
-      "x": 2442,
+    "recipe/personal-roboport-equipment": {
+      "x": 66,
       "y": 1188
     },
-    "recipe/parameter-9": {
-      "x": 2508,
+    "recipe/personal-roboport-mk2-equipment": {
+      "x": 132,
       "y": 1188
     },
     "recipe/petroleum-gas-barrel": {
-      "x": 2178,
+      "x": 1584,
       "y": 1650
+    },
+    "recipe/piercing-rounds-magazine": {
+      "x": 264,
+      "y": 1056
+    },
+    "recipe/piercing-shotgun-shell": {
+      "x": 462,
+      "y": 1056
+    },
+    "recipe/pipe": {
+      "x": 1650,
+      "y": 66
+    },
+    "recipe/pipe-to-ground": {
+      "x": 1716,
+      "y": 66
+    },
+    "recipe/plastic-bar": {
+      "x": 2442,
+      "y": 396
+    },
+    "recipe/poison-capsule": {
+      "x": 1848,
+      "y": 1056
+    },
+    "recipe/power-armor": {
+      "x": 396,
+      "y": 1122
+    },
+    "recipe/power-armor-mk2": {
+      "x": 462,
+      "y": 1122
+    },
+    "recipe/power-switch": {
+      "x": 2508,
+      "y": 132
+    },
+    "recipe/processed-fuel": {
+      "x": 132,
+      "y": 462
+    },
+    "recipe/processing-unit": {
+      "x": 924,
+      "y": 594
     },
     "recipe/production-science-pack": {
       "x": 396,
       "y": 792
     },
+    "recipe/productivity-module": {
+      "x": 1386,
+      "y": 396
+    },
+    "recipe/productivity-module-2": {
+      "x": 1452,
+      "y": 396
+    },
+    "recipe/productivity-module-3": {
+      "x": 1518,
+      "y": 396
+    },
+    "recipe/productivity-module-4": {
+      "x": 1584,
+      "y": 396
+    },
+    "recipe/productivity-module-5": {
+      "x": 1650,
+      "y": 396
+    },
+    "recipe/productivity-module-6": {
+      "x": 1716,
+      "y": 396
+    },
+    "recipe/productivity-module-7": {
+      "x": 1782,
+      "y": 396
+    },
+    "recipe/productivity-module-8": {
+      "x": 1848,
+      "y": 396
+    },
+    "recipe/productivity-module-9": {
+      "x": 1914,
+      "y": 396
+    },
+    "recipe/programmable-speaker": {
+      "x": 0,
+      "y": 198
+    },
+    "recipe/pump": {
+      "x": 2376,
+      "y": 66
+    },
+    "recipe/pumpjack": {
+      "x": 1122,
+      "y": 264
+    },
+    "recipe/radar": {
+      "x": 990,
+      "y": 1188
+    },
+    "recipe/rail": {
+      "x": 990,
+      "y": 132
+    },
+    "recipe/rail-chain-signal": {
+      "x": 1254,
+      "y": 132
+    },
+    "recipe/rail-ramp": {
+      "x": 726,
+      "y": 132
+    },
+    "recipe/rail-signal": {
+      "x": 1188,
+      "y": 132
+    },
+    "recipe/rail-support": {
+      "x": 792,
+      "y": 132
+    },
+    "recipe/refined-concrete": {
+      "x": 462,
+      "y": 198
+    },
+    "recipe/refined-hazard-concrete": {
+      "x": 528,
+      "y": 198
+    },
+    "recipe/repair-pack": {
+      "x": 1980,
+      "y": 990
+    },
+    "recipe/requester-chest": {
+      "x": 330,
+      "y": 0
+    },
+    "recipe/roboport": {
+      "x": 1980,
+      "y": 132
+    },
+    "recipe/rocket": {
+      "x": 1056,
+      "y": 1056
+    },
+    "recipe/rocket-control-unit": {
+      "x": 2244,
+      "y": 594
+    },
+    "recipe/rocket-fuel": {
+      "x": 264,
+      "y": 462
+    },
+    "recipe/rocket-launcher": {
+      "x": 2376,
+      "y": 990
+    },
+    "recipe/rocket-part": {
+      "x": 1650,
+      "y": 1518
+    },
+    "recipe/rocket-silo": {
+      "x": 1254,
+      "y": 726
+    },
+    "recipe/sand": {
+      "x": 594,
+      "y": 462
+    },
+    "recipe/satellite": {
+      "x": 2178,
+      "y": 594
+    },
+    "recipe/se-adaptive-armour-equipment-1": {
+      "x": 1914,
+      "y": 1122
+    },
+    "recipe/se-adaptive-armour-equipment-2": {
+      "x": 1980,
+      "y": 1122
+    },
+    "recipe/se-adaptive-armour-equipment-3": {
+      "x": 2046,
+      "y": 1122
+    },
+    "recipe/se-adaptive-armour-equipment-4": {
+      "x": 2112,
+      "y": 1122
+    },
+    "recipe/se-adaptive-armour-equipment-5": {
+      "x": 2178,
+      "y": 1122
+    },
     "recipe/se-addon-power-pole": {
       "x": 396,
       "y": 132
+    },
+    "recipe/se-aeroframe-bulkhead": {
+      "x": 1980,
+      "y": 594
+    },
+    "recipe/se-aeroframe-pole": {
+      "x": 1848,
+      "y": 594
+    },
+    "recipe/se-aeroframe-scaffold": {
+      "x": 1914,
+      "y": 594
     },
     "recipe/se-annihilation-data": {
       "x": 660,
@@ -3420,40 +4144,52 @@
       "x": 660,
       "y": 660
     },
+    "recipe/se-antimatter-reactor": {
+      "x": 2310,
+      "y": 198
+    },
+    "recipe/se-antimatter-reactor-equipment": {
+      "x": 1056,
+      "y": 1122
+    },
     "recipe/se-antimatter-stream": {
-      "x": 2376,
+      "x": 1716,
       "y": 1254
     },
+    "recipe/se-arcosphere-collector": {
+      "x": 1650,
+      "y": 660
+    },
     "recipe/se-arcosphere-fold-a": {
-      "x": 1254,
+      "x": 660,
       "y": 1584
     },
     "recipe/se-arcosphere-fold-b": {
-      "x": 1320,
+      "x": 726,
       "y": 1584
     },
     "recipe/se-arcosphere-fold-c": {
-      "x": 1386,
+      "x": 792,
       "y": 1584
     },
     "recipe/se-arcosphere-fold-d": {
-      "x": 1452,
+      "x": 858,
       "y": 1584
     },
     "recipe/se-arcosphere-fold-e": {
-      "x": 1518,
+      "x": 924,
       "y": 1584
     },
     "recipe/se-arcosphere-fold-f": {
-      "x": 1584,
+      "x": 990,
       "y": 1584
     },
     "recipe/se-arcosphere-fold-g": {
-      "x": 1650,
+      "x": 1056,
       "y": 1584
     },
     "recipe/se-arcosphere-fold-h": {
-      "x": 1716,
+      "x": 1122,
       "y": 1584
     },
     "recipe/se-arcosphere-fold-in": {
@@ -3473,15 +4209,15 @@
       "y": 660
     },
     "recipe/se-astrometric-analysis-multispectral-2": {
-      "x": 1188,
+      "x": 594,
       "y": 1782
     },
     "recipe/se-astrometric-analysis-multispectral-3": {
-      "x": 1254,
+      "x": 660,
       "y": 1782
     },
     "recipe/se-astrometric-data": {
-      "x": 1122,
+      "x": 528,
       "y": 1782
     },
     "recipe/se-astronomic-catalogue-1": {
@@ -3501,20 +4237,36 @@
       "y": 792
     },
     "recipe/se-astronomic-insight-1": {
-      "x": 858,
+      "x": 264,
       "y": 1782
     },
     "recipe/se-astronomic-insight-2": {
-      "x": 924,
+      "x": 330,
       "y": 1782
     },
     "recipe/se-astronomic-insight-3": {
-      "x": 990,
+      "x": 396,
       "y": 1782
     },
     "recipe/se-astronomic-insight-4": {
-      "x": 1056,
+      "x": 462,
       "y": 1782
+    },
+    "recipe/se-astronomic-science-pack-1": {
+      "x": 2508,
+      "y": 792
+    },
+    "recipe/se-astronomic-science-pack-2": {
+      "x": 0,
+      "y": 858
+    },
+    "recipe/se-astronomic-science-pack-3": {
+      "x": 66,
+      "y": 858
+    },
+    "recipe/se-astronomic-science-pack-4": {
+      "x": 132,
+      "y": 858
     },
     "recipe/se-atomic-data": {
       "x": 2508,
@@ -3525,20 +4277,48 @@
       "y": 924
     },
     "recipe/se-barrel-reprocessing": {
-      "x": 1914,
+      "x": 1320,
       "y": 1584
     },
     "recipe/se-belt-probe": {
       "x": 2376,
       "y": 792
     },
+    "recipe/se-beryllium-hydroxide": {
+      "x": 1188,
+      "y": 1254
+    },
     "recipe/se-beryllium-hydroxide-barrel": {
-      "x": 1584,
+      "x": 990,
       "y": 1650
     },
+    "recipe/se-beryllium-ingot": {
+      "x": 330,
+      "y": 528
+    },
     "recipe/se-beryllium-ingot-no-vulcanite": {
-      "x": 1980,
+      "x": 1320,
       "y": 1452
+    },
+    "recipe/se-beryllium-plate": {
+      "x": 396,
+      "y": 528
+    },
+    "recipe/se-beryllium-powder": {
+      "x": 264,
+      "y": 528
+    },
+    "recipe/se-beryllium-sulfate": {
+      "x": 198,
+      "y": 528
+    },
+    "recipe/se-big-heat-exchanger": {
+      "x": 2178,
+      "y": 198
+    },
+    "recipe/se-big-turbine": {
+      "x": 2244,
+      "y": 198
     },
     "recipe/se-bio-combustion-data": {
       "x": 528,
@@ -3549,35 +4329,35 @@
       "y": 858
     },
     "recipe/se-bio-methane-to-crude-oil": {
-      "x": 2112,
+      "x": 1452,
       "y": 1320
     },
     "recipe/se-bio-sludge": {
-      "x": 924,
+      "x": 264,
       "y": 1386
     },
     "recipe/se-bio-sludge-barrel": {
-      "x": 2508,
+      "x": 1914,
       "y": 1650
     },
     "recipe/se-bio-sludge-crude-oil": {
-      "x": 1188,
+      "x": 528,
       "y": 1386
     },
     "recipe/se-bio-sludge-decontamination": {
-      "x": 1254,
+      "x": 594,
       "y": 1386
     },
     "recipe/se-bio-sludge-from-fish": {
-      "x": 1056,
+      "x": 396,
       "y": 1386
     },
     "recipe/se-bio-sludge-from-vitamelange": {
-      "x": 1122,
+      "x": 462,
       "y": 1386
     },
     "recipe/se-bio-sludge-from-wood": {
-      "x": 990,
+      "x": 330,
       "y": 1386
     },
     "recipe/se-biochemical-data": {
@@ -3596,6 +4376,10 @@
       "x": 1056,
       "y": 858
     },
+    "recipe/se-biogun": {
+      "x": 2508,
+      "y": 990
+    },
     "recipe/se-biological-catalogue-1": {
       "x": 198,
       "y": 858
@@ -3613,20 +4397,36 @@
       "y": 858
     },
     "recipe/se-biological-insight-1": {
-      "x": 1320,
+      "x": 726,
       "y": 1782
     },
     "recipe/se-biological-insight-2": {
-      "x": 1386,
+      "x": 792,
       "y": 1782
     },
     "recipe/se-biological-insight-3": {
-      "x": 1452,
+      "x": 858,
       "y": 1782
     },
     "recipe/se-biological-insight-4": {
-      "x": 1518,
+      "x": 924,
       "y": 1782
+    },
+    "recipe/se-biological-science-pack-1": {
+      "x": 1584,
+      "y": 858
+    },
+    "recipe/se-biological-science-pack-2": {
+      "x": 1650,
+      "y": 858
+    },
+    "recipe/se-biological-science-pack-3": {
+      "x": 1716,
+      "y": 858
+    },
+    "recipe/se-biological-science-pack-4": {
+      "x": 1782,
+      "y": 858
     },
     "recipe/se-biomechanical-data": {
       "x": 594,
@@ -3636,40 +4436,96 @@
       "x": 990,
       "y": 858
     },
+    "recipe/se-bioscrubber": {
+      "x": 2112,
+      "y": 594
+    },
+    "recipe/se-bloater-ammo": {
+      "x": 1452,
+      "y": 1056
+    },
     "recipe/se-boson-data": {
       "x": 396,
       "y": 924
     },
     "recipe/se-broken-data-scrapping": {
-      "x": 1980,
+      "x": 1386,
       "y": 1584
     },
     "recipe/se-canister": {
       "x": 198,
       "y": 660
     },
+    "recipe/se-capsule-behemoth-biter": {
+      "x": 2442,
+      "y": 1056
+    },
+    "recipe/se-capsule-behemoth-spitter": {
+      "x": 132,
+      "y": 1122
+    },
+    "recipe/se-capsule-big-biter": {
+      "x": 2244,
+      "y": 1056
+    },
+    "recipe/se-capsule-big-spitter": {
+      "x": 66,
+      "y": 1122
+    },
+    "recipe/se-capsule-medium-biter": {
+      "x": 2376,
+      "y": 1056
+    },
+    "recipe/se-capsule-medium-spitter": {
+      "x": 0,
+      "y": 1122
+    },
+    "recipe/se-capsule-small-biter": {
+      "x": 2310,
+      "y": 1056
+    },
+    "recipe/se-capsule-small-spitter": {
+      "x": 2508,
+      "y": 1056
+    },
     "recipe/se-cargo-pod-scrapping": {
-      "x": 2178,
+      "x": 1584,
       "y": 1584
     },
-    "recipe/se-cargo-rocket-section-beryllium": {
+    "recipe/se-cargo-rocket-cargo-pod": {
       "x": 2310,
+      "y": 594
+    },
+    "recipe/se-cargo-rocket-fuel-tank": {
+      "x": 2376,
+      "y": 594
+    },
+    "recipe/se-cargo-rocket-section": {
+      "x": 2442,
+      "y": 594
+    },
+    "recipe/se-cargo-rocket-section-beryllium": {
+      "x": 1716,
       "y": 1518
     },
     "recipe/se-cargo-rocket-section-packed": {
-      "x": 2442,
+      "x": 1848,
       "y": 1518
     },
     "recipe/se-cargo-rocket-section-unpack": {
-      "x": 2376,
+      "x": 1782,
       "y": 1518
     },
+    "recipe/se-casting-machine": {
+      "x": 1518,
+      "y": 264
+    },
     "recipe/se-chemical-gel": {
-      "x": 1188,
+      "x": 528,
       "y": 1254
     },
     "recipe/se-chemical-gel-barrel": {
-      "x": 1848,
+      "x": 1254,
       "y": 1650
     },
     "recipe/se-cold-thermodynamics-data": {
@@ -3701,72 +4557,72 @@
       "y": 858
     },
     "recipe/se-contaminated-bio-sludge-barrel": {
-      "x": 0,
-      "y": 1716
+      "x": 1980,
+      "y": 1650
     },
     "recipe/se-contaminated-space-water-barrel": {
-      "x": 396,
-      "y": 1716
+      "x": 2376,
+      "y": 1650
     },
     "recipe/se-copper-ingot": {
-      "x": 66,
-      "y": 1452
+      "x": 1980,
+      "y": 1386
     },
     "recipe/se-copper-ingot-to-plate": {
-      "x": 132,
-      "y": 1452
+      "x": 2046,
+      "y": 1386
     },
     "recipe/se-core-fragment-coal": {
-      "x": 1386,
+      "x": 726,
       "y": 1320
     },
     "recipe/se-core-fragment-copper-ore": {
-      "x": 0,
-      "y": 1452
+      "x": 1914,
+      "y": 1386
     },
     "recipe/se-core-fragment-crude-oil": {
-      "x": 2046,
+      "x": 1386,
       "y": 1320
     },
     "recipe/se-core-fragment-iron-ore": {
-      "x": 1848,
+      "x": 1188,
       "y": 1386
     },
     "recipe/se-core-fragment-omni": {
-      "x": 1320,
+      "x": 660,
       "y": 1320
     },
     "recipe/se-core-fragment-se-beryllium-ore": {
-      "x": 1914,
+      "x": 1254,
       "y": 1452
     },
     "recipe/se-core-fragment-se-cryonite": {
-      "x": 1518,
+      "x": 858,
       "y": 1452
     },
     "recipe/se-core-fragment-se-holmium-ore": {
-      "x": 2376,
+      "x": 1716,
       "y": 1452
     },
     "recipe/se-core-fragment-se-iridium-ore": {
-      "x": 264,
-      "y": 1518
+      "x": 2178,
+      "y": 1452
     },
     "recipe/se-core-fragment-se-vitamelange": {
-      "x": 660,
+      "x": 0,
       "y": 1518
     },
     "recipe/se-core-fragment-se-vulcanite": {
-      "x": 990,
+      "x": 330,
       "y": 1452
     },
     "recipe/se-core-fragment-stone": {
-      "x": 1320,
+      "x": 660,
       "y": 1386
     },
     "recipe/se-core-fragment-uranium-ore": {
-      "x": 462,
-      "y": 1452
+      "x": 2376,
+      "y": 1386
     },
     "recipe/se-core-miner-drill": {
       "x": 1188,
@@ -3780,12 +4636,40 @@
       "x": 1122,
       "y": 858
     },
-    "recipe/se-cryonite-lubricant": {
+    "recipe/se-cryogun": {
       "x": 0,
-      "y": 1386
+      "y": 1056
+    },
+    "recipe/se-cryogun-ammo": {
+      "x": 1584,
+      "y": 1056
+    },
+    "recipe/se-cryonite-crystal": {
+      "x": 2442,
+      "y": 462
+    },
+    "recipe/se-cryonite-ion-exchange-beads": {
+      "x": 0,
+      "y": 528
+    },
+    "recipe/se-cryonite-lubricant": {
+      "x": 1914,
+      "y": 1320
+    },
+    "recipe/se-cryonite-powder": {
+      "x": 2376,
+      "y": 462
+    },
+    "recipe/se-cryonite-rod": {
+      "x": 2508,
+      "y": 462
+    },
+    "recipe/se-cryonite-slush": {
+      "x": 1122,
+      "y": 1254
     },
     "recipe/se-cryonite-slush-barrel": {
-      "x": 1716,
+      "x": 1122,
       "y": 1650
     },
     "recipe/se-dark-energy-data": {
@@ -3801,11 +4685,11 @@
       "y": 792
     },
     "recipe/se-data-storage-substrate-cleaned": {
-      "x": 1980,
+      "x": 1386,
       "y": 1716
     },
     "recipe/se-data-storage-substrate-cleaned-chemical": {
-      "x": 2046,
+      "x": 1452,
       "y": 1716
     },
     "recipe/se-decompression-data": {
@@ -3815,6 +4699,22 @@
     "recipe/se-decompression-resistance-data": {
       "x": 1386,
       "y": 858
+    },
+    "recipe/se-deep-catalogue-1": {
+      "x": 66,
+      "y": 990
+    },
+    "recipe/se-deep-catalogue-2": {
+      "x": 132,
+      "y": 990
+    },
+    "recipe/se-deep-catalogue-3": {
+      "x": 198,
+      "y": 990
+    },
+    "recipe/se-deep-catalogue-4": {
+      "x": 264,
+      "y": 990
     },
     "recipe/se-deep-space-science-pack-1": {
       "x": 1452,
@@ -3832,389 +4732,517 @@
       "x": 1650,
       "y": 990
     },
-    "recipe/se-delivery-cannon-capsule-iridium": {
+    "recipe/se-deep-space-splitter-black": {
+      "x": 1056,
+      "y": 66
+    },
+    "recipe/se-deep-space-splitter-blue": {
+      "x": 1122,
+      "y": 66
+    },
+    "recipe/se-deep-space-splitter-cyan": {
+      "x": 1188,
+      "y": 66
+    },
+    "recipe/se-deep-space-splitter-green": {
+      "x": 1254,
+      "y": 66
+    },
+    "recipe/se-deep-space-splitter-magenta": {
+      "x": 1320,
+      "y": 66
+    },
+    "recipe/se-deep-space-splitter-red": {
+      "x": 1386,
+      "y": 66
+    },
+    "recipe/se-deep-space-splitter-white": {
+      "x": 1452,
+      "y": 66
+    },
+    "recipe/se-deep-space-splitter-yellow": {
+      "x": 1518,
+      "y": 66
+    },
+    "recipe/se-deep-space-transport-belt-black": {
+      "x": 2046,
+      "y": 0
+    },
+    "recipe/se-deep-space-transport-belt-blue": {
+      "x": 2112,
+      "y": 0
+    },
+    "recipe/se-deep-space-transport-belt-cyan": {
+      "x": 2178,
+      "y": 0
+    },
+    "recipe/se-deep-space-transport-belt-green": {
+      "x": 2244,
+      "y": 0
+    },
+    "recipe/se-deep-space-transport-belt-magenta": {
+      "x": 2310,
+      "y": 0
+    },
+    "recipe/se-deep-space-transport-belt-red": {
+      "x": 2376,
+      "y": 0
+    },
+    "recipe/se-deep-space-transport-belt-white": {
+      "x": 2442,
+      "y": 0
+    },
+    "recipe/se-deep-space-transport-belt-yellow": {
       "x": 2508,
+      "y": 0
+    },
+    "recipe/se-deep-space-underground-belt-black": {
+      "x": 264,
+      "y": 66
+    },
+    "recipe/se-deep-space-underground-belt-blue": {
+      "x": 330,
+      "y": 66
+    },
+    "recipe/se-deep-space-underground-belt-cyan": {
+      "x": 396,
+      "y": 66
+    },
+    "recipe/se-deep-space-underground-belt-green": {
+      "x": 462,
+      "y": 66
+    },
+    "recipe/se-deep-space-underground-belt-magenta": {
+      "x": 528,
+      "y": 66
+    },
+    "recipe/se-deep-space-underground-belt-red": {
+      "x": 594,
+      "y": 66
+    },
+    "recipe/se-deep-space-underground-belt-white": {
+      "x": 660,
+      "y": 66
+    },
+    "recipe/se-deep-space-underground-belt-yellow": {
+      "x": 726,
+      "y": 66
+    },
+    "recipe/se-delivery-cannon": {
+      "x": 1650,
+      "y": 726
+    },
+    "recipe/se-delivery-cannon-artillery-targeter-atomic-bomb": {
+      "x": 726,
+      "y": 1188
+    },
+    "recipe/se-delivery-cannon-artillery-targeter-se-iridium-piledriver": {
+      "x": 660,
+      "y": 1188
+    },
+    "recipe/se-delivery-cannon-artillery-targeter-se-plague-bomb": {
+      "x": 792,
+      "y": 1188
+    },
+    "recipe/se-delivery-cannon-capsule": {
+      "x": 66,
+      "y": 660
+    },
+    "recipe/se-delivery-cannon-capsule-iridium": {
+      "x": 1914,
       "y": 1518
     },
+    "recipe/se-delivery-cannon-chest": {
+      "x": 1716,
+      "y": 726
+    },
     "recipe/se-delivery-cannon-pack-coal": {
-      "x": 1782,
+      "x": 1122,
       "y": 1320
     },
     "recipe/se-delivery-cannon-pack-concrete": {
-      "x": 660,
+      "x": 0,
       "y": 1320
     },
     "recipe/se-delivery-cannon-pack-copper-ore": {
-      "x": 264,
-      "y": 1452
+      "x": 2178,
+      "y": 1386
     },
     "recipe/se-delivery-cannon-pack-copper-plate": {
-      "x": 396,
-      "y": 1452
+      "x": 2310,
+      "y": 1386
     },
     "recipe/se-delivery-cannon-pack-crude-oil-barrel": {
-      "x": 726,
+      "x": 132,
       "y": 1650
     },
     "recipe/se-delivery-cannon-pack-explosives": {
-      "x": 1980,
+      "x": 1320,
       "y": 1320
     },
     "recipe/se-delivery-cannon-pack-glass": {
-      "x": 1716,
+      "x": 1056,
       "y": 1386
     },
     "recipe/se-delivery-cannon-pack-heavy-oil-barrel": {
-      "x": 924,
+      "x": 330,
       "y": 1650
     },
     "recipe/se-delivery-cannon-pack-iron-ore": {
-      "x": 2244,
+      "x": 1584,
       "y": 1386
     },
     "recipe/se-delivery-cannon-pack-iron-plate": {
-      "x": 2376,
+      "x": 1716,
       "y": 1386
     },
     "recipe/se-delivery-cannon-pack-light-oil-barrel": {
-      "x": 858,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-low-density-structure": {
-      "x": 2244,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-lubricant-barrel": {
-      "x": 990,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-petroleum-gas-barrel": {
-      "x": 792,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-plastic-bar": {
-      "x": 1914,
-      "y": 1320
-    },
-    "recipe/se-delivery-cannon-pack-processed-fuel": {
-      "x": 594,
-      "y": 1386
-    },
-    "recipe/se-delivery-cannon-pack-rocket-fuel": {
-      "x": 726,
-      "y": 1386
-    },
-    "recipe/se-delivery-cannon-pack-sand": {
-      "x": 1650,
-      "y": 1386
-    },
-    "recipe/se-delivery-cannon-pack-se-beryllium-hydroxide-barrel": {
-      "x": 198,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-beryllium-ingot": {
-      "x": 2310,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-beryllium-ore": {
-      "x": 2112,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-beryllium-powder": {
-      "x": 2244,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-beryllium-sulfate": {
-      "x": 2178,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-bio-sludge-barrel": {
-      "x": 1122,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-chemical-gel-barrel": {
-      "x": 462,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-contaminated-bio-sludge-barrel": {
-      "x": 1188,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-contaminated-scrap": {
-      "x": 132,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-contaminated-space-water-barrel": {
-      "x": 1518,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-copper-ingot": {
-      "x": 330,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-core-fragment-coal": {
-      "x": 1650,
-      "y": 1320
-    },
-    "recipe/se-delivery-cannon-pack-se-core-fragment-copper-ore": {
-      "x": 198,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-core-fragment-crude-oil": {
-      "x": 66,
-      "y": 1386
-    },
-    "recipe/se-delivery-cannon-pack-se-core-fragment-iron-ore": {
-      "x": 2178,
-      "y": 1386
-    },
-    "recipe/se-delivery-cannon-pack-se-core-fragment-omni": {
-      "x": 1584,
-      "y": 1320
-    },
-    "recipe/se-delivery-cannon-pack-se-core-fragment-se-beryllium-ore": {
-      "x": 2046,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-core-fragment-se-cryonite": {
-      "x": 1584,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-core-fragment-se-holmium-ore": {
-      "x": 2508,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-core-fragment-se-iridium-ore": {
-      "x": 330,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-core-fragment-se-vitamelange": {
-      "x": 726,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-core-fragment-se-vulcanite": {
-      "x": 1122,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-core-fragment-stone": {
-      "x": 1518,
-      "y": 1386
-    },
-    "recipe/se-delivery-cannon-pack-se-core-fragment-uranium-ore": {
-      "x": 726,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-cryonite": {
-      "x": 1650,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-cryonite-ion-exchange-beads": {
-      "x": 1848,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-cryonite-powder": {
-      "x": 1716,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-cryonite-rod": {
-      "x": 1782,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-cryonite-slush-barrel": {
-      "x": 330,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-heat-shielding": {
-      "x": 1782,
-      "y": 1386
-    },
-    "recipe/se-delivery-cannon-pack-se-holmium-chloride": {
-      "x": 132,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-holmium-ingot": {
-      "x": 198,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-holmium-ore": {
-      "x": 0,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-holmium-ore-crushed": {
-      "x": 66,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-iridium-blastcake": {
-      "x": 528,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-iridium-ingot": {
-      "x": 594,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-iridium-ore": {
-      "x": 396,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-iridium-ore-crushed": {
-      "x": 462,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-iron-ingot": {
-      "x": 2310,
-      "y": 1386
-    },
-    "recipe/se-delivery-cannon-pack-se-liquid-rocket-fuel-barrel": {
-      "x": 396,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-methane-gas-barrel": {
-      "x": 1056,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-methane-ice": {
-      "x": 132,
-      "y": 1386
-    },
-    "recipe/se-delivery-cannon-pack-se-naquium-ingot": {
-      "x": 1254,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-naquium-ore": {
-      "x": 1056,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-naquium-ore-crushed": {
-      "x": 1122,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-naquium-refined": {
-      "x": 1188,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-neural-gel-2-barrel": {
-      "x": 660,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-neural-gel-barrel": {
-      "x": 594,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-nutrient-gel-barrel": {
-      "x": 528,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-pyroflux-barrel": {
-      "x": 1386,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-scrap": {
-      "x": 66,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-space-coolant-hot-barrel": {
-      "x": 1254,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-space-elevator-cable": {
-      "x": 66,
-      "y": 1584
-    },
-    "recipe/se-delivery-cannon-pack-se-space-water-barrel": {
-      "x": 1452,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-steel-ingot": {
-      "x": 2442,
-      "y": 1386
-    },
-    "recipe/se-delivery-cannon-pack-se-vitalic-acid-barrel": {
-      "x": 1320,
-      "y": 1650
-    },
-    "recipe/se-delivery-cannon-pack-se-vitamelange": {
-      "x": 792,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-vitamelange-bloom": {
-      "x": 924,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-vitamelange-nugget": {
-      "x": 858,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-vitamelange-spice": {
-      "x": 990,
-      "y": 1518
-    },
-    "recipe/se-delivery-cannon-pack-se-vulcanite": {
-      "x": 1188,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-vulcanite-block": {
-      "x": 1386,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-vulcanite-crushed": {
-      "x": 1254,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-vulcanite-enriched": {
-      "x": 1320,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-vulcanite-ion-exchange-beads": {
-      "x": 1452,
-      "y": 1452
-    },
-    "recipe/se-delivery-cannon-pack-se-water-ice": {
-      "x": 1254,
-      "y": 1320
-    },
-    "recipe/se-delivery-cannon-pack-solid-fuel": {
-      "x": 660,
-      "y": 1386
-    },
-    "recipe/se-delivery-cannon-pack-steel-plate": {
-      "x": 2508,
-      "y": 1386
-    },
-    "recipe/se-delivery-cannon-pack-stone": {
-      "x": 1584,
-      "y": 1386
-    },
-    "recipe/se-delivery-cannon-pack-stone-brick": {
-      "x": 594,
-      "y": 1320
-    },
-    "recipe/se-delivery-cannon-pack-sulfur": {
-      "x": 1848,
-      "y": 1320
-    },
-    "recipe/se-delivery-cannon-pack-sulfuric-acid-barrel": {
       "x": 264,
       "y": 1650
     },
-    "recipe/se-delivery-cannon-pack-uranium-235": {
+    "recipe/se-delivery-cannon-pack-low-density-structure": {
+      "x": 1584,
+      "y": 1518
+    },
+    "recipe/se-delivery-cannon-pack-lubricant-barrel": {
+      "x": 396,
+      "y": 1650
+    },
+    "recipe/se-delivery-cannon-pack-petroleum-gas-barrel": {
+      "x": 198,
+      "y": 1650
+    },
+    "recipe/se-delivery-cannon-pack-plastic-bar": {
+      "x": 1254,
+      "y": 1320
+    },
+    "recipe/se-delivery-cannon-pack-processed-fuel": {
+      "x": 2508,
+      "y": 1320
+    },
+    "recipe/se-delivery-cannon-pack-rocket-fuel": {
+      "x": 66,
+      "y": 1386
+    },
+    "recipe/se-delivery-cannon-pack-sand": {
+      "x": 990,
+      "y": 1386
+    },
+    "recipe/se-delivery-cannon-pack-se-beryllium-hydroxide-barrel": {
+      "x": 2178,
+      "y": 1584
+    },
+    "recipe/se-delivery-cannon-pack-se-beryllium-ingot": {
+      "x": 1650,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-beryllium-ore": {
+      "x": 1452,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-beryllium-powder": {
+      "x": 1584,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-beryllium-sulfate": {
+      "x": 1518,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-bio-sludge-barrel": {
+      "x": 528,
+      "y": 1650
+    },
+    "recipe/se-delivery-cannon-pack-se-chemical-gel-barrel": {
+      "x": 2442,
+      "y": 1584
+    },
+    "recipe/se-delivery-cannon-pack-se-contaminated-bio-sludge-barrel": {
+      "x": 594,
+      "y": 1650
+    },
+    "recipe/se-delivery-cannon-pack-se-contaminated-scrap": {
+      "x": 2112,
+      "y": 1584
+    },
+    "recipe/se-delivery-cannon-pack-se-contaminated-space-water-barrel": {
+      "x": 924,
+      "y": 1650
+    },
+    "recipe/se-delivery-cannon-pack-se-copper-ingot": {
+      "x": 2244,
+      "y": 1386
+    },
+    "recipe/se-delivery-cannon-pack-se-core-fragment-coal": {
+      "x": 990,
+      "y": 1320
+    },
+    "recipe/se-delivery-cannon-pack-se-core-fragment-copper-ore": {
+      "x": 2112,
+      "y": 1386
+    },
+    "recipe/se-delivery-cannon-pack-se-core-fragment-crude-oil": {
+      "x": 1980,
+      "y": 1320
+    },
+    "recipe/se-delivery-cannon-pack-se-core-fragment-iron-ore": {
+      "x": 1518,
+      "y": 1386
+    },
+    "recipe/se-delivery-cannon-pack-se-core-fragment-omni": {
+      "x": 924,
+      "y": 1320
+    },
+    "recipe/se-delivery-cannon-pack-se-core-fragment-se-beryllium-ore": {
+      "x": 1386,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-core-fragment-se-cryonite": {
       "x": 924,
       "y": 1452
     },
-    "recipe/se-delivery-cannon-pack-uranium-238": {
-      "x": 858,
+    "recipe/se-delivery-cannon-pack-se-core-fragment-se-holmium-ore": {
+      "x": 1848,
       "y": 1452
     },
-    "recipe/se-delivery-cannon-pack-uranium-ore": {
+    "recipe/se-delivery-cannon-pack-se-core-fragment-se-iridium-ore": {
+      "x": 2244,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-core-fragment-se-vitamelange": {
+      "x": 66,
+      "y": 1518
+    },
+    "recipe/se-delivery-cannon-pack-se-core-fragment-se-vulcanite": {
+      "x": 462,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-core-fragment-stone": {
+      "x": 858,
+      "y": 1386
+    },
+    "recipe/se-delivery-cannon-pack-se-core-fragment-uranium-ore": {
+      "x": 66,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-cryonite": {
+      "x": 990,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-cryonite-ion-exchange-beads": {
+      "x": 1188,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-cryonite-powder": {
+      "x": 1056,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-cryonite-rod": {
+      "x": 1122,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-cryonite-slush-barrel": {
+      "x": 2310,
+      "y": 1584
+    },
+    "recipe/se-delivery-cannon-pack-se-heat-shielding": {
+      "x": 1122,
+      "y": 1386
+    },
+    "recipe/se-delivery-cannon-pack-se-holmium-chloride": {
+      "x": 2046,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-holmium-ingot": {
+      "x": 2112,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-holmium-ore": {
+      "x": 1914,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-holmium-ore-crushed": {
+      "x": 1980,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-iridium-blastcake": {
+      "x": 2442,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-iridium-ingot": {
+      "x": 2508,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-iridium-ore": {
+      "x": 2310,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-iridium-ore-crushed": {
+      "x": 2376,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-iron-ingot": {
+      "x": 1650,
+      "y": 1386
+    },
+    "recipe/se-delivery-cannon-pack-se-liquid-rocket-fuel-barrel": {
+      "x": 2376,
+      "y": 1584
+    },
+    "recipe/se-delivery-cannon-pack-se-methane-gas-barrel": {
+      "x": 462,
+      "y": 1650
+    },
+    "recipe/se-delivery-cannon-pack-se-methane-ice": {
+      "x": 2046,
+      "y": 1320
+    },
+    "recipe/se-delivery-cannon-pack-se-naquium-ingot": {
+      "x": 594,
+      "y": 1518
+    },
+    "recipe/se-delivery-cannon-pack-se-naquium-ore": {
+      "x": 396,
+      "y": 1518
+    },
+    "recipe/se-delivery-cannon-pack-se-naquium-ore-crushed": {
+      "x": 462,
+      "y": 1518
+    },
+    "recipe/se-delivery-cannon-pack-se-naquium-refined": {
+      "x": 528,
+      "y": 1518
+    },
+    "recipe/se-delivery-cannon-pack-se-neural-gel-2-barrel": {
+      "x": 66,
+      "y": 1650
+    },
+    "recipe/se-delivery-cannon-pack-se-neural-gel-barrel": {
+      "x": 0,
+      "y": 1650
+    },
+    "recipe/se-delivery-cannon-pack-se-nutrient-gel-barrel": {
+      "x": 2508,
+      "y": 1584
+    },
+    "recipe/se-delivery-cannon-pack-se-pyroflux-barrel": {
+      "x": 792,
+      "y": 1650
+    },
+    "recipe/se-delivery-cannon-pack-se-scrap": {
+      "x": 2046,
+      "y": 1584
+    },
+    "recipe/se-delivery-cannon-pack-se-space-coolant-hot-barrel": {
+      "x": 660,
+      "y": 1650
+    },
+    "recipe/se-delivery-cannon-pack-se-space-elevator-cable": {
+      "x": 2046,
+      "y": 1518
+    },
+    "recipe/se-delivery-cannon-pack-se-space-water-barrel": {
+      "x": 858,
+      "y": 1650
+    },
+    "recipe/se-delivery-cannon-pack-se-steel-ingot": {
+      "x": 1782,
+      "y": 1386
+    },
+    "recipe/se-delivery-cannon-pack-se-vitalic-acid-barrel": {
+      "x": 726,
+      "y": 1650
+    },
+    "recipe/se-delivery-cannon-pack-se-vitamelange": {
+      "x": 132,
+      "y": 1518
+    },
+    "recipe/se-delivery-cannon-pack-se-vitamelange-bloom": {
+      "x": 264,
+      "y": 1518
+    },
+    "recipe/se-delivery-cannon-pack-se-vitamelange-nugget": {
+      "x": 198,
+      "y": 1518
+    },
+    "recipe/se-delivery-cannon-pack-se-vitamelange-spice": {
+      "x": 330,
+      "y": 1518
+    },
+    "recipe/se-delivery-cannon-pack-se-vulcanite": {
+      "x": 528,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-vulcanite-block": {
+      "x": 726,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-vulcanite-crushed": {
+      "x": 594,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-vulcanite-enriched": {
+      "x": 660,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-se-vulcanite-ion-exchange-beads": {
       "x": 792,
       "y": 1452
     },
+    "recipe/se-delivery-cannon-pack-se-water-ice": {
+      "x": 594,
+      "y": 1320
+    },
+    "recipe/se-delivery-cannon-pack-solid-fuel": {
+      "x": 0,
+      "y": 1386
+    },
+    "recipe/se-delivery-cannon-pack-steel-plate": {
+      "x": 1848,
+      "y": 1386
+    },
+    "recipe/se-delivery-cannon-pack-stone": {
+      "x": 924,
+      "y": 1386
+    },
+    "recipe/se-delivery-cannon-pack-stone-brick": {
+      "x": 2508,
+      "y": 1254
+    },
+    "recipe/se-delivery-cannon-pack-sulfur": {
+      "x": 1188,
+      "y": 1320
+    },
+    "recipe/se-delivery-cannon-pack-sulfuric-acid-barrel": {
+      "x": 2244,
+      "y": 1584
+    },
+    "recipe/se-delivery-cannon-pack-uranium-235": {
+      "x": 264,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-uranium-238": {
+      "x": 198,
+      "y": 1452
+    },
+    "recipe/se-delivery-cannon-pack-uranium-ore": {
+      "x": 132,
+      "y": 1452
+    },
     "recipe/se-delivery-cannon-pack-water-barrel": {
-      "x": 1452,
+      "x": 858,
       "y": 1650
     },
     "recipe/se-delivery-cannon-pack-wood": {
-      "x": 1716,
+      "x": 1056,
       "y": 1320
+    },
+    "recipe/se-delivery-cannon-weapon": {
+      "x": 1782,
+      "y": 1188
+    },
+    "recipe/se-delivery-cannon-weapon-capsule": {
+      "x": 1848,
+      "y": 1188
     },
     "recipe/se-delivery-cannon-weapon-pack-atomic-bomb": {
       "x": 1188,
@@ -4228,28 +5256,40 @@
       "x": 1254,
       "y": 1056
     },
+    "recipe/se-dimensional-anchor": {
+      "x": 2508,
+      "y": 330
+    },
     "recipe/se-distortion-drive": {
-      "x": 2376,
+      "x": 1782,
       "y": 1716
     },
+    "recipe/se-dynamic-emitter": {
+      "x": 660,
+      "y": 594
+    },
+    "recipe/se-electric-boiler": {
+      "x": 1980,
+      "y": 198
+    },
     "recipe/se-electric-boiling-steam-100": {
-      "x": 990,
+      "x": 330,
       "y": 1320
     },
     "recipe/se-electric-boiling-steam-165": {
-      "x": 1056,
+      "x": 396,
       "y": 1320
     },
     "recipe/se-electric-boiling-steam-500": {
-      "x": 1122,
+      "x": 462,
       "y": 1320
     },
     "recipe/se-electric-boiling-steam-5000": {
-      "x": 1188,
+      "x": 528,
       "y": 1320
     },
     "recipe/se-electric-boiling-void": {
-      "x": 858,
+      "x": 198,
       "y": 1320
     },
     "recipe/se-electrical-shielding-data": {
@@ -4261,7 +5301,7 @@
       "y": 858
     },
     "recipe/se-empty-antimatter-canister": {
-      "x": 594,
+      "x": 0,
       "y": 1584
     },
     "recipe/se-empty-data": {
@@ -4271,6 +5311,10 @@
     "recipe/se-empty-lifesupport-canister": {
       "x": 330,
       "y": 660
+    },
+    "recipe/se-energy-beam-defence": {
+      "x": 1716,
+      "y": 1188
     },
     "recipe/se-energy-catalogue-1": {
       "x": 1848,
@@ -4289,20 +5333,52 @@
       "y": 858
     },
     "recipe/se-energy-insight-1": {
-      "x": 1584,
+      "x": 990,
       "y": 1782
     },
     "recipe/se-energy-insight-2": {
-      "x": 1650,
+      "x": 1056,
       "y": 1782
     },
     "recipe/se-energy-insight-3": {
-      "x": 1716,
+      "x": 1122,
       "y": 1782
     },
     "recipe/se-energy-insight-4": {
-      "x": 1782,
+      "x": 1188,
       "y": 1782
+    },
+    "recipe/se-energy-receiver": {
+      "x": 2442,
+      "y": 330
+    },
+    "recipe/se-energy-science-pack-1": {
+      "x": 726,
+      "y": 924
+    },
+    "recipe/se-energy-science-pack-2": {
+      "x": 792,
+      "y": 924
+    },
+    "recipe/se-energy-science-pack-3": {
+      "x": 858,
+      "y": 924
+    },
+    "recipe/se-energy-science-pack-4": {
+      "x": 924,
+      "y": 924
+    },
+    "recipe/se-energy-transmitter-chamber": {
+      "x": 2310,
+      "y": 330
+    },
+    "recipe/se-energy-transmitter-emitter": {
+      "x": 2244,
+      "y": 330
+    },
+    "recipe/se-energy-transmitter-injector": {
+      "x": 2376,
+      "y": 330
     },
     "recipe/se-entanglement-data": {
       "x": 264,
@@ -4328,29 +5404,41 @@
       "x": 2046,
       "y": 924
     },
+    "recipe/se-fluid-burner-generator": {
+      "x": 330,
+      "y": 264
+    },
     "recipe/se-forcefield-data": {
       "x": 66,
       "y": 924
     },
     "recipe/se-formatting-1": {
-      "x": 2112,
+      "x": 1518,
       "y": 1716
     },
     "recipe/se-formatting-2": {
-      "x": 2178,
+      "x": 1584,
       "y": 1716
     },
     "recipe/se-formatting-3": {
-      "x": 2244,
+      "x": 1650,
       "y": 1716
     },
     "recipe/se-formatting-4": {
-      "x": 2310,
+      "x": 1716,
       "y": 1716
     },
     "recipe/se-friction-data": {
       "x": 1848,
       "y": 924
+    },
+    "recipe/se-fuel-refinery": {
+      "x": 330,
+      "y": 330
+    },
+    "recipe/se-fusion-reactor-equipment": {
+      "x": 990,
+      "y": 1122
     },
     "recipe/se-fusion-test-data": {
       "x": 462,
@@ -4369,7 +5457,7 @@
       "y": 858
     },
     "recipe/se-glass-vulcanite": {
-      "x": 1386,
+      "x": 726,
       "y": 1386
     },
     "recipe/se-gravitational-lensing-data": {
@@ -4380,13 +5468,61 @@
       "x": 1848,
       "y": 792
     },
+    "recipe/se-heat-shielding": {
+      "x": 726,
+      "y": 462
+    },
     "recipe/se-heat-shielding-iridium": {
-      "x": 1452,
+      "x": 792,
       "y": 1386
     },
+    "recipe/se-heavy-assembly": {
+      "x": 1782,
+      "y": 594
+    },
+    "recipe/se-heavy-bearing": {
+      "x": 1650,
+      "y": 594
+    },
+    "recipe/se-heavy-composite": {
+      "x": 1716,
+      "y": 594
+    },
+    "recipe/se-heavy-girder": {
+      "x": 1584,
+      "y": 594
+    },
+    "recipe/se-holmium-cable": {
+      "x": 462,
+      "y": 594
+    },
+    "recipe/se-holmium-chloride": {
+      "x": 660,
+      "y": 528
+    },
+    "recipe/se-holmium-ingot": {
+      "x": 792,
+      "y": 528
+    },
     "recipe/se-holmium-ingot-no-vulcanite": {
-      "x": 2442,
+      "x": 1782,
       "y": 1452
+    },
+    "recipe/se-holmium-ore-crushed": {
+      "x": 594,
+      "y": 528
+    },
+    "recipe/se-holmium-plate": {
+      "x": 858,
+      "y": 528
+    },
+    "recipe/se-holmium-powder": {
+      "x": 726,
+      "y": 528
+    },
+    "recipe/se-holmium-solenoid": {
+      "x": 594,
+      "y": 594
     },
     "recipe/se-hot-thermodynamics-data": {
       "x": 1386,
@@ -4404,56 +5540,108 @@
       "x": 1386,
       "y": 792
     },
+    "recipe/se-interstellar-data": {
+      "x": 1188,
+      "y": 990
+    },
     "recipe/se-ion-canister": {
       "x": 594,
       "y": 660
     },
     "recipe/se-ion-canister-empty": {
-      "x": 528,
-      "y": 1584
+      "x": 2508,
+      "y": 1518
     },
     "recipe/se-ion-stream": {
-      "x": 2178,
+      "x": 1518,
       "y": 1254
     },
+    "recipe/se-iridium-blastcake": {
+      "x": 1188,
+      "y": 528
+    },
+    "recipe/se-iridium-ingot": {
+      "x": 1254,
+      "y": 528
+    },
+    "recipe/se-iridium-ore-crushed": {
+      "x": 1056,
+      "y": 528
+    },
+    "recipe/se-iridium-plate": {
+      "x": 1320,
+      "y": 528
+    },
+    "recipe/se-iridium-powder": {
+      "x": 1122,
+      "y": 528
+    },
     "recipe/se-iron-ingot": {
-      "x": 1914,
+      "x": 1254,
       "y": 1386
     },
     "recipe/se-iron-ingot-to-plate": {
-      "x": 1980,
+      "x": 1320,
       "y": 1386
     },
     "recipe/se-laser-shielding-data": {
       "x": 2178,
       "y": 924
     },
+    "recipe/se-lattice-pressure-vessel": {
+      "x": 2046,
+      "y": 594
+    },
     "recipe/se-lepton-data": {
       "x": 330,
       "y": 924
     },
     "recipe/se-lifesupport-canister": {
-      "x": 264,
-      "y": 1584
+      "x": 2244,
+      "y": 1518
     },
     "recipe/se-lifesupport-canister-fish": {
-      "x": 330,
-      "y": 1584
+      "x": 2310,
+      "y": 1518
     },
     "recipe/se-lifesupport-canister-specimen": {
-      "x": 396,
-      "y": 1584
+      "x": 2376,
+      "y": 1518
+    },
+    "recipe/se-lifesupport-equipment-1": {
+      "x": 2376,
+      "y": 1122
+    },
+    "recipe/se-lifesupport-equipment-2": {
+      "x": 2442,
+      "y": 1122
+    },
+    "recipe/se-lifesupport-equipment-3": {
+      "x": 2508,
+      "y": 1122
+    },
+    "recipe/se-lifesupport-equipment-4": {
+      "x": 0,
+      "y": 1188
     },
     "recipe/se-lifesupport-facility": {
       "x": 0,
       "y": 330
     },
+    "recipe/se-linked-container": {
+      "x": 924,
+      "y": 0
+    },
+    "recipe/se-liquid-rocket-fuel": {
+      "x": 462,
+      "y": 1254
+    },
     "recipe/se-liquid-rocket-fuel-barrel": {
-      "x": 1782,
+      "x": 1188,
       "y": 1650
     },
     "recipe/se-low-density-structure-beryllium": {
-      "x": 2112,
+      "x": 1452,
       "y": 1518
     },
     "recipe/se-machine-learning-data": {
@@ -4485,63 +5673,79 @@
       "y": 924
     },
     "recipe/se-material-insight-1": {
-      "x": 1848,
+      "x": 1254,
       "y": 1782
     },
     "recipe/se-material-insight-2": {
-      "x": 1914,
+      "x": 1320,
       "y": 1782
     },
     "recipe/se-material-insight-3": {
-      "x": 1980,
+      "x": 1386,
       "y": 1782
     },
     "recipe/se-material-insight-4": {
-      "x": 2046,
+      "x": 1452,
       "y": 1782
+    },
+    "recipe/se-material-science-pack-1": {
+      "x": 2376,
+      "y": 924
+    },
+    "recipe/se-material-science-pack-2": {
+      "x": 2442,
+      "y": 924
+    },
+    "recipe/se-material-science-pack-3": {
+      "x": 2508,
+      "y": 924
+    },
+    "recipe/se-material-science-pack-4": {
+      "x": 0,
+      "y": 990
     },
     "recipe/se-material-testing-pack": {
       "x": 1320,
       "y": 594
     },
     "recipe/se-matter-fusion-beryllium": {
-      "x": 1782,
+      "x": 1122,
       "y": 1518
     },
     "recipe/se-matter-fusion-copper": {
-      "x": 1452,
+      "x": 792,
       "y": 1518
     },
     "recipe/se-matter-fusion-cryonite": {
-      "x": 1716,
+      "x": 1056,
       "y": 1518
     },
     "recipe/se-matter-fusion-dirty": {
-      "x": 1320,
+      "x": 660,
       "y": 1518
     },
     "recipe/se-matter-fusion-holmium": {
-      "x": 1848,
+      "x": 1188,
       "y": 1518
     },
     "recipe/se-matter-fusion-iridium": {
-      "x": 1914,
+      "x": 1254,
       "y": 1518
     },
     "recipe/se-matter-fusion-iron": {
-      "x": 1386,
+      "x": 726,
       "y": 1518
     },
     "recipe/se-matter-fusion-stone": {
-      "x": 1518,
+      "x": 858,
       "y": 1518
     },
     "recipe/se-matter-fusion-uranium": {
-      "x": 1584,
+      "x": 924,
       "y": 1518
     },
     "recipe/se-matter-fusion-vulcanite": {
-      "x": 1650,
+      "x": 990,
       "y": 1518
     },
     "recipe/se-medpack": {
@@ -4565,16 +5769,36 @@
       "y": 990
     },
     "recipe/se-melting-water-ice": {
-      "x": 726,
+      "x": 66,
       "y": 1320
     },
+    "recipe/se-meteor-defence": {
+      "x": 1584,
+      "y": 1188
+    },
+    "recipe/se-meteor-defence-ammo": {
+      "x": 1650,
+      "y": 1188
+    },
+    "recipe/se-meteor-point-defence": {
+      "x": 1452,
+      "y": 1188
+    },
+    "recipe/se-meteor-point-defence-ammo": {
+      "x": 1518,
+      "y": 1188
+    },
     "recipe/se-methane-gas": {
-      "x": 1056,
+      "x": 396,
       "y": 1254
     },
     "recipe/se-methane-gas-barrel": {
-      "x": 2442,
+      "x": 1848,
       "y": 1650
+    },
+    "recipe/se-methane-ice": {
+      "x": 66,
+      "y": 462
     },
     "recipe/se-micro-black-hole-data": {
       "x": 2244,
@@ -4584,6 +5808,22 @@
       "x": 1650,
       "y": 792
     },
+    "recipe/se-molten-beryllium": {
+      "x": 1254,
+      "y": 1254
+    },
+    "recipe/se-molten-copper": {
+      "x": 990,
+      "y": 1254
+    },
+    "recipe/se-molten-holmium": {
+      "x": 1320,
+      "y": 1254
+    },
+    "recipe/se-molten-iron": {
+      "x": 924,
+      "y": 1254
+    },
     "recipe/se-nano-engineering-data": {
       "x": 330,
       "y": 990
@@ -4592,13 +5832,69 @@
       "x": 1386,
       "y": 594
     },
+    "recipe/se-naquium-crystal": {
+      "x": 2244,
+      "y": 528
+    },
+    "recipe/se-naquium-cube": {
+      "x": 1452,
+      "y": 594
+    },
     "recipe/se-naquium-energy-data": {
       "x": 462,
       "y": 990
     },
+    "recipe/se-naquium-heat-pipe": {
+      "x": 2508,
+      "y": 198
+    },
+    "recipe/se-naquium-heat-pipe-long--t--": {
+      "x": 0,
+      "y": 264
+    },
+    "recipe/se-naquium-heat-pipe-long--t-----t--": {
+      "x": 66,
+      "y": 264
+    },
+    "recipe/se-naquium-ingot": {
+      "x": 2310,
+      "y": 528
+    },
+    "recipe/se-naquium-ore-crushed": {
+      "x": 2046,
+      "y": 528
+    },
+    "recipe/se-naquium-plate": {
+      "x": 2376,
+      "y": 528
+    },
+    "recipe/se-naquium-powder": {
+      "x": 2178,
+      "y": 528
+    },
+    "recipe/se-naquium-processor": {
+      "x": 1056,
+      "y": 594
+    },
+    "recipe/se-naquium-processor-alt": {
+      "x": 1056,
+      "y": 594
+    },
+    "recipe/se-naquium-refined": {
+      "x": 2112,
+      "y": 528
+    },
     "recipe/se-naquium-structural-data": {
       "x": 396,
       "y": 990
+    },
+    "recipe/se-naquium-tessaract": {
+      "x": 1518,
+      "y": 594
+    },
+    "recipe/se-naquium-tessaract-alt": {
+      "x": 1518,
+      "y": 594
     },
     "recipe/se-negative-pressure-data": {
       "x": 2112,
@@ -4609,31 +5905,35 @@
       "y": 858
     },
     "recipe/se-neural-gel": {
-      "x": 1320,
+      "x": 660,
       "y": 1254
     },
     "recipe/se-neural-gel-2": {
-      "x": 1386,
+      "x": 726,
       "y": 1254
     },
     "recipe/se-neural-gel-2-barrel": {
-      "x": 2046,
+      "x": 1452,
       "y": 1650
     },
     "recipe/se-neural-gel-barrel": {
-      "x": 1980,
+      "x": 1386,
       "y": 1650
     },
+    "recipe/se-nexus": {
+      "x": 1254,
+      "y": 330
+    },
     "recipe/se-nutrient-gel": {
-      "x": 792,
+      "x": 132,
       "y": 1386
     },
     "recipe/se-nutrient-gel-barrel": {
-      "x": 1914,
+      "x": 1320,
       "y": 1650
     },
     "recipe/se-nutrient-gel-methane": {
-      "x": 858,
+      "x": 198,
       "y": 1386
     },
     "recipe/se-nutrient-vat": {
@@ -4641,11 +5941,11 @@
       "y": 660
     },
     "recipe/se-observation-frame-blank": {
-      "x": 660,
+      "x": 66,
       "y": 1584
     },
     "recipe/se-observation-frame-blank-beryllium": {
-      "x": 726,
+      "x": 132,
       "y": 1584
     },
     "recipe/se-observation-frame-gammaray": {
@@ -4681,19 +5981,27 @@
       "y": 924
     },
     "recipe/se-particle-stream": {
-      "x": 2310,
+      "x": 1650,
       "y": 1254
+    },
+    "recipe/se-pheromone-ammo": {
+      "x": 1518,
+      "y": 1056
+    },
+    "recipe/se-plague-bomb": {
+      "x": 1254,
+      "y": 1056
     },
     "recipe/se-plasma-canister": {
       "x": 528,
       "y": 660
     },
     "recipe/se-plasma-canister-empty": {
-      "x": 462,
-      "y": 1584
+      "x": 2442,
+      "y": 1518
     },
     "recipe/se-plasma-stream": {
-      "x": 2112,
+      "x": 1452,
       "y": 1254
     },
     "recipe/se-polarisation-data": {
@@ -4705,16 +6013,20 @@
       "y": 924
     },
     "recipe/se-processed-fuel-from-solid-fuel": {
-      "x": 198,
-      "y": 1386
+      "x": 2112,
+      "y": 1320
     },
     "recipe/se-processing-unit-holmium": {
-      "x": 2046,
+      "x": 1386,
       "y": 1518
     },
     "recipe/se-proton-stream": {
-      "x": 2244,
+      "x": 1584,
       "y": 1254
+    },
+    "recipe/se-pulverised-sand": {
+      "x": 594,
+      "y": 462
     },
     "recipe/se-pulveriser": {
       "x": 1914,
@@ -4736,28 +6048,36 @@
       "x": 528,
       "y": 132
     },
+    "recipe/se-pyroflux": {
+      "x": 1056,
+      "y": 1254
+    },
     "recipe/se-pyroflux-barrel": {
-      "x": 198,
-      "y": 1716
+      "x": 2178,
+      "y": 1650
     },
     "recipe/se-pyroflux-steam": {
-      "x": 1056,
+      "x": 396,
       "y": 1452
     },
     "recipe/se-quantum-phenomenon-data": {
       "x": 2442,
       "y": 858
     },
+    "recipe/se-quantum-processor": {
+      "x": 990,
+      "y": 594
+    },
     "recipe/se-quark-data": {
       "x": 198,
       "y": 924
     },
     "recipe/se-radiating-space-coolant-fast": {
-      "x": 924,
+      "x": 330,
       "y": 1584
     },
     "recipe/se-radiating-space-coolant-slow": {
-      "x": 858,
+      "x": 264,
       "y": 1584
     },
     "recipe/se-radiation-data": {
@@ -4780,117 +6100,141 @@
       "x": 1914,
       "y": 792
     },
+    "recipe/se-railgun": {
+      "x": 2310,
+      "y": 990
+    },
+    "recipe/se-railgun-ammo": {
+      "x": 528,
+      "y": 1056
+    },
     "recipe/se-recycle-big-electric-pole": {
-      "x": 2244,
+      "x": 1650,
       "y": 1584
     },
     "recipe/se-recycle-medium-electric-pole": {
-      "x": 2310,
+      "x": 1716,
       "y": 1584
     },
     "recipe/se-recycle-radar": {
-      "x": 2376,
+      "x": 1782,
       "y": 1584
     },
     "recipe/se-recycle-small-electric-pole": {
-      "x": 2442,
+      "x": 1848,
       "y": 1584
     },
     "recipe/se-recycle-small-iron-electric-pole": {
-      "x": 2508,
+      "x": 1914,
       "y": 1584
     },
     "recipe/se-recycle-substation": {
-      "x": 0,
-      "y": 1650
+      "x": 1980,
+      "y": 1584
     },
     "recipe/se-recycling-facility": {
       "x": 1782,
       "y": 264
+    },
+    "recipe/se-rhga-data": {
+      "x": 1386,
+      "y": 990
     },
     "recipe/se-rigidity-data": {
       "x": 1584,
       "y": 924
     },
     "recipe/se-rocket-fuel-from-water-copper": {
-      "x": 462,
-      "y": 1386
+      "x": 2376,
+      "y": 1320
+    },
+    "recipe/se-rocket-launch-pad": {
+      "x": 1386,
+      "y": 726
     },
     "recipe/se-rocket-science-pack": {
       "x": 264,
       "y": 792
     },
+    "recipe/se-rtg-equipment": {
+      "x": 858,
+      "y": 1122
+    },
     "recipe/se-scrap-decontamination": {
-      "x": 1782,
+      "x": 1188,
       "y": 1584
     },
     "recipe/se-scrap-hard-recycling": {
-      "x": 1848,
+      "x": 1254,
       "y": 1584
+    },
+    "recipe/se-self-sealing-gel": {
+      "x": 1914,
+      "y": 528
     },
     "recipe/se-significant-specimen": {
       "x": 1584,
       "y": 660
     },
     "recipe/se-simulation-a": {
-      "x": 2442,
+      "x": 1848,
       "y": 1716
     },
     "recipe/se-simulation-ab": {
-      "x": 132,
-      "y": 1782
+      "x": 2112,
+      "y": 1716
     },
     "recipe/se-simulation-abm": {
-      "x": 528,
-      "y": 1782
-    },
-    "recipe/se-simulation-am": {
-      "x": 198,
-      "y": 1782
-    },
-    "recipe/se-simulation-as": {
-      "x": 264,
-      "y": 1782
-    },
-    "recipe/se-simulation-asb": {
-      "x": 594,
-      "y": 1782
-    },
-    "recipe/se-simulation-asbm": {
-      "x": 792,
-      "y": 1782
-    },
-    "recipe/se-simulation-asm": {
-      "x": 660,
-      "y": 1782
-    },
-    "recipe/se-simulation-b": {
       "x": 2508,
       "y": 1716
     },
-    "recipe/se-simulation-bm": {
-      "x": 330,
-      "y": 1782
+    "recipe/se-simulation-am": {
+      "x": 2178,
+      "y": 1716
     },
-    "recipe/se-simulation-m": {
-      "x": 66,
-      "y": 1782
+    "recipe/se-simulation-as": {
+      "x": 2244,
+      "y": 1716
     },
-    "recipe/se-simulation-s": {
+    "recipe/se-simulation-asb": {
       "x": 0,
       "y": 1782
     },
-    "recipe/se-simulation-sb": {
-      "x": 396,
+    "recipe/se-simulation-asbm": {
+      "x": 198,
       "y": 1782
     },
+    "recipe/se-simulation-asm": {
+      "x": 66,
+      "y": 1782
+    },
+    "recipe/se-simulation-b": {
+      "x": 1914,
+      "y": 1716
+    },
+    "recipe/se-simulation-bm": {
+      "x": 2310,
+      "y": 1716
+    },
+    "recipe/se-simulation-m": {
+      "x": 2046,
+      "y": 1716
+    },
+    "recipe/se-simulation-s": {
+      "x": 1980,
+      "y": 1716
+    },
+    "recipe/se-simulation-sb": {
+      "x": 2376,
+      "y": 1716
+    },
     "recipe/se-simulation-sbm": {
-      "x": 726,
+      "x": 132,
       "y": 1782
     },
     "recipe/se-simulation-sm": {
-      "x": 462,
-      "y": 1782
+      "x": 2442,
+      "y": 1716
     },
     "recipe/se-singularity-data": {
       "x": 858,
@@ -4916,48 +6260,52 @@
       "x": 66,
       "y": 330
     },
+    "recipe/se-space-capsule": {
+      "x": 1518,
+      "y": 726
+    },
     "recipe/se-space-capsule-refurbish": {
-      "x": 1914,
+      "x": 1320,
       "y": 1716
     },
     "recipe/se-space-capsule-scorched-scrapping": {
-      "x": 2112,
+      "x": 1518,
       "y": 1584
     },
     "recipe/se-space-capsule-scrapping": {
-      "x": 2046,
+      "x": 1452,
       "y": 1584
     },
     "recipe/se-space-coolant-cold": {
-      "x": 0,
-      "y": 1320
+      "x": 1914,
+      "y": 1254
     },
     "recipe/se-space-coolant-cold-cryonite": {
-      "x": 990,
+      "x": 396,
       "y": 1584
     },
     "recipe/se-space-coolant-hot": {
-      "x": 2442,
+      "x": 1782,
       "y": 1254
     },
     "recipe/se-space-coolant-hot-barrel": {
-      "x": 66,
-      "y": 1716
+      "x": 2046,
+      "y": 1650
     },
     "recipe/se-space-coolant-hot-cryonite": {
-      "x": 792,
+      "x": 198,
       "y": 1584
     },
     "recipe/se-space-coolant-supercooled": {
-      "x": 66,
-      "y": 1320
+      "x": 1980,
+      "y": 1254
     },
     "recipe/se-space-coolant-supercooled-cryonite": {
-      "x": 1056,
+      "x": 462,
       "y": 1584
     },
     "recipe/se-space-coolant-warm": {
-      "x": 2508,
+      "x": 1848,
       "y": 1254
     },
     "recipe/se-space-decontamination-facility": {
@@ -4976,9 +6324,17 @@
       "x": 528,
       "y": 330
     },
+    "recipe/se-space-elevator": {
+      "x": 2508,
+      "y": 726
+    },
+    "recipe/se-space-elevator-cable": {
+      "x": 132,
+      "y": 660
+    },
     "recipe/se-space-elevator-cable-nano": {
-      "x": 0,
-      "y": 1584
+      "x": 1980,
+      "y": 1518
     },
     "recipe/se-space-fold-data": {
       "x": 924,
@@ -5033,7 +6389,7 @@
       "y": 594
     },
     "recipe/se-space-mirror-alternate": {
-      "x": 2178,
+      "x": 1518,
       "y": 1518
     },
     "recipe/se-space-particle-accelerator": {
@@ -5044,9 +6400,57 @@
       "x": 792,
       "y": 330
     },
+    "recipe/se-space-pipe": {
+      "x": 1782,
+      "y": 66
+    },
+    "recipe/se-space-pipe-long-j-3": {
+      "x": 1914,
+      "y": 66
+    },
+    "recipe/se-space-pipe-long-j-5": {
+      "x": 1980,
+      "y": 66
+    },
+    "recipe/se-space-pipe-long-j-7": {
+      "x": 2046,
+      "y": 66
+    },
+    "recipe/se-space-pipe-long-s-15": {
+      "x": 2178,
+      "y": 66
+    },
+    "recipe/se-space-pipe-long-s-9": {
+      "x": 2112,
+      "y": 66
+    },
+    "recipe/se-space-pipe-to-ground": {
+      "x": 1848,
+      "y": 66
+    },
     "recipe/se-space-plasma-generator": {
       "x": 858,
       "y": 330
+    },
+    "recipe/se-space-platform-plating": {
+      "x": 660,
+      "y": 198
+    },
+    "recipe/se-space-platform-scaffold": {
+      "x": 594,
+      "y": 198
+    },
+    "recipe/se-space-probe-rocket": {
+      "x": 0,
+      "y": 660
+    },
+    "recipe/se-space-probe-rocket-deploy": {
+      "x": 0,
+      "y": 660
+    },
+    "recipe/se-space-probe-rocket-silo": {
+      "x": 1320,
+      "y": 726
     },
     "recipe/se-space-radiation-laboratory": {
       "x": 462,
@@ -5059,6 +6463,14 @@
     "recipe/se-space-radiator-2": {
       "x": 1056,
       "y": 330
+    },
+    "recipe/se-space-rail": {
+      "x": 1056,
+      "y": 132
+    },
+    "recipe/se-space-rail-ramp": {
+      "x": 858,
+      "y": 132
     },
     "recipe/se-space-rail-support": {
       "x": 924,
@@ -5079,6 +6491,10 @@
     "recipe/se-space-solar-panel-3": {
       "x": 594,
       "y": 264
+    },
+    "recipe/se-space-splitter": {
+      "x": 990,
+      "y": 66
     },
     "recipe/se-space-supercomputer-1": {
       "x": 1320,
@@ -5120,6 +6536,14 @@
       "x": 1584,
       "y": 264
     },
+    "recipe/se-space-transport-belt": {
+      "x": 1980,
+      "y": 0
+    },
+    "recipe/se-space-underground-belt": {
+      "x": 198,
+      "y": 66
+    },
     "recipe/se-space-warp-data": {
       "x": 990,
       "y": 990
@@ -5128,24 +6552,72 @@
       "x": 990,
       "y": 990
     },
+    "recipe/se-space-water": {
+      "x": 2376,
+      "y": 1188
+    },
     "recipe/se-space-water-barrel": {
-      "x": 330,
-      "y": 1716
+      "x": 2310,
+      "y": 1650
     },
     "recipe/se-space-water-decontamination": {
-      "x": 924,
+      "x": 264,
       "y": 1320
+    },
+    "recipe/se-spaceship-antimatter-booster-tank": {
+      "x": 2376,
+      "y": 726
+    },
+    "recipe/se-spaceship-antimatter-engine": {
+      "x": 2310,
+      "y": 726
+    },
+    "recipe/se-spaceship-clamp": {
+      "x": 2442,
+      "y": 726
+    },
+    "recipe/se-spaceship-console": {
+      "x": 1782,
+      "y": 726
+    },
+    "recipe/se-spaceship-floor": {
+      "x": 1848,
+      "y": 726
+    },
+    "recipe/se-spaceship-gate": {
+      "x": 1980,
+      "y": 726
+    },
+    "recipe/se-spaceship-ion-booster-tank": {
+      "x": 2244,
+      "y": 726
+    },
+    "recipe/se-spaceship-ion-engine": {
+      "x": 2178,
+      "y": 726
+    },
+    "recipe/se-spaceship-rocket-booster-tank": {
+      "x": 2112,
+      "y": 726
+    },
+    "recipe/se-spaceship-rocket-engine": {
+      "x": 2046,
+      "y": 726
+    },
+    "recipe/se-spaceship-wall": {
+      "x": 1914,
+      "y": 726
     },
     "recipe/se-specimen": {
       "x": 1452,
       "y": 660
     },
     "recipe/se-specimen-fish": {
-      "x": 1122,
+      "x": 528,
       "y": 1584
     },
     "recipe/se-specimen-wood": {
-      "x": 1188,
+      "x": 594,
       "y": 1584
     },
     "recipe/se-star-probe": {
@@ -5153,15 +6625,15 @@
       "y": 924
     },
     "recipe/se-steam-to-water": {
-      "x": 792,
+      "x": 132,
       "y": 1320
     },
     "recipe/se-steel-ingot": {
-      "x": 2046,
+      "x": 1386,
       "y": 1386
     },
     "recipe/se-steel-ingot-to-plate": {
-      "x": 2112,
+      "x": 1452,
       "y": 1386
     },
     "recipe/se-subatomic-data": {
@@ -5188,21 +6660,45 @@
       "x": 1452,
       "y": 924
     },
+    "recipe/se-tesla-ammo": {
+      "x": 1650,
+      "y": 1056
+    },
+    "recipe/se-tesla-gun": {
+      "x": 132,
+      "y": 1056
+    },
     "recipe/se-thermodynamics-coal": {
-      "x": 1518,
+      "x": 858,
       "y": 1320
+    },
+    "recipe/se-thruster-suit": {
+      "x": 528,
+      "y": 1122
+    },
+    "recipe/se-thruster-suit-2": {
+      "x": 594,
+      "y": 1122
+    },
+    "recipe/se-thruster-suit-3": {
+      "x": 660,
+      "y": 1122
+    },
+    "recipe/se-thruster-suit-4": {
+      "x": 726,
+      "y": 1122
     },
     "recipe/se-timespace-anomaly-data": {
       "x": 792,
       "y": 990
     },
     "recipe/se-used-lifesupport-canister-cleaning": {
-      "x": 132,
-      "y": 1584
+      "x": 2112,
+      "y": 1518
     },
     "recipe/se-used-lifesupport-canister-cleaning-space": {
-      "x": 198,
-      "y": 1584
+      "x": 2178,
+      "y": 1518
     },
     "recipe/se-uv-observation-data": {
       "x": 1518,
@@ -5212,21 +6708,69 @@
       "x": 1452,
       "y": 792
     },
+    "recipe/se-vitalic-acid": {
+      "x": 1386,
+      "y": 1254
+    },
     "recipe/se-vitalic-acid-barrel": {
-      "x": 132,
-      "y": 1716
+      "x": 2112,
+      "y": 1650
+    },
+    "recipe/se-vitalic-epoxy": {
+      "x": 1848,
+      "y": 528
     },
     "recipe/se-vitalic-hydrocarbon-extraction": {
-      "x": 1452,
+      "x": 792,
       "y": 1320
+    },
+    "recipe/se-vitalic-reagent": {
+      "x": 1782,
+      "y": 528
+    },
+    "recipe/se-vitamelange-bloom": {
+      "x": 1584,
+      "y": 528
+    },
+    "recipe/se-vitamelange-extract": {
+      "x": 1716,
+      "y": 528
+    },
+    "recipe/se-vitamelange-nugget": {
+      "x": 1518,
+      "y": 528
+    },
+    "recipe/se-vitamelange-spice": {
+      "x": 1650,
+      "y": 528
     },
     "recipe/se-void-probe": {
       "x": 528,
       "y": 990
     },
+    "recipe/se-vulcanite-block": {
+      "x": 2112,
+      "y": 462
+    },
+    "recipe/se-vulcanite-crushed": {
+      "x": 1980,
+      "y": 462
+    },
+    "recipe/se-vulcanite-enriched": {
+      "x": 2046,
+      "y": 462
+    },
+    "recipe/se-vulcanite-ion-exchange-beads": {
+      "x": 2178,
+      "y": 462
+    },
     "recipe/se-vulcanite-rocket-fuel": {
-      "x": 528,
-      "y": 1386
+      "x": 2442,
+      "y": 1320
+    },
+    "recipe/se-water-ice": {
+      "x": 1980,
+      "y": 396
     },
     "recipe/se-wide-beacon": {
       "x": 2112,
@@ -5248,25 +6792,181 @@
       "x": 2310,
       "y": 792
     },
-    "recipe/solid-fuel-from-heavy-oil": {
+    "recipe/selector-combinator": {
+      "x": 2310,
+      "y": 132
+    },
+    "recipe/shield-projector": {
+      "x": 1122,
+      "y": 1188
+    },
+    "recipe/shotgun": {
+      "x": 2178,
+      "y": 990
+    },
+    "recipe/shotgun-shell": {
       "x": 396,
-      "y": 1386
+      "y": 1056
+    },
+    "recipe/slowdown-capsule": {
+      "x": 1914,
+      "y": 1056
+    },
+    "recipe/small-electric-pole": {
+      "x": 66,
+      "y": 132
+    },
+    "recipe/small-iron-electric-pole": {
+      "x": 132,
+      "y": 132
+    },
+    "recipe/small-lamp": {
+      "x": 2112,
+      "y": 132
+    },
+    "recipe/solar-panel": {
+      "x": 396,
+      "y": 264
+    },
+    "recipe/solar-panel-equipment": {
+      "x": 792,
+      "y": 1122
+    },
+    "recipe/solid-fuel-from-heavy-oil": {
+      "x": 2310,
+      "y": 1320
     },
     "recipe/solid-fuel-from-light-oil": {
-      "x": 330,
-      "y": 1386
+      "x": 2244,
+      "y": 1320
     },
     "recipe/solid-fuel-from-petroleum-gas": {
-      "x": 264,
-      "y": 1386
+      "x": 2178,
+      "y": 1320
     },
     "recipe/space-science-pack": {
       "x": 330,
       "y": 792
     },
+    "recipe/speed-module": {
+      "x": 198,
+      "y": 396
+    },
+    "recipe/speed-module-2": {
+      "x": 264,
+      "y": 396
+    },
+    "recipe/speed-module-3": {
+      "x": 330,
+      "y": 396
+    },
+    "recipe/speed-module-4": {
+      "x": 396,
+      "y": 396
+    },
+    "recipe/speed-module-5": {
+      "x": 462,
+      "y": 396
+    },
+    "recipe/speed-module-6": {
+      "x": 528,
+      "y": 396
+    },
+    "recipe/speed-module-7": {
+      "x": 594,
+      "y": 396
+    },
+    "recipe/speed-module-8": {
+      "x": 660,
+      "y": 396
+    },
+    "recipe/speed-module-9": {
+      "x": 726,
+      "y": 396
+    },
+    "recipe/spidertron": {
+      "x": 1782,
+      "y": 132
+    },
+    "recipe/splitter": {
+      "x": 792,
+      "y": 66
+    },
+    "recipe/steam-engine": {
+      "x": 2112,
+      "y": 198
+    },
+    "recipe/steam-turbine": {
+      "x": 264,
+      "y": 264
+    },
+    "recipe/steel-chest": {
+      "x": 0,
+      "y": 0
+    },
+    "recipe/steel-furnace": {
+      "x": 1320,
+      "y": 264
+    },
+    "recipe/steel-gate": {
+      "x": 924,
+      "y": 1188
+    },
+    "recipe/steel-plate": {
+      "x": 1122,
+      "y": 462
+    },
+    "recipe/steel-wall": {
+      "x": 858,
+      "y": 1188
+    },
+    "recipe/stone-brick": {
+      "x": 264,
+      "y": 198
+    },
+    "recipe/stone-furnace": {
+      "x": 1254,
+      "y": 264
+    },
+    "recipe/stone-tablet": {
+      "x": 528,
+      "y": 462
+    },
+    "recipe/stone-wall": {
+      "x": 396,
+      "y": 1188
+    },
+    "recipe/storage-chest": {
+      "x": 198,
+      "y": 0
+    },
+    "recipe/storage-tank": {
+      "x": 2244,
+      "y": 66
+    },
+    "recipe/submachine-gun": {
+      "x": 2112,
+      "y": 990
+    },
+    "recipe/substation": {
+      "x": 330,
+      "y": 132
+    },
+    "recipe/sulfur": {
+      "x": 2376,
+      "y": 396
+    },
+    "recipe/sulfuric-acid": {
+      "x": 0,
+      "y": 1254
+    },
     "recipe/sulfuric-acid-barrel": {
-      "x": 1650,
+      "x": 1056,
       "y": 1650
+    },
+    "recipe/tank": {
+      "x": 1650,
+      "y": 132
     },
     "recipe/textplate-large-concrete": {
       "x": 792,
@@ -5340,1508 +7040,1536 @@
       "x": 1782,
       "y": 198
     },
+    "recipe/train-stop": {
+      "x": 1122,
+      "y": 132
+    },
+    "recipe/transport-belt": {
+      "x": 1782,
+      "y": 0
+    },
+    "recipe/underground-belt": {
+      "x": 0,
+      "y": 66
+    },
+    "recipe/uranium-cannon-shell": {
+      "x": 858,
+      "y": 1056
+    },
+    "recipe/uranium-fuel-cell": {
+      "x": 1716,
+      "y": 462
+    },
     "recipe/uranium-processing": {
-      "x": 528,
-      "y": 1452
+      "x": 2442,
+      "y": 1386
+    },
+    "recipe/uranium-rounds-magazine": {
+      "x": 330,
+      "y": 1056
     },
     "recipe/utility-science-pack": {
       "x": 462,
       "y": 792
     },
     "recipe/water-barrel": {
-      "x": 264,
-      "y": 1716
+      "x": 2244,
+      "y": 1650
+    },
+    "recipe/wooden-chest": {
+      "x": 462,
+      "y": 0
     },
     "technology/aai-signal-transmission": {
-      "x": 2376,
+      "x": 1782,
       "y": 2046
     },
     "technology/aai-storehouse-base": {
-      "x": 594,
+      "x": 0,
       "y": 2046
     },
     "technology/aai-storehouse-logistic": {
-      "x": 660,
+      "x": 66,
       "y": 2046
     },
     "technology/aai-storehouse-storage": {
-      "x": 726,
+      "x": 132,
       "y": 2046
     },
     "technology/aai-strongbox-base": {
-      "x": 792,
+      "x": 198,
       "y": 2046
     },
     "technology/aai-strongbox-logistic": {
-      "x": 858,
+      "x": 264,
       "y": 2046
     },
     "technology/aai-strongbox-storage": {
-      "x": 924,
+      "x": 330,
       "y": 2046
     },
     "technology/aai-warehouse-base": {
-      "x": 990,
+      "x": 396,
       "y": 2046
     },
     "technology/aai-warehouse-logistic": {
-      "x": 1056,
+      "x": 462,
       "y": 2046
     },
     "technology/aai-warehouse-storage": {
-      "x": 1122,
+      "x": 528,
       "y": 2046
     },
     "technology/advanced-circuit": {
-      "x": 2112,
+      "x": 1518,
       "y": 1782
     },
     "technology/advanced-combinators": {
-      "x": 2178,
+      "x": 1584,
       "y": 1782
     },
     "technology/advanced-material-processing": {
-      "x": 2244,
+      "x": 1650,
       "y": 1782
     },
     "technology/advanced-material-processing-2": {
-      "x": 2310,
+      "x": 1716,
       "y": 1782
     },
     "technology/advanced-oil-processing": {
-      "x": 2376,
+      "x": 1782,
       "y": 1782
     },
     "technology/area-mining-drill": {
-      "x": 2112,
+      "x": 1518,
       "y": 2046
     },
     "technology/artillery": {
-      "x": 2442,
+      "x": 1848,
       "y": 1782
     },
     "technology/artillery-shell-range-1": {
-      "x": 2508,
+      "x": 1914,
       "y": 1782
     },
     "technology/artillery-shell-range-2": {
-      "x": 2508,
+      "x": 1914,
       "y": 1782
     },
     "technology/artillery-shell-range-3": {
-      "x": 2508,
+      "x": 1914,
       "y": 1782
     },
     "technology/artillery-shell-range-4": {
-      "x": 2508,
+      "x": 1914,
       "y": 1782
     },
     "technology/artillery-shell-range-5": {
-      "x": 2508,
+      "x": 1914,
       "y": 1782
     },
     "technology/artillery-shell-range-6": {
-      "x": 2508,
+      "x": 1914,
       "y": 1782
     },
     "technology/artillery-shell-speed-1": {
-      "x": 0,
-      "y": 1848
+      "x": 1980,
+      "y": 1782
     },
     "technology/artillery-shell-speed-2": {
-      "x": 0,
-      "y": 1848
+      "x": 1980,
+      "y": 1782
     },
     "technology/artillery-shell-speed-3": {
-      "x": 0,
-      "y": 1848
+      "x": 1980,
+      "y": 1782
     },
     "technology/artillery-shell-speed-4": {
-      "x": 0,
-      "y": 1848
+      "x": 1980,
+      "y": 1782
     },
     "technology/artillery-shell-speed-5": {
-      "x": 0,
-      "y": 1848
+      "x": 1980,
+      "y": 1782
     },
     "technology/artillery-shell-speed-6": {
-      "x": 0,
-      "y": 1848
+      "x": 1980,
+      "y": 1782
     },
     "technology/atomic-bomb": {
-      "x": 66,
-      "y": 1848
+      "x": 2046,
+      "y": 1782
     },
     "technology/automated-rail-transportation": {
-      "x": 132,
-      "y": 1848
+      "x": 2112,
+      "y": 1782
     },
     "technology/automation": {
-      "x": 198,
-      "y": 1848
+      "x": 2178,
+      "y": 1782
     },
     "technology/automation-2": {
-      "x": 264,
-      "y": 1848
+      "x": 2244,
+      "y": 1782
     },
     "technology/automation-3": {
-      "x": 330,
-      "y": 1848
+      "x": 2310,
+      "y": 1782
     },
     "technology/automation-science-pack": {
-      "x": 396,
-      "y": 1848
+      "x": 2376,
+      "y": 1782
     },
     "technology/automobilism": {
-      "x": 462,
-      "y": 1848
+      "x": 2442,
+      "y": 1782
     },
     "technology/basic-fluid-handling": {
-      "x": 330,
-      "y": 1914
+      "x": 2310,
+      "y": 1848
     },
     "technology/basic-logistics": {
-      "x": 1452,
+      "x": 858,
       "y": 1914
     },
     "technology/battery": {
-      "x": 528,
-      "y": 1848
+      "x": 2508,
+      "y": 1782
     },
     "technology/battery-equipment": {
-      "x": 594,
+      "x": 0,
       "y": 1848
     },
     "technology/battery-mk2-equipment": {
-      "x": 660,
+      "x": 66,
       "y": 1848
     },
     "technology/belt-immunity-equipment": {
-      "x": 726,
+      "x": 132,
       "y": 1848
     },
     "technology/braking-force-1": {
-      "x": 792,
+      "x": 198,
       "y": 1848
     },
     "technology/braking-force-2": {
-      "x": 792,
+      "x": 198,
       "y": 1848
     },
     "technology/braking-force-3": {
-      "x": 792,
+      "x": 198,
       "y": 1848
     },
     "technology/braking-force-4": {
-      "x": 792,
+      "x": 198,
       "y": 1848
     },
     "technology/braking-force-5": {
-      "x": 792,
+      "x": 198,
       "y": 1848
     },
     "technology/braking-force-6": {
-      "x": 792,
+      "x": 198,
       "y": 1848
     },
     "technology/braking-force-7": {
-      "x": 792,
+      "x": 198,
       "y": 1848
     },
     "technology/bulk-inserter": {
-      "x": 858,
+      "x": 264,
       "y": 1848
     },
     "technology/burner-mechanics": {
-      "x": 1188,
+      "x": 594,
       "y": 2046
     },
     "technology/chemical-science-pack": {
-      "x": 924,
+      "x": 330,
       "y": 1848
     },
     "technology/circuit-network": {
-      "x": 990,
+      "x": 396,
       "y": 1848
     },
     "technology/cliff-explosives": {
-      "x": 1056,
+      "x": 462,
       "y": 1848
     },
     "technology/coal-liquefaction": {
-      "x": 1122,
+      "x": 528,
       "y": 1848
     },
     "technology/concrete": {
-      "x": 1188,
+      "x": 594,
       "y": 1848
     },
     "technology/concrete-gates": {
-      "x": 1452,
+      "x": 858,
       "y": 2046
     },
     "technology/concrete-walls": {
-      "x": 1782,
+      "x": 1188,
       "y": 2046
     },
     "technology/construction-robotics": {
-      "x": 1254,
+      "x": 660,
       "y": 1848
     },
     "technology/defender": {
-      "x": 1320,
+      "x": 726,
       "y": 1848
     },
     "technology/destroyer": {
-      "x": 1386,
+      "x": 792,
       "y": 1848
     },
     "technology/discharge-defense-equipment": {
-      "x": 1452,
+      "x": 858,
       "y": 1848
     },
     "technology/distractor": {
-      "x": 1518,
+      "x": 924,
       "y": 1848
     },
     "technology/effect-transmission": {
-      "x": 1584,
+      "x": 990,
       "y": 1848
     },
     "technology/efficiency-module": {
-      "x": 1650,
+      "x": 1056,
       "y": 1848
     },
     "technology/efficiency-module-2": {
-      "x": 1716,
+      "x": 1122,
       "y": 1848
     },
     "technology/efficiency-module-3": {
-      "x": 1782,
+      "x": 1188,
       "y": 1848
     },
     "technology/efficiency-module-4": {
-      "x": 462,
-      "y": 2508
+      "x": 2442,
+      "y": 2442
     },
     "technology/efficiency-module-5": {
-      "x": 528,
-      "y": 2508
+      "x": 2508,
+      "y": 2442
     },
     "technology/efficiency-module-6": {
-      "x": 594,
+      "x": 0,
       "y": 2508
     },
     "technology/efficiency-module-7": {
-      "x": 660,
+      "x": 66,
       "y": 2508
     },
     "technology/efficiency-module-8": {
-      "x": 726,
+      "x": 132,
       "y": 2508
     },
     "technology/efficiency-module-9": {
-      "x": 792,
+      "x": 198,
       "y": 2508
     },
     "technology/electric-energy-accumulators": {
-      "x": 1848,
+      "x": 1254,
       "y": 1848
     },
     "technology/electric-energy-distribution-1": {
-      "x": 1914,
+      "x": 1320,
       "y": 1848
     },
     "technology/electric-energy-distribution-2": {
-      "x": 1980,
+      "x": 1386,
       "y": 1848
     },
     "technology/electric-engine": {
-      "x": 2046,
+      "x": 1452,
       "y": 1848
     },
     "technology/electric-lab": {
-      "x": 1254,
+      "x": 660,
       "y": 2046
     },
     "technology/electric-mining-drill": {
-      "x": 2112,
+      "x": 1518,
       "y": 1848
     },
     "technology/electricity": {
-      "x": 1320,
+      "x": 726,
       "y": 2046
     },
     "technology/electronics": {
-      "x": 2178,
+      "x": 1584,
       "y": 1848
     },
     "technology/elevated-rail": {
-      "x": 2244,
+      "x": 1650,
       "y": 1848
     },
     "technology/energy-shield-equipment": {
-      "x": 2310,
+      "x": 1716,
       "y": 1848
     },
     "technology/energy-shield-mk2-equipment": {
-      "x": 2376,
+      "x": 1782,
       "y": 1848
     },
     "technology/energy-shield-mk3-equipment": {
-      "x": 1782,
+      "x": 1188,
       "y": 2442
     },
     "technology/energy-shield-mk4-equipment": {
-      "x": 1914,
+      "x": 1320,
       "y": 2442
     },
     "technology/energy-shield-mk5-equipment": {
-      "x": 2112,
+      "x": 1518,
       "y": 2442
     },
     "technology/energy-shield-mk6-equipment": {
-      "x": 2178,
+      "x": 1584,
       "y": 2442
     },
     "technology/engine": {
-      "x": 2442,
+      "x": 1848,
       "y": 1848
     },
     "technology/equipment-gantry": {
-      "x": 2178,
+      "x": 1584,
       "y": 2046
     },
     "technology/exoskeleton-equipment": {
-      "x": 2508,
+      "x": 1914,
       "y": 1848
     },
     "technology/explosive-rocketry": {
-      "x": 0,
-      "y": 1914
+      "x": 1980,
+      "y": 1848
     },
     "technology/explosives": {
-      "x": 66,
-      "y": 1914
+      "x": 2046,
+      "y": 1848
     },
     "technology/fast-inserter": {
-      "x": 132,
-      "y": 1914
+      "x": 2112,
+      "y": 1848
     },
     "technology/fission-reactor-equipment": {
-      "x": 528,
-      "y": 2442
+      "x": 2508,
+      "y": 2376
     },
     "technology/flamethrower": {
-      "x": 198,
-      "y": 1914
+      "x": 2178,
+      "y": 1848
     },
     "technology/flammables": {
-      "x": 264,
-      "y": 1914
+      "x": 2244,
+      "y": 1848
     },
     "technology/fluid-handling": {
-      "x": 330,
-      "y": 1914
+      "x": 2310,
+      "y": 1848
     },
     "technology/fluid-wagon": {
-      "x": 396,
-      "y": 1914
+      "x": 2376,
+      "y": 1848
     },
     "technology/follower-robot-count-1": {
-      "x": 462,
-      "y": 1914
+      "x": 2442,
+      "y": 1848
     },
     "technology/follower-robot-count-10": {
-      "x": 462,
-      "y": 1914
+      "x": 2442,
+      "y": 1848
     },
     "technology/follower-robot-count-2": {
-      "x": 462,
-      "y": 1914
+      "x": 2442,
+      "y": 1848
     },
     "technology/follower-robot-count-3": {
-      "x": 462,
-      "y": 1914
+      "x": 2442,
+      "y": 1848
     },
     "technology/follower-robot-count-4": {
-      "x": 462,
-      "y": 1914
+      "x": 2442,
+      "y": 1848
     },
     "technology/follower-robot-count-5": {
-      "x": 462,
-      "y": 1914
+      "x": 2442,
+      "y": 1848
     },
     "technology/follower-robot-count-6": {
-      "x": 462,
-      "y": 1914
+      "x": 2442,
+      "y": 1848
     },
     "technology/follower-robot-count-7": {
-      "x": 462,
-      "y": 1914
+      "x": 2442,
+      "y": 1848
     },
     "technology/follower-robot-count-8": {
-      "x": 462,
-      "y": 1914
+      "x": 2442,
+      "y": 1848
     },
     "technology/follower-robot-count-9": {
-      "x": 462,
-      "y": 1914
+      "x": 2442,
+      "y": 1848
     },
     "technology/fuel-processing": {
-      "x": 1386,
+      "x": 792,
       "y": 2046
     },
     "technology/gate": {
-      "x": 1452,
+      "x": 858,
       "y": 2046
     },
     "technology/glass-processing": {
-      "x": 1518,
+      "x": 924,
       "y": 2046
     },
     "technology/grappling-gun": {
-      "x": 2442,
+      "x": 1848,
       "y": 2046
     },
     "technology/gun-turret": {
-      "x": 528,
-      "y": 1914
+      "x": 2508,
+      "y": 1848
     },
     "technology/heavy-armor": {
-      "x": 594,
+      "x": 0,
       "y": 1914
     },
     "technology/industrial-furnace": {
-      "x": 1584,
+      "x": 990,
       "y": 2046
     },
     "technology/inserter-capacity-bonus-1": {
-      "x": 660,
+      "x": 66,
       "y": 1914
     },
     "technology/inserter-capacity-bonus-2": {
-      "x": 660,
+      "x": 66,
       "y": 1914
     },
     "technology/inserter-capacity-bonus-3": {
-      "x": 660,
+      "x": 66,
       "y": 1914
     },
     "technology/inserter-capacity-bonus-4": {
-      "x": 660,
+      "x": 66,
       "y": 1914
     },
     "technology/inserter-capacity-bonus-5": {
-      "x": 660,
+      "x": 66,
       "y": 1914
     },
     "technology/inserter-capacity-bonus-6": {
-      "x": 660,
+      "x": 66,
       "y": 1914
     },
     "technology/inserter-capacity-bonus-7": {
-      "x": 660,
+      "x": 66,
       "y": 1914
     },
     "technology/ironclad": {
-      "x": 2310,
+      "x": 1716,
       "y": 2046
     },
     "technology/jetpack-1": {
-      "x": 2508,
+      "x": 1914,
       "y": 2046
     },
     "technology/jetpack-2": {
-      "x": 0,
-      "y": 2112
+      "x": 1980,
+      "y": 2046
     },
     "technology/jetpack-3": {
-      "x": 66,
-      "y": 2112
+      "x": 2046,
+      "y": 2046
     },
     "technology/jetpack-4": {
-      "x": 132,
-      "y": 2112
+      "x": 2112,
+      "y": 2046
     },
     "technology/kovarex-enrichment-process": {
-      "x": 726,
+      "x": 132,
       "y": 1914
     },
     "technology/lamp": {
-      "x": 792,
+      "x": 198,
       "y": 1914
     },
     "technology/land-mine": {
-      "x": 858,
+      "x": 264,
       "y": 1914
     },
     "technology/landfill": {
-      "x": 924,
+      "x": 330,
       "y": 1914
     },
     "technology/laser": {
-      "x": 990,
+      "x": 396,
       "y": 1914
     },
     "technology/laser-shooting-speed-1": {
-      "x": 1056,
+      "x": 462,
       "y": 1914
     },
     "technology/laser-shooting-speed-2": {
-      "x": 1056,
+      "x": 462,
       "y": 1914
     },
     "technology/laser-shooting-speed-3": {
-      "x": 1056,
+      "x": 462,
       "y": 1914
     },
     "technology/laser-shooting-speed-4": {
-      "x": 1056,
+      "x": 462,
       "y": 1914
     },
     "technology/laser-shooting-speed-5": {
-      "x": 1056,
+      "x": 462,
       "y": 1914
     },
     "technology/laser-shooting-speed-6": {
-      "x": 1056,
+      "x": 462,
       "y": 1914
     },
     "technology/laser-shooting-speed-7": {
-      "x": 1056,
+      "x": 462,
       "y": 1914
     },
     "technology/laser-turret": {
-      "x": 1122,
+      "x": 528,
       "y": 1914
     },
     "technology/laser-weapons-damage-1": {
-      "x": 1188,
+      "x": 594,
       "y": 1914
     },
     "technology/laser-weapons-damage-10": {
-      "x": 1188,
+      "x": 594,
       "y": 1914
     },
     "technology/laser-weapons-damage-2": {
-      "x": 1188,
+      "x": 594,
       "y": 1914
     },
     "technology/laser-weapons-damage-3": {
-      "x": 1188,
+      "x": 594,
       "y": 1914
     },
     "technology/laser-weapons-damage-4": {
-      "x": 1188,
+      "x": 594,
       "y": 1914
     },
     "technology/laser-weapons-damage-5": {
-      "x": 1188,
+      "x": 594,
       "y": 1914
     },
     "technology/laser-weapons-damage-6": {
-      "x": 1188,
+      "x": 594,
       "y": 1914
     },
     "technology/laser-weapons-damage-7": {
-      "x": 1188,
+      "x": 594,
       "y": 1914
     },
     "technology/laser-weapons-damage-8": {
-      "x": 1188,
+      "x": 594,
       "y": 1914
     },
     "technology/laser-weapons-damage-9": {
-      "x": 1188,
+      "x": 594,
       "y": 1914
     },
     "technology/logistic-robotics": {
-      "x": 1254,
+      "x": 660,
       "y": 1914
     },
     "technology/logistic-science-pack": {
-      "x": 1320,
+      "x": 726,
       "y": 1914
     },
     "technology/logistic-system": {
-      "x": 1386,
+      "x": 792,
       "y": 1914
     },
     "technology/logistics": {
-      "x": 1452,
+      "x": 858,
       "y": 1914
     },
     "technology/logistics-2": {
-      "x": 1518,
+      "x": 924,
       "y": 1914
     },
     "technology/logistics-3": {
-      "x": 1584,
+      "x": 990,
       "y": 1914
     },
     "technology/low-density-structure": {
-      "x": 1650,
+      "x": 1056,
       "y": 1914
     },
     "technology/lubricant": {
-      "x": 1716,
+      "x": 1122,
       "y": 1914
     },
     "technology/medium-electric-pole": {
-      "x": 1914,
+      "x": 1320,
       "y": 1848
     },
     "technology/military": {
-      "x": 1782,
+      "x": 1188,
       "y": 1914
     },
     "technology/military-2": {
-      "x": 1782,
+      "x": 1188,
       "y": 1914
     },
     "technology/military-3": {
-      "x": 1782,
+      "x": 1188,
       "y": 1914
     },
     "technology/military-4": {
-      "x": 1782,
+      "x": 1188,
       "y": 1914
     },
     "technology/military-science-pack": {
-      "x": 1848,
+      "x": 1254,
       "y": 1914
     },
     "technology/mining-productivity-1": {
-      "x": 1914,
+      "x": 1320,
       "y": 1914
     },
     "technology/mining-productivity-10": {
-      "x": 1914,
+      "x": 1320,
       "y": 1914
     },
     "technology/mining-productivity-11": {
-      "x": 1914,
+      "x": 1320,
       "y": 1914
     },
     "technology/mining-productivity-12": {
-      "x": 1914,
+      "x": 1320,
       "y": 1914
     },
     "technology/mining-productivity-13": {
-      "x": 1914,
+      "x": 1320,
       "y": 1914
     },
     "technology/mining-productivity-2": {
-      "x": 1914,
+      "x": 1320,
       "y": 1914
     },
     "technology/mining-productivity-3": {
-      "x": 1914,
+      "x": 1320,
       "y": 1914
     },
     "technology/mining-productivity-4": {
-      "x": 1914,
+      "x": 1320,
       "y": 1914
     },
     "technology/mining-productivity-5": {
-      "x": 1914,
+      "x": 1320,
       "y": 1914
     },
     "technology/mining-productivity-6": {
-      "x": 1914,
+      "x": 1320,
       "y": 1914
     },
     "technology/mining-productivity-7": {
-      "x": 1914,
+      "x": 1320,
       "y": 1914
     },
     "technology/mining-productivity-8": {
-      "x": 1914,
+      "x": 1320,
       "y": 1914
     },
     "technology/mining-productivity-9": {
-      "x": 1914,
+      "x": 1320,
       "y": 1914
     },
     "technology/modular-armor": {
-      "x": 1980,
+      "x": 1386,
       "y": 1914
     },
     "technology/modules": {
-      "x": 2046,
+      "x": 1452,
       "y": 1914
     },
     "technology/night-vision-equipment": {
-      "x": 2112,
+      "x": 1518,
       "y": 1914
     },
     "technology/nuclear-fuel-reprocessing": {
-      "x": 2178,
+      "x": 1584,
       "y": 1914
     },
     "technology/nuclear-power": {
-      "x": 2244,
+      "x": 1650,
       "y": 1914
     },
     "technology/oil-gathering": {
-      "x": 2310,
+      "x": 1716,
       "y": 1914
     },
     "technology/oil-processing": {
-      "x": 2376,
+      "x": 1782,
       "y": 1914
     },
     "technology/personal-laser-defense-equipment": {
-      "x": 2442,
+      "x": 1848,
       "y": 1914
     },
     "technology/personal-roboport-equipment": {
-      "x": 2508,
+      "x": 1914,
       "y": 1914
     },
     "technology/personal-roboport-mk2-equipment": {
-      "x": 0,
-      "y": 1980
+      "x": 1980,
+      "y": 1914
     },
     "technology/physical-projectile-damage-1": {
-      "x": 66,
-      "y": 1980
+      "x": 2046,
+      "y": 1914
     },
     "technology/physical-projectile-damage-10": {
-      "x": 132,
-      "y": 1980
+      "x": 2112,
+      "y": 1914
     },
     "technology/physical-projectile-damage-2": {
-      "x": 66,
-      "y": 1980
+      "x": 2046,
+      "y": 1914
     },
     "technology/physical-projectile-damage-3": {
-      "x": 66,
-      "y": 1980
+      "x": 2046,
+      "y": 1914
     },
     "technology/physical-projectile-damage-4": {
-      "x": 66,
-      "y": 1980
+      "x": 2046,
+      "y": 1914
     },
     "technology/physical-projectile-damage-5": {
-      "x": 132,
-      "y": 1980
+      "x": 2112,
+      "y": 1914
     },
     "technology/physical-projectile-damage-6": {
-      "x": 132,
-      "y": 1980
+      "x": 2112,
+      "y": 1914
     },
     "technology/physical-projectile-damage-7": {
-      "x": 132,
-      "y": 1980
+      "x": 2112,
+      "y": 1914
     },
     "technology/physical-projectile-damage-8": {
-      "x": 132,
-      "y": 1980
+      "x": 2112,
+      "y": 1914
     },
     "technology/physical-projectile-damage-9": {
-      "x": 132,
-      "y": 1980
+      "x": 2112,
+      "y": 1914
     },
     "technology/plastics": {
-      "x": 198,
-      "y": 1980
+      "x": 2178,
+      "y": 1914
     },
     "technology/power-armor": {
-      "x": 264,
-      "y": 1980
+      "x": 2244,
+      "y": 1914
     },
     "technology/power-armor-mk2": {
-      "x": 330,
-      "y": 1980
+      "x": 2310,
+      "y": 1914
     },
     "technology/processing-unit": {
-      "x": 396,
-      "y": 1980
+      "x": 2376,
+      "y": 1914
     },
     "technology/production-science-pack": {
-      "x": 462,
-      "y": 1980
+      "x": 2442,
+      "y": 1914
     },
     "technology/productivity-module": {
-      "x": 528,
-      "y": 1980
+      "x": 2508,
+      "y": 1914
     },
     "technology/productivity-module-2": {
-      "x": 594,
+      "x": 0,
       "y": 1980
     },
     "technology/productivity-module-3": {
-      "x": 660,
+      "x": 66,
       "y": 1980
     },
     "technology/productivity-module-4": {
-      "x": 66,
-      "y": 2508
+      "x": 2046,
+      "y": 2442
     },
     "technology/productivity-module-5": {
-      "x": 132,
-      "y": 2508
+      "x": 2112,
+      "y": 2442
     },
     "technology/productivity-module-6": {
-      "x": 198,
-      "y": 2508
+      "x": 2178,
+      "y": 2442
     },
     "technology/productivity-module-7": {
-      "x": 264,
-      "y": 2508
+      "x": 2244,
+      "y": 2442
     },
     "technology/productivity-module-8": {
-      "x": 330,
-      "y": 2508
+      "x": 2310,
+      "y": 2442
     },
     "technology/productivity-module-9": {
-      "x": 396,
-      "y": 2508
+      "x": 2376,
+      "y": 2442
     },
     "technology/radar": {
-      "x": 726,
+      "x": 132,
       "y": 1980
     },
     "technology/railway": {
-      "x": 792,
+      "x": 198,
       "y": 1980
     },
     "technology/refined-flammables-1": {
-      "x": 858,
+      "x": 264,
       "y": 1980
     },
     "technology/refined-flammables-10": {
-      "x": 858,
+      "x": 264,
       "y": 1980
     },
     "technology/refined-flammables-2": {
-      "x": 858,
+      "x": 264,
       "y": 1980
     },
     "technology/refined-flammables-3": {
-      "x": 858,
+      "x": 264,
       "y": 1980
     },
     "technology/refined-flammables-4": {
-      "x": 858,
+      "x": 264,
       "y": 1980
     },
     "technology/refined-flammables-5": {
-      "x": 858,
+      "x": 264,
       "y": 1980
     },
     "technology/refined-flammables-6": {
-      "x": 858,
+      "x": 264,
       "y": 1980
     },
     "technology/refined-flammables-7": {
-      "x": 858,
+      "x": 264,
       "y": 1980
     },
     "technology/refined-flammables-8": {
-      "x": 858,
+      "x": 264,
       "y": 1980
     },
     "technology/refined-flammables-9": {
-      "x": 858,
+      "x": 264,
       "y": 1980
     },
     "technology/repair-pack": {
-      "x": 924,
+      "x": 330,
       "y": 1980
     },
     "technology/research-speed-1": {
-      "x": 990,
+      "x": 396,
       "y": 1980
     },
     "technology/research-speed-2": {
-      "x": 990,
+      "x": 396,
       "y": 1980
     },
     "technology/research-speed-3": {
-      "x": 990,
+      "x": 396,
       "y": 1980
     },
     "technology/research-speed-4": {
-      "x": 990,
+      "x": 396,
       "y": 1980
     },
     "technology/research-speed-5": {
-      "x": 990,
+      "x": 396,
       "y": 1980
     },
     "technology/research-speed-6": {
-      "x": 990,
+      "x": 396,
       "y": 1980
     },
     "technology/robot-attrition-explosion-safety": {
-      "x": 198,
-      "y": 2112
+      "x": 2178,
+      "y": 2046
     },
     "technology/robotics": {
-      "x": 1056,
+      "x": 462,
       "y": 1980
     },
     "technology/rocket-control-unit": {
-      "x": 858,
+      "x": 264,
       "y": 2508
     },
     "technology/rocket-fuel": {
-      "x": 1122,
+      "x": 528,
       "y": 1980
     },
     "technology/rocket-silo": {
-      "x": 1188,
+      "x": 594,
       "y": 1980
     },
     "technology/rocketry": {
-      "x": 1254,
+      "x": 660,
       "y": 1980
     },
     "technology/sand-processing": {
-      "x": 1650,
+      "x": 1056,
       "y": 2046
     },
     "technology/se-adaptive-armour-1": {
-      "x": 264,
-      "y": 2112
+      "x": 2244,
+      "y": 2046
     },
     "technology/se-adaptive-armour-2": {
-      "x": 330,
-      "y": 2112
+      "x": 2310,
+      "y": 2046
     },
     "technology/se-adaptive-armour-3": {
-      "x": 396,
-      "y": 2112
+      "x": 2376,
+      "y": 2046
     },
     "technology/se-adaptive-armour-4": {
-      "x": 462,
-      "y": 2112
+      "x": 2442,
+      "y": 2046
     },
     "technology/se-adaptive-armour-5": {
-      "x": 528,
-      "y": 2112
+      "x": 2508,
+      "y": 2046
     },
     "technology/se-addon-power-pole": {
-      "x": 594,
+      "x": 0,
       "y": 2112
     },
     "technology/se-aeroframe-bulkhead": {
-      "x": 660,
+      "x": 66,
       "y": 2112
     },
     "technology/se-aeroframe-pole": {
-      "x": 726,
+      "x": 132,
       "y": 2112
     },
     "technology/se-aeroframe-scaffold": {
-      "x": 792,
+      "x": 198,
       "y": 2112
     },
     "technology/se-antimatter-engine": {
-      "x": 858,
+      "x": 264,
       "y": 2112
     },
     "technology/se-antimatter-production": {
-      "x": 924,
+      "x": 330,
       "y": 2112
     },
     "technology/se-antimatter-reactor": {
-      "x": 990,
+      "x": 396,
       "y": 2112
     },
     "technology/se-antimatter-reactor-equipment": {
-      "x": 594,
+      "x": 0,
       "y": 2442
     },
     "technology/se-arcosphere": {
-      "x": 1056,
+      "x": 462,
       "y": 2112
     },
     "technology/se-arcosphere-folding": {
-      "x": 1056,
+      "x": 462,
       "y": 2112
     },
     "technology/se-astronomic-science-pack-1": {
-      "x": 1122,
+      "x": 528,
       "y": 2112
     },
     "technology/se-astronomic-science-pack-2": {
-      "x": 1188,
+      "x": 594,
       "y": 2112
     },
     "technology/se-astronomic-science-pack-3": {
-      "x": 1254,
+      "x": 660,
       "y": 2112
     },
     "technology/se-astronomic-science-pack-4": {
-      "x": 1320,
+      "x": 726,
       "y": 2112
     },
     "technology/se-big-heat-exchanger": {
-      "x": 1386,
+      "x": 792,
       "y": 2112
     },
     "technology/se-big-turbine": {
-      "x": 1452,
+      "x": 858,
       "y": 2112
     },
     "technology/se-bio-upgrade-agility-1": {
-      "x": 1518,
+      "x": 924,
       "y": 2112
     },
     "technology/se-bio-upgrade-agility-2": {
-      "x": 1518,
+      "x": 924,
       "y": 2112
     },
     "technology/se-bio-upgrade-agility-3": {
-      "x": 1518,
+      "x": 924,
       "y": 2112
     },
     "technology/se-bio-upgrade-agility-4": {
-      "x": 1518,
+      "x": 924,
       "y": 2112
     },
     "technology/se-bio-upgrade-agility-5": {
-      "x": 1518,
+      "x": 924,
       "y": 2112
     },
     "technology/se-bio-upgrade-constitution-1": {
-      "x": 1584,
+      "x": 990,
       "y": 2112
     },
     "technology/se-bio-upgrade-constitution-2": {
-      "x": 1584,
+      "x": 990,
       "y": 2112
     },
     "technology/se-bio-upgrade-constitution-3": {
-      "x": 1584,
+      "x": 990,
       "y": 2112
     },
     "technology/se-bio-upgrade-constitution-4": {
-      "x": 1584,
+      "x": 990,
       "y": 2112
     },
     "technology/se-bio-upgrade-constitution-5": {
-      "x": 1584,
+      "x": 990,
       "y": 2112
     },
     "technology/se-bio-upgrade-dexterity-1": {
-      "x": 1650,
+      "x": 1056,
       "y": 2112
     },
     "technology/se-bio-upgrade-dexterity-2": {
-      "x": 1650,
+      "x": 1056,
       "y": 2112
     },
     "technology/se-bio-upgrade-dexterity-3": {
-      "x": 1650,
+      "x": 1056,
       "y": 2112
     },
     "technology/se-bio-upgrade-dexterity-4": {
-      "x": 1650,
+      "x": 1056,
       "y": 2112
     },
     "technology/se-bio-upgrade-dexterity-5": {
-      "x": 1650,
+      "x": 1056,
       "y": 2112
     },
     "technology/se-bio-upgrade-intelligence-1": {
-      "x": 1716,
+      "x": 1122,
       "y": 2112
     },
     "technology/se-bio-upgrade-intelligence-2": {
-      "x": 1716,
+      "x": 1122,
       "y": 2112
     },
     "technology/se-bio-upgrade-intelligence-3": {
-      "x": 1716,
+      "x": 1122,
       "y": 2112
     },
     "technology/se-bio-upgrade-intelligence-4": {
-      "x": 1716,
+      "x": 1122,
       "y": 2112
     },
     "technology/se-bio-upgrade-intelligence-5": {
-      "x": 1716,
+      "x": 1122,
       "y": 2112
     },
     "technology/se-bio-upgrade-strength-1": {
-      "x": 1782,
+      "x": 1188,
       "y": 2112
     },
     "technology/se-bio-upgrade-strength-2": {
-      "x": 1782,
+      "x": 1188,
       "y": 2112
     },
     "technology/se-bio-upgrade-strength-3": {
-      "x": 1782,
+      "x": 1188,
       "y": 2112
     },
     "technology/se-bio-upgrade-strength-4": {
-      "x": 1782,
+      "x": 1188,
       "y": 2112
     },
     "technology/se-bio-upgrade-strength-5": {
-      "x": 1782,
+      "x": 1188,
       "y": 2112
     },
     "technology/se-biogun": {
-      "x": 1848,
+      "x": 1254,
       "y": 2112
     },
     "technology/se-biological-science-pack-1": {
-      "x": 1914,
+      "x": 1320,
       "y": 2112
     },
     "technology/se-biological-science-pack-2": {
-      "x": 1980,
+      "x": 1386,
       "y": 2112
     },
     "technology/se-biological-science-pack-3": {
-      "x": 2046,
+      "x": 1452,
       "y": 2112
     },
     "technology/se-biological-science-pack-4": {
-      "x": 2112,
+      "x": 1518,
       "y": 2112
     },
     "technology/se-bioscrubber": {
-      "x": 2178,
+      "x": 1584,
       "y": 2112
     },
     "technology/se-capsule-behemoth-biter": {
-      "x": 2244,
+      "x": 1650,
       "y": 2112
     },
     "technology/se-capsule-behemoth-spitter": {
-      "x": 2310,
+      "x": 1716,
       "y": 2112
     },
     "technology/se-capsule-big-biter": {
-      "x": 2376,
+      "x": 1782,
       "y": 2112
     },
     "technology/se-capsule-big-spitter": {
-      "x": 2442,
+      "x": 1848,
       "y": 2112
     },
     "technology/se-capsule-medium-biter": {
-      "x": 2508,
+      "x": 1914,
       "y": 2112
     },
     "technology/se-capsule-medium-spitter": {
-      "x": 0,
-      "y": 2178
+      "x": 1980,
+      "y": 2112
     },
     "technology/se-capsule-small-biter": {
-      "x": 66,
-      "y": 2178
+      "x": 2046,
+      "y": 2112
     },
     "technology/se-capsule-small-spitter": {
-      "x": 132,
-      "y": 2178
+      "x": 2112,
+      "y": 2112
     },
     "technology/se-cargo-rocket-section-beryllium": {
-      "x": 198,
-      "y": 2178
+      "x": 2178,
+      "y": 2112
     },
     "technology/se-centrifuge": {
-      "x": 396,
-      "y": 2442
+      "x": 2376,
+      "y": 2376
     },
     "technology/se-compact-beacon": {
-      "x": 264,
-      "y": 2178
+      "x": 2244,
+      "y": 2112
     },
     "technology/se-compact-beacon-2": {
-      "x": 330,
-      "y": 2178
+      "x": 2310,
+      "y": 2112
     },
     "technology/se-condenser-turbine": {
-      "x": 396,
-      "y": 2178
+      "x": 2376,
+      "y": 2112
     },
     "technology/se-core-miner": {
-      "x": 462,
-      "y": 2178
+      "x": 2442,
+      "y": 2112
     },
     "technology/se-cryogun": {
-      "x": 660,
+      "x": 66,
       "y": 2442
     },
     "technology/se-cryonite-lubricant": {
-      "x": 528,
-      "y": 2178
+      "x": 2508,
+      "y": 2112
     },
     "technology/se-deep-catalogue-1": {
-      "x": 594,
+      "x": 0,
       "y": 2178
     },
     "technology/se-deep-catalogue-2": {
-      "x": 660,
+      "x": 66,
       "y": 2178
     },
     "technology/se-deep-catalogue-3": {
-      "x": 726,
+      "x": 132,
       "y": 2178
     },
     "technology/se-deep-catalogue-4": {
-      "x": 792,
+      "x": 198,
       "y": 2178
     },
     "technology/se-deep-space-science-pack-1": {
-      "x": 858,
+      "x": 264,
       "y": 2178
     },
     "technology/se-deep-space-science-pack-2": {
-      "x": 924,
+      "x": 330,
       "y": 2178
     },
     "technology/se-deep-space-science-pack-3": {
-      "x": 990,
+      "x": 396,
       "y": 2178
     },
     "technology/se-deep-space-science-pack-4": {
-      "x": 1056,
+      "x": 462,
       "y": 2178
     },
     "technology/se-deep-space-transport-belt": {
-      "x": 1122,
+      "x": 528,
       "y": 2178
     },
     "technology/se-delivery-cannon": {
-      "x": 1188,
+      "x": 594,
       "y": 2178
     },
     "technology/se-delivery-cannon-capsule-iridium": {
-      "x": 1254,
+      "x": 660,
       "y": 2178
     },
     "technology/se-delivery-cannon-weapon": {
-      "x": 1320,
+      "x": 726,
       "y": 2178
     },
     "technology/se-dimensional-anchor": {
-      "x": 1386,
+      "x": 792,
       "y": 2178
     },
     "technology/se-dynamic-emitter": {
-      "x": 1452,
+      "x": 858,
       "y": 2178
     },
     "technology/se-electric-boiler": {
-      "x": 1518,
+      "x": 924,
       "y": 2178
     },
     "technology/se-energy-beam-defence": {
-      "x": 2244,
+      "x": 1650,
       "y": 2046
     },
     "technology/se-energy-beaming": {
-      "x": 1584,
+      "x": 990,
       "y": 2178
     },
     "technology/se-energy-science-pack-1": {
-      "x": 1650,
+      "x": 1056,
       "y": 2178
     },
     "technology/se-energy-science-pack-2": {
-      "x": 1716,
+      "x": 1122,
       "y": 2178
     },
     "technology/se-energy-science-pack-3": {
-      "x": 1782,
+      "x": 1188,
       "y": 2178
     },
     "technology/se-energy-science-pack-4": {
-      "x": 1848,
+      "x": 1254,
       "y": 2178
     },
     "technology/se-factory-spaceship-1": {
-      "x": 726,
+      "x": 132,
       "y": 2442
     },
     "technology/se-factory-spaceship-2": {
-      "x": 726,
+      "x": 132,
       "y": 2442
     },
     "technology/se-factory-spaceship-3": {
-      "x": 726,
+      "x": 132,
       "y": 2442
     },
     "technology/se-factory-spaceship-4": {
-      "x": 726,
+      "x": 132,
       "y": 2442
     },
     "technology/se-factory-spaceship-5": {
-      "x": 726,
+      "x": 132,
       "y": 2442
     },
     "technology/se-fluid-burner-generator": {
-      "x": 1914,
+      "x": 1320,
       "y": 2178
     },
     "technology/se-fuel-refining": {
-      "x": 1980,
+      "x": 1386,
       "y": 2178
     },
     "technology/se-fusion-reactor-equipment": {
-      "x": 792,
+      "x": 198,
       "y": 2442
     },
     "technology/se-heat-shielding": {
-      "x": 2046,
+      "x": 1452,
       "y": 2178
     },
     "technology/se-heat-shielding-iridium": {
-      "x": 2112,
+      "x": 1518,
       "y": 2178
     },
     "technology/se-heavy-assembly": {
-      "x": 2178,
+      "x": 1584,
       "y": 2178
     },
     "technology/se-heavy-bearing": {
-      "x": 2244,
+      "x": 1650,
       "y": 2178
     },
     "technology/se-heavy-composite": {
-      "x": 2310,
+      "x": 1716,
       "y": 2178
     },
     "technology/se-heavy-girder": {
-      "x": 2376,
+      "x": 1782,
       "y": 2178
     },
     "technology/se-holmium-cable": {
-      "x": 2442,
+      "x": 1848,
       "y": 2178
     },
     "technology/se-holmium-solenoid": {
-      "x": 2508,
+      "x": 1914,
       "y": 2178
     },
     "technology/se-ion-engine": {
+      "x": 1980,
+      "y": 2178
+    },
+    "technology/se-lattice-pressure-vessel": {
+      "x": 2046,
+      "y": 2178
+    },
+    "technology/se-lifesupport-equipment-1": {
+      "x": 2112,
+      "y": 2178
+    },
+    "technology/se-lifesupport-equipment-2": {
+      "x": 2178,
+      "y": 2178
+    },
+    "technology/se-lifesupport-equipment-3": {
+      "x": 2244,
+      "y": 2178
+    },
+    "technology/se-lifesupport-equipment-4": {
+      "x": 2310,
+      "y": 2178
+    },
+    "technology/se-lifesupport-facility": {
+      "x": 2376,
+      "y": 2178
+    },
+    "technology/se-linked-container": {
+      "x": 2442,
+      "y": 2178
+    },
+    "technology/se-long-range-star-mapping": {
+      "x": 2508,
+      "y": 2178
+    },
+    "technology/se-low-density-structure-beryllium": {
       "x": 0,
       "y": 2244
     },
-    "technology/se-lattice-pressure-vessel": {
+    "technology/se-material-science-pack-1": {
       "x": 66,
       "y": 2244
     },
-    "technology/se-lifesupport-equipment-1": {
+    "technology/se-material-science-pack-2": {
       "x": 132,
       "y": 2244
     },
-    "technology/se-lifesupport-equipment-2": {
+    "technology/se-material-science-pack-3": {
       "x": 198,
       "y": 2244
     },
-    "technology/se-lifesupport-equipment-3": {
+    "technology/se-material-science-pack-4": {
       "x": 264,
       "y": 2244
     },
-    "technology/se-lifesupport-equipment-4": {
-      "x": 330,
-      "y": 2244
-    },
-    "technology/se-lifesupport-facility": {
-      "x": 396,
-      "y": 2244
-    },
-    "technology/se-linked-container": {
-      "x": 462,
-      "y": 2244
-    },
-    "technology/se-long-range-star-mapping": {
-      "x": 528,
-      "y": 2244
-    },
-    "technology/se-low-density-structure-beryllium": {
-      "x": 594,
-      "y": 2244
-    },
-    "technology/se-material-science-pack-1": {
-      "x": 660,
-      "y": 2244
-    },
-    "technology/se-material-science-pack-2": {
-      "x": 726,
-      "y": 2244
-    },
-    "technology/se-material-science-pack-3": {
-      "x": 792,
-      "y": 2244
-    },
-    "technology/se-material-science-pack-4": {
-      "x": 858,
-      "y": 2244
-    },
     "technology/se-medpack": {
-      "x": 1848,
+      "x": 1254,
       "y": 2046
     },
     "technology/se-medpack-2": {
-      "x": 1914,
+      "x": 1320,
       "y": 2046
     },
     "technology/se-medpack-3": {
-      "x": 1980,
+      "x": 1386,
       "y": 2046
     },
     "technology/se-medpack-4": {
-      "x": 2046,
+      "x": 1452,
       "y": 2046
     },
     "technology/se-meteor-defence": {
-      "x": 858,
+      "x": 264,
       "y": 2442
     },
     "technology/se-meteor-point-defence": {
-      "x": 924,
+      "x": 330,
       "y": 2442
     },
     "technology/se-nanomaterial": {
-      "x": 924,
+      "x": 330,
       "y": 2244
     },
     "technology/se-naquium-cube": {
-      "x": 990,
+      "x": 396,
       "y": 2244
     },
     "technology/se-naquium-processor": {
-      "x": 1056,
+      "x": 462,
       "y": 2244
     },
     "technology/se-naquium-tessaract": {
-      "x": 1122,
+      "x": 528,
       "y": 2244
     },
     "technology/se-nexus": {
-      "x": 1188,
+      "x": 594,
       "y": 2244
     },
     "technology/se-plague": {
-      "x": 990,
+      "x": 396,
       "y": 2442
     },
     "technology/se-processing-beryllium": {
-      "x": 1254,
+      "x": 660,
       "y": 2244
     },
     "technology/se-processing-cryonite": {
-      "x": 1320,
+      "x": 726,
       "y": 2244
     },
     "technology/se-processing-holmium": {
-      "x": 1386,
+      "x": 792,
       "y": 2244
     },
     "technology/se-processing-iridium": {
-      "x": 1452,
+      "x": 858,
       "y": 2244
     },
     "technology/se-processing-methane-ice": {
@@ -6849,19 +8577,19 @@
       "y": 462
     },
     "technology/se-processing-naquium": {
-      "x": 1518,
+      "x": 924,
       "y": 2244
     },
     "technology/se-processing-unit-holmium": {
-      "x": 1584,
+      "x": 990,
       "y": 2244
     },
     "technology/se-processing-vitamelange": {
-      "x": 1650,
+      "x": 1056,
       "y": 2244
     },
     "technology/se-processing-vulcanite": {
-      "x": 1716,
+      "x": 1122,
       "y": 2244
     },
     "technology/se-processing-water-ice": {
@@ -6869,804 +8597,804 @@
       "y": 396
     },
     "technology/se-pulveriser": {
-      "x": 1782,
+      "x": 1188,
       "y": 2244
     },
     "technology/se-pylon": {
-      "x": 1848,
+      "x": 1254,
       "y": 2244
     },
     "technology/se-pylon-construction": {
-      "x": 1914,
+      "x": 1320,
       "y": 2244
     },
     "technology/se-pylon-construction-radar": {
-      "x": 1980,
+      "x": 1386,
       "y": 2244
     },
     "technology/se-pylon-substation": {
-      "x": 2046,
+      "x": 1452,
       "y": 2244
     },
     "technology/se-pyroflux-smelting": {
-      "x": 2112,
+      "x": 1518,
       "y": 2244
     },
     "technology/se-pyroflux-smelting-beryllium": {
-      "x": 2178,
+      "x": 1584,
       "y": 2244
     },
     "technology/se-pyroflux-smelting-holmium": {
-      "x": 2244,
+      "x": 1650,
       "y": 2244
     },
     "technology/se-quantum-processor": {
-      "x": 2310,
+      "x": 1716,
       "y": 2244
     },
     "technology/se-railgun": {
-      "x": 1056,
+      "x": 462,
       "y": 2442
     },
     "technology/se-recycling-facility": {
-      "x": 2376,
+      "x": 1782,
       "y": 2244
     },
     "technology/se-rocket-cargo-safety-1": {
-      "x": 2442,
+      "x": 1848,
       "y": 2244
     },
     "technology/se-rocket-cargo-safety-2": {
-      "x": 2442,
+      "x": 1848,
       "y": 2244
     },
     "technology/se-rocket-cargo-safety-3": {
-      "x": 2442,
+      "x": 1848,
       "y": 2244
     },
     "technology/se-rocket-cargo-safety-4": {
-      "x": 2442,
+      "x": 1848,
       "y": 2244
     },
     "technology/se-rocket-fuel-from-water": {
-      "x": 2508,
+      "x": 1914,
       "y": 2244
     },
     "technology/se-rocket-launch-pad": {
-      "x": 0,
-      "y": 2310
+      "x": 1980,
+      "y": 2244
     },
     "technology/se-rocket-reusability-1": {
-      "x": 66,
-      "y": 2310
+      "x": 2046,
+      "y": 2244
     },
     "technology/se-rocket-reusability-2": {
-      "x": 66,
-      "y": 2310
+      "x": 2046,
+      "y": 2244
     },
     "technology/se-rocket-reusability-3": {
-      "x": 66,
-      "y": 2310
+      "x": 2046,
+      "y": 2244
     },
     "technology/se-rocket-reusability-4": {
-      "x": 66,
-      "y": 2310
+      "x": 2046,
+      "y": 2244
     },
     "technology/se-rocket-science-pack": {
-      "x": 1848,
+      "x": 1254,
       "y": 2442
     },
     "technology/se-rocket-survivability-1": {
-      "x": 132,
-      "y": 2310
+      "x": 2112,
+      "y": 2244
     },
     "technology/se-rocket-survivability-2": {
-      "x": 132,
-      "y": 2310
+      "x": 2112,
+      "y": 2244
     },
     "technology/se-rocket-survivability-3": {
-      "x": 132,
-      "y": 2310
+      "x": 2112,
+      "y": 2244
     },
     "technology/se-rocket-survivability-4": {
-      "x": 132,
-      "y": 2310
+      "x": 2112,
+      "y": 2244
     },
     "technology/se-rtg-equipment": {
-      "x": 1122,
+      "x": 528,
       "y": 2442
     },
     "technology/se-self-sealing-gel": {
-      "x": 198,
-      "y": 2310
+      "x": 2178,
+      "y": 2244
     },
     "technology/se-space-accumulator": {
-      "x": 1188,
+      "x": 594,
       "y": 2442
     },
     "technology/se-space-accumulator-2": {
-      "x": 1254,
+      "x": 660,
       "y": 2442
     },
     "technology/se-space-assembling": {
-      "x": 264,
-      "y": 2310
+      "x": 2244,
+      "y": 2244
     },
     "technology/se-space-astrometrics-laboratory": {
-      "x": 330,
-      "y": 2310
+      "x": 2310,
+      "y": 2244
     },
     "technology/se-space-belt": {
-      "x": 396,
-      "y": 2310
+      "x": 2376,
+      "y": 2244
     },
     "technology/se-space-biochemical-laboratory": {
-      "x": 462,
-      "y": 2310
+      "x": 2442,
+      "y": 2244
     },
     "technology/se-space-capsule-navigation": {
-      "x": 528,
-      "y": 2310
+      "x": 2508,
+      "y": 2244
     },
     "technology/se-space-catalogue-astronomic-1": {
-      "x": 594,
+      "x": 0,
       "y": 2310
     },
     "technology/se-space-catalogue-astronomic-2": {
-      "x": 660,
+      "x": 66,
       "y": 2310
     },
     "technology/se-space-catalogue-astronomic-3": {
-      "x": 726,
+      "x": 132,
       "y": 2310
     },
     "technology/se-space-catalogue-astronomic-4": {
-      "x": 792,
+      "x": 198,
       "y": 2310
     },
     "technology/se-space-catalogue-biological-1": {
-      "x": 858,
+      "x": 264,
       "y": 2310
     },
     "technology/se-space-catalogue-biological-2": {
-      "x": 924,
+      "x": 330,
       "y": 2310
     },
     "technology/se-space-catalogue-biological-3": {
-      "x": 990,
+      "x": 396,
       "y": 2310
     },
     "technology/se-space-catalogue-biological-4": {
-      "x": 1056,
+      "x": 462,
       "y": 2310
     },
     "technology/se-space-catalogue-energy-1": {
-      "x": 1122,
+      "x": 528,
       "y": 2310
     },
     "technology/se-space-catalogue-energy-2": {
-      "x": 1188,
+      "x": 594,
       "y": 2310
     },
     "technology/se-space-catalogue-energy-3": {
-      "x": 1254,
+      "x": 660,
       "y": 2310
     },
     "technology/se-space-catalogue-energy-4": {
-      "x": 1320,
+      "x": 726,
       "y": 2310
     },
     "technology/se-space-catalogue-material-1": {
-      "x": 1386,
+      "x": 792,
       "y": 2310
     },
     "technology/se-space-catalogue-material-2": {
-      "x": 1452,
+      "x": 858,
       "y": 2310
     },
     "technology/se-space-catalogue-material-3": {
-      "x": 1518,
+      "x": 924,
       "y": 2310
     },
     "technology/se-space-catalogue-material-4": {
-      "x": 1584,
+      "x": 990,
       "y": 2310
     },
     "technology/se-space-data-card": {
-      "x": 1650,
+      "x": 1056,
       "y": 2310
     },
     "technology/se-space-decontamination-facility": {
-      "x": 1716,
+      "x": 1122,
       "y": 2310
     },
     "technology/se-space-electromagnetics-laboratory": {
-      "x": 1782,
+      "x": 1188,
       "y": 2310
     },
     "technology/se-space-elevator": {
-      "x": 1848,
+      "x": 1254,
       "y": 2310
     },
     "technology/se-space-elevator-cable-nano": {
-      "x": 1848,
+      "x": 1254,
       "y": 2310
     },
     "technology/se-space-genetics-laboratory": {
-      "x": 1914,
+      "x": 1320,
       "y": 2310
     },
     "technology/se-space-gravimetrics-laboratory": {
-      "x": 1980,
+      "x": 1386,
       "y": 2310
     },
     "technology/se-space-growth-facility": {
-      "x": 2046,
+      "x": 1452,
       "y": 2310
     },
     "technology/se-space-hypercooling-1": {
-      "x": 2112,
+      "x": 1518,
       "y": 2310
     },
     "technology/se-space-hypercooling-2": {
-      "x": 2112,
+      "x": 1518,
       "y": 2310
     },
     "technology/se-space-hypercooling-3": {
-      "x": 2112,
+      "x": 1518,
       "y": 2310
     },
     "technology/se-space-laser-laboratory": {
-      "x": 2178,
+      "x": 1584,
       "y": 2310
     },
     "technology/se-space-manufactory": {
-      "x": 2244,
+      "x": 1650,
       "y": 2310
     },
     "technology/se-space-material-fabricator": {
-      "x": 924,
+      "x": 330,
       "y": 2112
     },
     "technology/se-space-matter-fusion": {
-      "x": 924,
+      "x": 330,
       "y": 2112
     },
     "technology/se-space-mechanical-laboratory": {
-      "x": 2310,
+      "x": 1716,
       "y": 2310
     },
     "technology/se-space-particle-accelerator": {
-      "x": 2376,
+      "x": 1782,
       "y": 2310
     },
     "technology/se-space-particle-collider": {
-      "x": 2442,
+      "x": 1848,
       "y": 2310
     },
     "technology/se-space-pipe": {
-      "x": 330,
-      "y": 1914
+      "x": 2310,
+      "y": 1848
     },
     "technology/se-space-plasma-generator": {
-      "x": 2508,
+      "x": 1914,
       "y": 2310
     },
     "technology/se-space-platform-plating": {
-      "x": 0,
-      "y": 2376
+      "x": 1980,
+      "y": 2310
     },
     "technology/se-space-platform-scaffold": {
-      "x": 66,
-      "y": 2376
+      "x": 2046,
+      "y": 2310
     },
     "technology/se-space-probe": {
-      "x": 132,
-      "y": 2376
+      "x": 2112,
+      "y": 2310
     },
     "technology/se-space-radiating-efficiency": {
-      "x": 198,
-      "y": 2376
+      "x": 2178,
+      "y": 2310
     },
     "technology/se-space-radiating-speed": {
-      "x": 264,
-      "y": 2376
+      "x": 2244,
+      "y": 2310
     },
     "technology/se-space-radiation-laboratory": {
-      "x": 330,
-      "y": 2376
+      "x": 2310,
+      "y": 2310
     },
     "technology/se-space-radiator-1": {
-      "x": 396,
-      "y": 2376
+      "x": 2376,
+      "y": 2310
     },
     "technology/se-space-radiator-2": {
-      "x": 462,
-      "y": 2376
+      "x": 2442,
+      "y": 2310
     },
     "technology/se-space-rail": {
-      "x": 528,
-      "y": 2376
+      "x": 2508,
+      "y": 2310
     },
     "technology/se-space-science-lab": {
-      "x": 594,
+      "x": 0,
       "y": 2376
     },
     "technology/se-space-simulation-ab": {
-      "x": 660,
+      "x": 66,
       "y": 2376
     },
     "technology/se-space-simulation-abm": {
-      "x": 726,
+      "x": 132,
       "y": 2376
     },
     "technology/se-space-simulation-am": {
-      "x": 792,
+      "x": 198,
       "y": 2376
     },
     "technology/se-space-simulation-as": {
-      "x": 858,
+      "x": 264,
       "y": 2376
     },
     "technology/se-space-simulation-asb": {
-      "x": 924,
+      "x": 330,
       "y": 2376
     },
     "technology/se-space-simulation-asbm": {
-      "x": 990,
+      "x": 396,
       "y": 2376
     },
     "technology/se-space-simulation-asm": {
-      "x": 1056,
+      "x": 462,
       "y": 2376
     },
     "technology/se-space-simulation-bm": {
-      "x": 1122,
+      "x": 528,
       "y": 2376
     },
     "technology/se-space-simulation-sb": {
-      "x": 1188,
+      "x": 594,
       "y": 2376
     },
     "technology/se-space-simulation-sbm": {
-      "x": 1254,
+      "x": 660,
       "y": 2376
     },
     "technology/se-space-simulation-sm": {
-      "x": 1320,
+      "x": 726,
       "y": 2376
     },
     "technology/se-space-solar-panel": {
-      "x": 1386,
+      "x": 792,
       "y": 2376
     },
     "technology/se-space-solar-panel-2": {
-      "x": 1452,
+      "x": 858,
       "y": 2376
     },
     "technology/se-space-solar-panel-3": {
-      "x": 1518,
+      "x": 924,
       "y": 2376
     },
     "technology/se-space-supercomputer-1": {
-      "x": 1584,
+      "x": 990,
       "y": 2376
     },
     "technology/se-space-supercomputer-2": {
-      "x": 1650,
+      "x": 1056,
       "y": 2376
     },
     "technology/se-space-supercomputer-3": {
-      "x": 1716,
+      "x": 1122,
       "y": 2376
     },
     "technology/se-space-supercomputer-4": {
-      "x": 1782,
+      "x": 1188,
       "y": 2376
     },
     "technology/se-space-telescope": {
-      "x": 1848,
+      "x": 1254,
       "y": 2376
     },
     "technology/se-space-telescope-gammaray": {
-      "x": 1914,
+      "x": 1320,
       "y": 2376
     },
     "technology/se-space-telescope-microwave": {
-      "x": 1980,
+      "x": 1386,
       "y": 2376
     },
     "technology/se-space-telescope-radio": {
-      "x": 2046,
+      "x": 1452,
       "y": 2376
     },
     "technology/se-space-telescope-xray": {
-      "x": 2112,
+      "x": 1518,
       "y": 2376
     },
     "technology/se-space-thermodynamics-laboratory": {
-      "x": 2178,
+      "x": 1584,
       "y": 2376
     },
     "technology/se-spaceship": {
-      "x": 1320,
+      "x": 726,
       "y": 2442
     },
     "technology/se-spaceship-clamps": {
-      "x": 2244,
+      "x": 1650,
       "y": 2376
     },
     "technology/se-spaceship-integrity-1": {
-      "x": 726,
+      "x": 132,
       "y": 2442
     },
     "technology/se-spaceship-integrity-2": {
-      "x": 726,
+      "x": 132,
       "y": 2442
     },
     "technology/se-spaceship-integrity-3": {
-      "x": 726,
+      "x": 132,
       "y": 2442
     },
     "technology/se-spaceship-integrity-4": {
-      "x": 726,
+      "x": 132,
       "y": 2442
     },
     "technology/se-spaceship-integrity-5": {
-      "x": 726,
+      "x": 132,
       "y": 2442
     },
     "technology/se-spaceship-integrity-6": {
-      "x": 726,
+      "x": 132,
       "y": 2442
     },
     "technology/se-spaceship-integrity-7": {
-      "x": 726,
+      "x": 132,
       "y": 2442
     },
     "technology/se-spaceship-victory": {
-      "x": 924,
+      "x": 330,
       "y": 2508
     },
     "technology/se-supercharger": {
-      "x": 2310,
+      "x": 1716,
       "y": 2376
     },
     "technology/se-superconductive-cable": {
-      "x": 1386,
+      "x": 792,
       "y": 2442
     },
     "technology/se-teleportation": {
-      "x": 2376,
+      "x": 1782,
       "y": 2376
     },
     "technology/se-tesla-gun": {
-      "x": 1452,
+      "x": 858,
       "y": 2442
     },
     "technology/se-thruster-suit": {
-      "x": 1518,
+      "x": 924,
       "y": 2442
     },
     "technology/se-thruster-suit-2": {
-      "x": 1584,
+      "x": 990,
       "y": 2442
     },
     "technology/se-thruster-suit-3": {
-      "x": 1650,
+      "x": 1056,
       "y": 2442
     },
     "technology/se-thruster-suit-4": {
-      "x": 1716,
+      "x": 1122,
       "y": 2442
     },
     "technology/se-vitalic-acid": {
-      "x": 2442,
+      "x": 1848,
       "y": 2376
     },
     "technology/se-vitalic-epoxy": {
-      "x": 2508,
+      "x": 1914,
       "y": 2376
     },
     "technology/se-vitalic-reagent": {
-      "x": 0,
-      "y": 2442
+      "x": 1980,
+      "y": 2376
     },
     "technology/se-vulcanite-rocket-fuel": {
-      "x": 66,
-      "y": 2442
+      "x": 2046,
+      "y": 2376
     },
     "technology/se-wide-beacon": {
-      "x": 132,
-      "y": 2442
+      "x": 2112,
+      "y": 2376
     },
     "technology/se-wide-beacon-2": {
-      "x": 198,
-      "y": 2442
+      "x": 2178,
+      "y": 2376
     },
     "technology/se-zone-discovery-deep": {
-      "x": 264,
-      "y": 2442
+      "x": 2244,
+      "y": 2376
     },
     "technology/se-zone-discovery-random": {
-      "x": 264,
-      "y": 2442
+      "x": 2244,
+      "y": 2376
     },
     "technology/se-zone-discovery-targeted": {
-      "x": 264,
-      "y": 2442
+      "x": 2244,
+      "y": 2376
     },
     "technology/shield-projector": {
-      "x": 330,
-      "y": 2442
+      "x": 2310,
+      "y": 2376
     },
     "technology/solar-energy": {
-      "x": 1320,
+      "x": 726,
       "y": 1980
     },
     "technology/solar-panel-equipment": {
-      "x": 1386,
+      "x": 792,
       "y": 1980
     },
     "technology/space-science-pack": {
-      "x": 1980,
+      "x": 1386,
       "y": 2442
     },
     "technology/speed-module": {
-      "x": 1452,
+      "x": 858,
       "y": 1980
     },
     "technology/speed-module-2": {
-      "x": 1518,
+      "x": 924,
       "y": 1980
     },
     "technology/speed-module-3": {
-      "x": 1584,
+      "x": 990,
       "y": 1980
     },
     "technology/speed-module-4": {
-      "x": 2244,
+      "x": 1650,
       "y": 2442
     },
     "technology/speed-module-5": {
-      "x": 2310,
+      "x": 1716,
       "y": 2442
     },
     "technology/speed-module-6": {
-      "x": 2376,
+      "x": 1782,
       "y": 2442
     },
     "technology/speed-module-7": {
-      "x": 2442,
+      "x": 1848,
       "y": 2442
     },
     "technology/speed-module-8": {
-      "x": 2508,
+      "x": 1914,
       "y": 2442
     },
     "technology/speed-module-9": {
-      "x": 0,
-      "y": 2508
+      "x": 1980,
+      "y": 2442
     },
     "technology/spidertron": {
-      "x": 1650,
+      "x": 1056,
       "y": 1980
     },
     "technology/steam-power": {
-      "x": 1716,
+      "x": 1122,
       "y": 2046
     },
     "technology/steam-turbine": {
-      "x": 462,
-      "y": 2442
+      "x": 2442,
+      "y": 2376
     },
     "technology/steel-axe": {
-      "x": 1716,
+      "x": 1122,
       "y": 1980
     },
     "technology/steel-gates": {
-      "x": 1452,
+      "x": 858,
       "y": 2046
     },
     "technology/steel-processing": {
-      "x": 1782,
+      "x": 1188,
       "y": 1980
     },
     "technology/steel-walls": {
-      "x": 1782,
+      "x": 1188,
       "y": 2046
     },
     "technology/stone-wall": {
-      "x": 1782,
+      "x": 1188,
       "y": 2046
     },
     "technology/stronger-explosives-1": {
-      "x": 1848,
+      "x": 1254,
       "y": 1980
     },
     "technology/stronger-explosives-10": {
-      "x": 1914,
+      "x": 1320,
       "y": 1980
     },
     "technology/stronger-explosives-2": {
-      "x": 1980,
+      "x": 1386,
       "y": 1980
     },
     "technology/stronger-explosives-3": {
-      "x": 1914,
+      "x": 1320,
       "y": 1980
     },
     "technology/stronger-explosives-4": {
-      "x": 1914,
+      "x": 1320,
       "y": 1980
     },
     "technology/stronger-explosives-5": {
-      "x": 1914,
+      "x": 1320,
       "y": 1980
     },
     "technology/stronger-explosives-6": {
-      "x": 1914,
+      "x": 1320,
       "y": 1980
     },
     "technology/stronger-explosives-7": {
-      "x": 1914,
+      "x": 1320,
       "y": 1980
     },
     "technology/stronger-explosives-8": {
-      "x": 1914,
+      "x": 1320,
       "y": 1980
     },
     "technology/stronger-explosives-9": {
-      "x": 1914,
+      "x": 1320,
       "y": 1980
     },
     "technology/sulfur-processing": {
-      "x": 2046,
+      "x": 1452,
       "y": 1980
     },
     "technology/tank": {
-      "x": 2112,
+      "x": 1518,
       "y": 1980
     },
     "technology/textplates-concrete": {
-      "x": 2178,
+      "x": 1584,
       "y": 1980
     },
     "technology/textplates-glass": {
-      "x": 2244,
+      "x": 1650,
       "y": 1980
     },
     "technology/textplates-gold": {
-      "x": 2310,
+      "x": 1716,
       "y": 1980
     },
     "technology/textplates-plastic": {
-      "x": 2376,
+      "x": 1782,
       "y": 1980
     },
     "technology/textplates-steel": {
-      "x": 2442,
+      "x": 1848,
       "y": 1980
     },
     "technology/textplates-uranium": {
-      "x": 2508,
+      "x": 1914,
       "y": 1980
     },
     "technology/toolbelt": {
-      "x": 0,
-      "y": 2046
+      "x": 1980,
+      "y": 1980
     },
     "technology/toolbelt-2": {
-      "x": 0,
-      "y": 2046
+      "x": 1980,
+      "y": 1980
     },
     "technology/toolbelt-3": {
-      "x": 0,
-      "y": 2046
+      "x": 1980,
+      "y": 1980
     },
     "technology/toolbelt-4": {
-      "x": 0,
-      "y": 2046
+      "x": 1980,
+      "y": 1980
     },
     "technology/toolbelt-5": {
-      "x": 0,
-      "y": 2046
+      "x": 1980,
+      "y": 1980
     },
     "technology/toolbelt-6": {
-      "x": 0,
-      "y": 2046
+      "x": 1980,
+      "y": 1980
     },
     "technology/uranium-ammo": {
-      "x": 66,
-      "y": 2046
+      "x": 2046,
+      "y": 1980
     },
     "technology/uranium-mining": {
-      "x": 132,
-      "y": 2046
+      "x": 2112,
+      "y": 1980
     },
     "technology/uranium-processing": {
-      "x": 198,
-      "y": 2046
+      "x": 2178,
+      "y": 1980
     },
     "technology/utility-science-pack": {
-      "x": 2046,
+      "x": 1452,
       "y": 2442
     },
     "technology/weapon-shooting-speed-1": {
-      "x": 264,
-      "y": 2046
+      "x": 2244,
+      "y": 1980
     },
     "technology/weapon-shooting-speed-2": {
-      "x": 264,
-      "y": 2046
+      "x": 2244,
+      "y": 1980
     },
     "technology/weapon-shooting-speed-3": {
-      "x": 330,
-      "y": 2046
+      "x": 2310,
+      "y": 1980
     },
     "technology/weapon-shooting-speed-4": {
-      "x": 330,
-      "y": 2046
+      "x": 2310,
+      "y": 1980
     },
     "technology/weapon-shooting-speed-5": {
-      "x": 396,
-      "y": 2046
+      "x": 2376,
+      "y": 1980
     },
     "technology/weapon-shooting-speed-6": {
-      "x": 396,
-      "y": 2046
+      "x": 2376,
+      "y": 1980
     },
     "technology/worker-robots-speed-1": {
-      "x": 462,
-      "y": 2046
+      "x": 2442,
+      "y": 1980
     },
     "technology/worker-robots-speed-10": {
-      "x": 462,
-      "y": 2046
+      "x": 2442,
+      "y": 1980
     },
     "technology/worker-robots-speed-2": {
-      "x": 462,
-      "y": 2046
+      "x": 2442,
+      "y": 1980
     },
     "technology/worker-robots-speed-3": {
-      "x": 462,
-      "y": 2046
+      "x": 2442,
+      "y": 1980
     },
     "technology/worker-robots-speed-4": {
-      "x": 462,
-      "y": 2046
+      "x": 2442,
+      "y": 1980
     },
     "technology/worker-robots-speed-5": {
-      "x": 462,
-      "y": 2046
+      "x": 2442,
+      "y": 1980
     },
     "technology/worker-robots-speed-6": {
-      "x": 462,
-      "y": 2046
+      "x": 2442,
+      "y": 1980
     },
     "technology/worker-robots-speed-7": {
-      "x": 462,
-      "y": 2046
+      "x": 2442,
+      "y": 1980
     },
     "technology/worker-robots-speed-8": {
-      "x": 462,
-      "y": 2046
+      "x": 2442,
+      "y": 1980
     },
     "technology/worker-robots-speed-9": {
-      "x": 462,
-      "y": 2046
+      "x": 2442,
+      "y": 1980
     },
     "technology/worker-robots-storage-1": {
-      "x": 528,
-      "y": 2046
+      "x": 2508,
+      "y": 1980
     },
     "technology/worker-robots-storage-2": {
-      "x": 528,
-      "y": 2046
+      "x": 2508,
+      "y": 1980
     },
     "technology/worker-robots-storage-3": {
-      "x": 528,
-      "y": 2046
+      "x": 2508,
+      "y": 1980
     }
   }
 }
