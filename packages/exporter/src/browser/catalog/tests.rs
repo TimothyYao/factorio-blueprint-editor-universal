@@ -509,3 +509,23 @@ fn icon_exclusion_cascades_to_references() {
     assert_eq!(cascade.prerequisite_refs_pruned, 1);
     assert_eq!(cascade.unlock_refs_pruned, 0);
 }
+
+#[test]
+fn lua_empty_table_parses_as_empty_seq() {
+    // Factorio's writer serializes an empty Lua table as `{}` — seen on the
+    // real dump's recipe-unknown. Sequence fields must tolerate it…
+    let raw = raw(
+        r#"{ "recipe": { "recipe-unknown": { "type": "recipe", "name": "recipe-unknown",
+             "hidden": true, "ingredients": {}, "results": {} } } }"#,
+    );
+    assert!(raw.recipe["recipe-unknown"].ingredients.is_empty());
+    assert!(raw.recipe["recipe-unknown"].results.is_empty());
+
+    // …while a NON-empty map in a sequence position is a real shape surprise
+    // and must abort, not be silently dropped.
+    let bad = serde_json::from_str::<DataRaw>(
+        r#"{ "recipe": { "x": { "type": "recipe", "name": "x",
+             "ingredients": { "iron-plate": 2 } } } }"#,
+    );
+    assert!(bad.is_err());
+}

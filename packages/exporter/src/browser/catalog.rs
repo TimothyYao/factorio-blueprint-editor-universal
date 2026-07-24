@@ -19,6 +19,41 @@ use std::collections::{HashMap, HashSet};
 // Input: a partial, typed view of data-raw-dump.json
 // ---------------------------------------------------------------------------
 
+/// Deserialize a dump array field tolerantly: Factorio's JSON writer serializes
+/// an EMPTY Lua table as `{}` (Lua cannot tell an empty array from an empty
+/// map — seen in a real 2.0.76 dump on `recipe-unknown`'s `"ingredients": {}`),
+/// so accept a sequence or an empty map. A NON-empty map here is a genuine
+/// shape surprise and aborts loudly rather than being silently dropped. Every
+/// `Vec` field of the input structs goes through this.
+fn lua_seq<'de, D, T>(deserializer: D) -> Result<Vec<T>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+    T: serde::Deserialize<'de>,
+{
+    struct SeqOrEmptyMap<T>(std::marker::PhantomData<T>);
+    impl<'de, T: serde::Deserialize<'de>> serde::de::Visitor<'de> for SeqOrEmptyMap<T> {
+        type Value = Vec<T>;
+        fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            f.write_str("a sequence, or the `{}` Lua serializes an empty array as")
+        }
+        fn visit_seq<A: serde::de::SeqAccess<'de>>(self, seq: A) -> Result<Self::Value, A::Error> {
+            serde::Deserialize::deserialize(serde::de::value::SeqAccessDeserializer::new(seq))
+        }
+        fn visit_map<A: serde::de::MapAccess<'de>>(
+            self,
+            mut map: A,
+        ) -> Result<Self::Value, A::Error> {
+            match map.next_key::<serde::de::IgnoredAny>()? {
+                None => Ok(Vec::new()),
+                Some(_) => Err(serde::de::Error::custom(
+                    "non-empty map where a sequence was expected",
+                )),
+            }
+        }
+    }
+    deserializer.deserialize_any(SeqOrEmptyMap(std::marker::PhantomData))
+}
+
 /// Top level of `data-raw-dump.json`: `{ "<category>": { "<name>": {…}, … } }`.
 /// Each category we care about is an object keyed by prototype name. Categories
 /// we don't project (entities other than crafting machines, tiles, sounds, …)
@@ -97,7 +132,7 @@ pub struct ItemProto {
     pub place_result: Option<String>,
     #[serde(default)]
     pub hidden: bool,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "lua_seq")]
     pub flags: Vec<String>,
 }
 
@@ -128,7 +163,7 @@ pub struct FluidProto {
 #[derive(Deserialize, Clone)]
 pub struct MachineProto {
     // (name is the map key — not repeated here)
-    #[serde(default)]
+    #[serde(default, deserialize_with = "lua_seq")]
     pub crafting_categories: Vec<String>,
     #[serde(default)]
     pub crafting_speed: Option<f64>,
@@ -136,7 +171,7 @@ pub struct MachineProto {
     pub energy_usage: Option<String>,
     #[serde(default)]
     pub module_slots: Option<u64>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "lua_seq")]
     pub fluid_boxes: Vec<FluidBox>,
 }
 
@@ -186,9 +221,9 @@ pub struct RecipeProto {
     pub hidden: bool,
     #[serde(default)]
     pub main_product: Option<String>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "lua_seq")]
     pub ingredients: Vec<Ingredient>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "lua_seq")]
     pub results: Vec<Product>,
     #[serde(default)]
     pub icon: Option<String>,
@@ -248,9 +283,9 @@ pub struct TechProto {
     pub order: Option<String>,
     #[serde(default)]
     pub hidden: bool,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "lua_seq")]
     pub prerequisites: Vec<String>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "lua_seq")]
     pub effects: Vec<Effect>,
     #[serde(default)]
     pub unit: Option<TechUnit>,
@@ -283,7 +318,7 @@ pub struct TechUnit {
     pub count_formula: Option<String>,
     #[serde(default)]
     pub time: Option<f64>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "lua_seq")]
     pub ingredients: Vec<ResearchIngredient>,
 }
 
