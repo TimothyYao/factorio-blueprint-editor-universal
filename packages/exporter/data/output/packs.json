@@ -3,14 +3,27 @@
         "id": "vanilla-2.0",
         "label": "Vanilla 2.0",
         "factorioVersion": "2.0",
-        "mods": ["base"],
-        "default": true
+        "mods": [
+            "base"
+        ],
+        "default": true,
+        "artifacts": [
+            "editor",
+            "browser"
+        ],
+        "browserSchemaVersion": 1,
+        "generated": "2026-07-24T15:24:01Z"
     },
     {
         "id": "space-age",
         "label": "Space Age (2.0)",
         "factorioVersion": "2.0",
-        "mods": ["base", "elevated-rails", "quality", "space-age"]
+        "mods": [
+            "base",
+            "elevated-rails",
+            "quality",
+            "space-age"
+        ]
     },
     {
         "id": "space-exploration",
