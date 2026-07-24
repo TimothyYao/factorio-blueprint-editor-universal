@@ -73,6 +73,13 @@ exporter is a separate Rust tool and is **not** a JS workspace.
       compatible** (defensive null-guards + additive draw branches), so a single
       build renders any pack. Adding a pack = drop a new `data/output/<id>/`
       dump + a `packs.json` entry; no code changes.
+    - **Browser artifact:** each pack also carries a `browser/` dir
+      (`catalog.json` + `icons.webp` + `icons.json`) generated from Factorio's
+      built-in dump flags — a compact, DOM-friendly projection consumed by the
+      sibling fork [`trisiak/factorio-item-browser`](https://github.com/trisiak/factorio-item-browser)
+      (see its `docs/data-plane.md` for the shared data-plane design, and the
+      exporter README's "Browser artifact" section for how it's produced).
+      Issue #8 tracks eventually moving all pack data to a dedicated repo.
 - `functions/corsproxy.js` — Cloudflare Pages Function for URL blueprint import.
   **Does not run on GitHub Pages**; paste-string import + editing do.
 - `e2e/` — Playwright specs. `docs/` — design/tracking docs.
