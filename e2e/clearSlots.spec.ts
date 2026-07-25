@@ -25,11 +25,13 @@ import { longPressOneFinger } from './touchGestures'
 const BP =
     '0eNq1kl1qwzAQhK9S9lkqsfPTRlcpIcjyJl0qr4y0DjHGdy+yS9K0pVBIn8SI3ZnRhwaofIdtJBYwA5BgA+bTnQJvK/RgwHm0UScfJD0c6CxdRFBwwpgoMJj1ptyuttv1qnxals8LBeQCJzAvAyQ6svXZXvoWwcwpCtg2WdmUsKk88VE31r0Soy5hVEBc4xlMMe4UIAsJ4ew3iX7PXVNhBFP87qSgDYlkKjlANnxcK+inc1QQ0dFUCj06iYHJaUfRdZQfn5vOoVTn9Y+g1CLWugl153GqOo8NQLwnPiFLiP28dlUrBUmsewOzUOBCl4kX424c1X3di1v3Xfb/gqy8IKvQusDfIW1uIN0TQ/GvGIq/YFheMBxsEp1aTyIYf/gyE4vNxOJAPs9ce1IMrFtvBSHHjO/kmB6J'
 
-// A storage chest (filter slots the setter can't write — see Entity.canEditFilters)
-// and a train stop (no slots at all): the two editors that must *not* advertise a
-// clear gesture.
+// The logistic-container cases, one per behaviour: a **storage** chest carrying a
+// request (one slot, no count); a **requester** chest with no `request_filters` key
+// at all — the "never configured" shape that used to throw on open; a **passive
+// provider**, which requests nothing and so must open no editor; and a **train
+// stop**, an editor with no slots at all (the hint's negative case).
 const CHEST_BP =
-    '0eNp1kcFqwzAQRH8lzFkuseu0taB/0VsxQXE36YIsudK6JBj9e5HchpbQ07LD8GbYXXCwM02BnUAvYKER+pemYM2BLDQGSyZU0XqJm+GdomyOfJY5EBQ+KUT2Dnr30HRt1+3a5vG+edoq8OBdhH5dEPnkjM0hcpkIes1ScGbMWxQfzImqgkZSYPdGZ+g69QrkhIVpBZXlsnfzeKAAXf+DUJh8ZCm1Fpyht3c7hUuZSSHQx0xR9ke2QiFmT6Qh29eUn3iFq+OP+p3JwbtqskbyGQY/TiYY8QEaz0WY813r1Kc+JXXTvblyJBh2VRQ/3RZvS+02KUQxq46X/IBiz+Qv+PSX5Q=='
+    '0eNp9ksFuwjAQRH8F7dmpIIQW/B29VRFywkJXMrbr3SCiyP9eOaERFaUna0fjN+OVB2hshyGSE9ADkOAZ9J2mwJoGLWhoLZpYsPXCi/YTWRZHukoXERRcMDJ5B3rzWu6q3W5TlW/rcrtUQK13DPpjAKaTMzaHSB8Q9JSlwJlznlh8NCcsRjQkBeQOeAW9SrUCdEJCOIHGod+77txgBL16glAQPJOMtQa4gl6+bBT045kURPzqkGV/JCsYOXsY22yfUn7iFcyOX+otk6J3RbBG8hpa3+U1rlKd6pTUQ9VyvnZLx/isbHlX9g/SeiYFw0wXLEL0Fzo8B1b/A6sZKNGQK1h8eIRsR0SVFLCYSYf3/BVGe370N6lYxgY='
 
 const isMobileProject = (): boolean => test.info().project.name === 'mobile-chromium'
 
@@ -39,6 +41,7 @@ interface ClearHook {
     openEditorSlot: (name: string, kind: SlotKind, index: number) => { x: number; y: number } | null
     inventoryClearButtonPos: () => { x: number; y: number } | null
     inventoryClearButtonLabel: () => string | null
+    inventoryConfirmButtonPos: () => { x: number; y: number } | null
     entityModules: (name: string) => (string | null)[] | null
     entityFilters: (name: string) => (string | null)[] | null
     entityRecipe: (name: string) => string | null
@@ -124,6 +127,28 @@ const readQuickbar = (page: Page): Promise<(string | null)[]> =>
     page.evaluate(() =>
         (window as unknown as { __FBE_TEST__: ClearHook }).__FBE_TEST__.quickbarItems()
     )
+
+const readConfirmButton = (page: Page): Promise<{ x: number; y: number } | null> =>
+    page.evaluate(() =>
+        (window as unknown as { __FBE_TEST__: ClearHook }).__FBE_TEST__.inventoryConfirmButtonPos()
+    )
+
+/**
+ * Pick the first item in the open selector.
+ *
+ * On touch a tap only *previews* — selecting is a deliberate two-step everywhere
+ * except the module picker (see `m_commitOnTap`), so anything else needs the
+ * ✓ Confirm press to actually commit. Desktop commits on click.
+ */
+async function pickFirstItem(page: Page, needsConfirm = isMobileProject()): Promise<void> {
+    const item = await readFirstItem(page)
+    expect(item, 'the selector should show at least one item').not.toBeNull()
+    await tap(page, item)
+    if (!needsConfirm) return
+    const confirm = await readConfirmButton(page)
+    expect(confirm, 'a touch tap should have revealed ✓ Confirm').not.toBeNull()
+    await tap(page, confirm)
+}
 
 const readFirstItem = (page: Page): Promise<{ x: number; y: number } | null> =>
     page.evaluate(() =>
@@ -346,14 +371,17 @@ test.describe('the clear-a-slot hint', () => {
         )
     })
 
-    test('is absent on an editor whose slots cannot be cleared', async ({ page }) => {
-        // A storage chest has filter slots, but Entity.logisticChestFilters is an
-        // unimplemented `throw` — so the editor must not promise a clear gesture
-        // there (Entity.canEditFilters gates it).
+    test('is offered on a chest now that its filters are writable', async ({ page }) => {
+        // This used to assert the *opposite*: `Entity.logisticChestFilters` was an
+        // unimplemented `throw`, so the chest editor (which wasn't even routed)
+        // had to stay silent rather than promise a clear it couldn't perform.
+        // Both are fixed, so the hint belongs here like any other clearable slot.
         await page.goto(`/?test&source=${encodeURIComponent(CHEST_BP)}`)
         await waitForAppReady(page)
 
-        expect(await readClearHint(page, 'storage-chest')).toBeNull()
+        expect(await readClearHint(page, 'storage-chest')).toBe(
+            isMobileProject() ? 'Hold a slot to clear it' : 'Right-click a slot to clear it'
+        )
     })
 
     test('is absent on an editor with no slots at all', async ({ page }) => {
@@ -443,6 +471,86 @@ test.describe('module selector: one tap either way', () => {
         // Still open, still on the old recipe — the tap only previewed.
         expect(await inventoryOpen(page)).toBe(true)
         expect(await readRecipe(page, 'assembling-machine-2')).toBe('electronic-circuit')
+    })
+})
+
+test.describe('logistic chest requests', () => {
+    // The chest editor existed but nothing routed to it, and its filter setter was
+    // an unimplemented `throw` — so chest requests had no UI at all. These cover
+    // the whole path now that it does: the editor opens, a filter can be set, and
+    // it can be cleared by the same gesture every other slot uses.
+
+    test('a chest opens an editor with filter slots', async ({ page }) => {
+        await page.goto(`/?test&source=${encodeURIComponent(CHEST_BP)}`)
+        await waitForAppReady(page)
+
+        // openEditorSlot returns null unless an editor opened *and* it has the slot.
+        const slot = await openSlot(page, 'storage-chest', 'filters', 0)
+        expect(slot).not.toBeNull()
+    })
+
+    test('a provider chest still opens no editor', async ({ page }) => {
+        // Providers are logistic containers too, but request nothing — routing is
+        // gated on filterSlots so they must not get an empty dialog.
+        await page.goto(`/?test&source=${encodeURIComponent(CHEST_BP)}`)
+        await waitForAppReady(page)
+
+        const opened = await page.evaluate(() =>
+            (
+                window as unknown as { __FBE_TEST__: { openEntityEditor: (n: string) => boolean } }
+            ).__FBE_TEST__.openEntityEditor('passive-provider-chest')
+        )
+        expect(opened).toBe(false)
+    })
+
+    test('long-press clears a chest filter', async ({ page }) => {
+        await page.goto(`/?test&source=${encodeURIComponent(CHEST_BP)}`)
+        await waitForAppReady(page)
+
+        // The fixture ships the storage chest with an iron-plate request.
+        expect(await readFilters(page, 'storage-chest')).toEqual(['iron-plate'])
+
+        const slot = await openSlot(page, 'storage-chest', 'filters', 0)
+        await holdToClear(page, slot)
+
+        await expect.poll(() => readFilters(page, 'storage-chest')).toEqual([])
+    })
+
+    test('the picker sets a chest filter and ✕ Clear empties it', async ({ page }) => {
+        await page.goto(`/?test&source=${encodeURIComponent(CHEST_BP)}`)
+        await waitForAppReady(page)
+
+        // Start empty so "a filter got set" is unambiguous.
+        const slot = await openSlot(page, 'storage-chest', 'filters', 0)
+        await holdToClear(page, slot)
+        await expect.poll(() => readFilters(page, 'storage-chest')).toEqual([])
+
+        // Tap the slot → picker → pick an item. This is the write path that used
+        // to throw before the setter existed. The filter picker keeps the
+        // two-step selection on touch, so this goes via ✓ Confirm there.
+        await tap(page, slot)
+        await pickFirstItem(page)
+        await expect.poll(async () => (await readFilters(page, 'storage-chest')).length).toBe(1)
+
+        // ...then clear it again through the picker's button.
+        await tap(page, slot)
+        expect(await readClearButtonLabel(page)).toBe('✕ Clear')
+        await tap(page, await readClearButton(page))
+        await expect.poll(() => readFilters(page, 'storage-chest')).toEqual([])
+    })
+
+    test('opening a requester chest editor does not throw', async ({ page }) => {
+        // Regression: the editor reads `requestFromBufferChest` while building its
+        // checkbox, and that getter dereferenced an absent `request_filters`.
+        await page.goto(`/?test&source=${encodeURIComponent(CHEST_BP)}`)
+        await waitForAppReady(page)
+
+        const errors: string[] = []
+        page.on('pageerror', e => errors.push(e.message))
+
+        const slot = await openSlot(page, 'requester-chest', 'filters', 0)
+        expect(slot).not.toBeNull()
+        expect(errors, 'building the requester editor must not throw').toEqual([])
     })
 })
 

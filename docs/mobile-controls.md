@@ -182,10 +182,37 @@ pipelines at once made touch taps double-act via the browser's synthetic
   the ✕ Clear round-trip, and the splitter regression) via new `?test` probes
   (`openEditorSlot`, `entityModules`/`entityFilters`, `inventoryClearButtonPos`)
   plus a `longPressOneFinger` CDP helper.
-  Known gap: **logistic-chest** filters still can't be cleared — `Entity`'s
-  `logisticChestFilters` setter is an unimplemented `throw` (pre-existing; 2.0
-  request-sections were never wired up), so chest filters are read-only whatever
-  the input mode.
+  ~~Known gap: **logistic-chest** filters still can't be cleared.~~ **Closed —
+  see below.**
+- ✅ **Logistic-chest requests are editable at all** — the follow-up to that gap,
+  and bigger than it looked: chest requests had **no UI whatsoever**. Three
+  things were broken at once. `ChestEditor` existed but **nothing routed to it**
+  (`factory.ts` had no chest case, so the class was unreachable dead code);
+  `Entity`'s `logisticChestFilters` setter was an unimplemented `throw`; and
+  `requestFromBufferChest` dereferenced an absent `request_filters`, so even
+  reaching the editor would have thrown while it built its checkbox. Now:
+    - **Routed by type** (`logistic-container`) and gated on `filterSlots > 0`,
+      so storage/requester/buffer chests open the editor and providers — which
+      request nothing — still open none. `filters`, `canEditFilters` and
+      `filterSlots` key off `type` + the new `Entity.logisticMode` rather than
+      the vanilla chest names, so modded logistic containers work too (the
+      mod-safety rule).
+    - **The setter writes the 2.0 `request_filters.sections` shape**, preserving
+      what it doesn't model: `request_from_buffers` / `trash_not_requested` and
+      any further sections survive a write, and per-filter `quality` /
+      `comparator` / `max_count` are merged back onto the entry being edited
+      (`Filters` rebuilds slots as bare `{index,name,count}`, so an imported
+      blueprint would otherwise lose them on a count change).
+    - **Counts use `NumericField`/`NumericKeypad`**, not the DOM `TextInput`
+      that's unusable on touch (#56) — this editor is now reachable on a phone,
+      so the old overlay input would have made counts uneditable there. The
+      drag-target slider went with it.
+    - Covered by `packages/editor/src/core/logisticChestFilters.test.ts` — the
+      first **unit** coverage of the entity setters (the harness gap noted in
+      #31; `Blueprint`/`Entity` are framework-free, so no canvas needed), pinning
+      the serialized shape because a wrong one produces a blueprint Factorio
+      rejects. Plus e2e in `clearSlots.spec.ts` for open/set/clear and the
+      provider-opens-nothing case.
 
 ## Not done / next
 

@@ -129,6 +129,12 @@ export interface FbeTestHook {
      * isn't in the blueprint.
      */
     showEntityInfo: (name: string | null) => boolean
+    /**
+     * @returns whether an editor actually opened — false both when the entity
+     * isn't in the blueprint and when it has nothing to configure (the factory
+     * returns no editor, e.g. a provider chest). It used to report only "the
+     * entity exists", which couldn't express "correctly opened nothing".
+     */
     openEntityEditor: (name: string) => boolean
     openInventory: () => void
     /** Open the item inventory and long-press-preview `name` (Confirm/Pin bar). */
@@ -192,6 +198,8 @@ export interface FbeTestHook {
     inventoryClearButtonPos: () => { x: number; y: number } | null
     /** The escape-hatch button's label — "✕ Clear", "✕ Cancel", or null if absent. */
     inventoryClearButtonLabel: () => string | null
+    /** On-screen centre of "✓ Confirm", or null while it's hidden. */
+    inventoryConfirmButtonPos: () => { x: number; y: number } | null
     /**
      * Flip the input mode, as the settings pane's Input Mode dropdown does. Lets
      * a spec assert that live-mode-switch handling works on already-open UI.
@@ -264,8 +272,7 @@ export function installTestHook(win: Window = window): void {
             const e = findEntity(name)
             if (!e) return false
             Dialog.closeAll()
-            G.UI.createEditor(e)
-            return true
+            return G.UI.createEditor(e) !== undefined
         },
         openInventory: () => {
             Dialog.closeAll()
@@ -364,6 +371,10 @@ export function installTestHook(win: Window = window): void {
         inventoryClearButtonLabel: () => {
             const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
             return inv ? inv.clearButtonLabel() : null
+        },
+        inventoryConfirmButtonPos: () => {
+            const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
+            return inv ? inv.confirmButtonPosition() : null
         },
         setInputMode: mode => {
             inputMode.mode = mode
