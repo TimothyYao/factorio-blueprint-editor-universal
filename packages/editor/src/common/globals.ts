@@ -12,11 +12,12 @@ const debug = false
  * `<root>/space-age/`; a `packs.json` manifest sits alongside them).
  *
  * Injected at build time by Vite's `define` (see website `vite.config.js`).
- * Defaults to the app's own `<base>/data`, so a root deploy resolves to `/data`
- * (unchanged) and a sub-path deploy (e.g. GitHub Pages under
- * `/factorio-blueprint-editor/`) resolves to `<base>/data`. Preview builds may
- * set `VITE_DATA_URL` to reuse another deploy's atlas. The `typeof` guard keeps
- * it working outside Vite (e.g. vitest), where the constant isn't substituted.
+ * The data itself is not part of this repo or of `dist/`: every build points at
+ * the dedicated data plane (`trisiak/factorio-pack-data` on GitHub Pages, CORS
+ * `*`) via `VITE_DATA_URL`, while `vite` dev keeps the app-relative `<base>data`
+ * that the dev server proxies to the exporter's `:8081`. The `typeof` guard
+ * keeps it working outside Vite (e.g. vitest), where the constant isn't
+ * substituted — hence the `/data` fallback here.
  */
 declare const __DATA_URL__: string
 export const DATA_ROOT: string = typeof __DATA_URL__ === 'string' ? __DATA_URL__ : '/data'

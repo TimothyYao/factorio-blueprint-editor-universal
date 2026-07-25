@@ -6,9 +6,39 @@ and compresses every referenced sprite into a `.basis` atlas. Output is written
 **per pack** under `data/output/<id>/`, served on `:8081` for the website's dev
 server to proxy.
 
-> This tool is **out of band from normal feature work** — it's large,
-> credentialed, and the committed atlas is what the app/e2e builds actually use.
-> You only need it to (re)generate a pack's data. See the root `CLAUDE.md`.
+> This tool is **out of band from normal feature work** — it's large and
+> credentialed. You only need it to (re)generate a pack's data. See the root
+> `CLAUDE.md`.
+
+## Where the output goes (read this first)
+
+**`data/output/` is a local working directory, not a deliverable.** It is
+gitignored: generated pack data is no longer committed to this repo. The copy of
+record — and what every deployed build, PR preview and e2e run actually fetches —
+is published by the dedicated data plane,
+[`trisiak/factorio-pack-data`](https://github.com/trisiak/factorio-pack-data),
+at `https://trisiak.github.io/factorio-pack-data/` (GitHub Pages, CORS `*`). Its
+deploy workflow is what publishes generated output; there is nothing to commit
+back here after a run.
+
+Two consequences for a local run:
+
+- **The manifest lives there too.** `packs/packs.json` in the data repo is the
+  manifest of record. Before running the exporter, copy it to
+  `data/output/packs.json` (it is the file this CLI reads for pack ids/mods and
+  additively updates after a run):
+
+  ```bash
+  mkdir -p data/output   # a fresh clone has no data/ at all
+  curl -fsSL https://trisiak.github.io/factorio-pack-data/packs.json \
+      -o data/output/packs.json
+  ```
+
+  If you change it — a new pack, a version pin, a label — the edit belongs in the
+  data repo, not here.
+- **Feeding the local website** with what you just generated is the `:8081`
+  server below plus the dev server's `/data` proxy (the default in `vite`
+  dev), or `VITE_DATA_URL=http://127.0.0.1:8081` for a production/preview build.
 
 ## Prerequisites
 
@@ -25,12 +55,12 @@ server to proxy.
 
 The pinned Factorio version is `FACTORIO_VERSION` in `src/main.rs`. The download
 is cached under `data/factorio/`; only that directory is replaced on a version
-change — the committed `data/output/` packs are left untouched.
+change — any `data/output/` packs you already generated are left untouched.
 
 ## Packs
 
-`data/output/packs.json` is the manifest the editor and exporter share. Each
-entry:
+`data/output/packs.json` is the manifest the editor and exporter share — a local
+copy of the data repo's `packs/packs.json` (see above). Each entry:
 
 ```json
 { "id": "space-age", "label": "Space Age (2.0)", "factorioVersion": "2.0",
@@ -73,8 +103,11 @@ What a run does:
    `data/output/<id>/<__mod__>/…​.basis` (incremental — an mtime/size cache in
    `metadata.json` skips unchanged sprites on reruns).
 
-When the run finishes it serves `data/output/` on `http://localhost:8081`. Point
-the website at it (`VITE_DATA_URL`) or just commit the new `data/output/<id>/`.
+When the run finishes it serves `data/output/` on `http://localhost:8081`, which
+is what `npm run start:website` proxies `/data` to — so a dev server renders the
+pack you just generated with no extra wiring (a production/preview build needs
+`VITE_DATA_URL=http://127.0.0.1:8081`). To **publish** it, hand the output to
+the data repo; nothing is committed here.
 
 ## Browser artifact
 
@@ -117,8 +150,8 @@ The dump runs rewrite `mod-list.json` with the injected `export-data` mod
 **disabled** — it extends `data.raw` with placeholder prototypes the dumps must
 not see; a later editor run re-enables it.
 
-The manifest (`data/output/packs.json`) is updated additively per pack after a
-successful run (written atomically via tmp-and-rename): `artifacts`
+The local manifest (`data/output/packs.json`) is updated additively per pack
+after a successful run (written atomically via tmp-and-rename): `artifacts`
 (`["editor","browser"]` — truthfully, `"browser"` only once this run produced
 it), `browserSchemaVersion` (currently `1`), and `generated` (a UTC ISO-8601
 timestamp, doubling as a cache-buster). Existing fields and key order are
@@ -141,7 +174,9 @@ artifacts.
 
 ## Adding a new pack
 
-1. Add an entry to `packs.json` with a new `id` and its `mods` (load order).
+1. Add an entry to `packs.json` with a new `id` and its `mods` (load order). The
+   entry belongs in the data repo's `packs/packs.json` (the manifest of record);
+   add it to your local `data/output/packs.json` too so this run picks it up.
 2. For **third-party mods** (e.g. Space Exploration), also pin each portal mod
    under `versions` (`"name": "version"`) in that entry, and set
    `FACTORIO_USERNAME` / `FACTORIO_TOKEN` in `.env`.

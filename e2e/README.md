@@ -12,13 +12,40 @@ npm run test:e2e:ui      # Playwright UI mode (pick/inspect specs)
 ```
 
 No manual server step: `playwright.config.ts` runs `build:website &&
-preview:website` for you. `build:website` bakes the committed `vanilla-2.0`
-atlas into `dist/`, and `preview:website` serves it on :8080 — so the Rust
-exporter / :8081 are **not** needed.
+preview:website` for you, and `preview:website` serves the app on :8080 — so the
+Rust exporter / :8081 are **not** needed.
 
 The web server start has a 180s timeout because it does a full production build
 first; the initial run is slow, subsequent runs reuse the server locally
 (`reuseExistingServer` is on outside CI).
+
+### Live data
+
+The build under test fetches its pack data (`packs.json`, each pack's
+`data.json` + `.basis` atlas) from the **published data plane**,
+`https://trisiak.github.io/factorio-pack-data` — the same URL production and the
+PR previews use. Nothing pack-related is committed here or baked into `dist/`,
+so this suite is also a **canary for the data plane**: a break there (site down,
+pack renamed, format drift) fails the suite the same way an app regression does.
+When triaging a red run, check whether the data still serves before assuming the
+code broke.
+
+The root is set as `VITE_DATA_URL` on the webServer in `playwright.config.ts`;
+export your own to test against something else — a local `npm run serve:data`
+(`VITE_DATA_URL=/data` won't work, the preview server has no proxy — use
+`http://127.0.0.1:8081`) or a staging host. Specs must **not** assume the URL
+shape above `<pack-id>/data.json`; the modpack specs tail-match it deliberately.
+
+Because the browser now talks to the public internet, sandboxed hosts whose
+egress goes through an agent proxy need Chromium to use it too. The config does
+that automatically when `HTTPS_PROXY` is set and `CI` is not: it routes `https=`
+through the proxy and leaves the local `http://localhost:8080` server direct. CI
+is on a direct network, so the plumbing is never engaged there. If your host's
+Chromium lives outside Playwright's cache, point at it:
+
+```bash
+PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium npm run test:e2e
+```
 
 ### Parallelism & the render loop
 

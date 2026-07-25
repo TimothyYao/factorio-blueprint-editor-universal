@@ -1,8 +1,10 @@
 name: Deploy production site
 
-# Publishes the full site (including the ~68 MB sprite atlas) to the root of the
-# `gh-pages` branch. PR previews live under `pr-preview/` on the same branch and
-# reuse this deploy's atlas, so they don't ship their own copy.
+# Publishes the site to the root of the `gh-pages` branch. The build is small —
+# app code only: the per-pack data.json + sprite atlases are served by the
+# dedicated data plane (`trisiak/factorio-pack-data`), which this deploy points
+# at via VITE_DATA_URL. PR previews live under `pr-preview/` on the same branch
+# and point at the same data plane.
 
 on:
   push:
@@ -34,6 +36,13 @@ jobs:
       - run: npm run build:website
         env:
           PUBLIC_BASE: /factorio-blueprint-editor/
+          # Pack data (per-pack data.json + *.basis atlas + packs.json manifest)
+          # comes from the dedicated data plane, not from this repo — nothing
+          # game-derived is committed here or baked into dist/. GitHub Pages
+          # serves it with `Access-Control-Allow-Origin: *`, so the editor's
+          # cross-origin fetches need no proxy. See
+          # https://github.com/trisiak/factorio-pack-data.
+          VITE_DATA_URL: https://trisiak.github.io/factorio-pack-data
           # Firebase web config for the blueprint library's cloud sync (Phase 6).
           # These are GitHub repo *variables*, not secrets — Firebase web config is
           # public by design (it ships in the client bundle). If they're unset they

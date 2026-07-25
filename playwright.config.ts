@@ -1,9 +1,13 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * End-to-end tests run against a self-contained production build: `build:website`
- * bakes the committed vanilla-2.0 atlas into `dist/` (via viteStaticCopy), so
- * `preview:website` serves everything from :8080 with no exporter / :8081 needed.
+ * End-to-end tests run against a production build of the app served from :8080
+ * (`build:website && preview:website`), fetching its pack data **live** from the
+ * shared data plane (`trisiak.github.io/factorio-pack-data`) — the same URL
+ * production and the PR previews use. Nothing pack-related is committed here or
+ * baked into `dist/`, so the suite doubles as a canary for the data plane and
+ * for format drift in it; a red suite means either our code or the published
+ * data broke. The Rust exporter / :8081 are not involved.
  *
  * Touch coverage uses a mobile device descriptor (`hasTouch: true`), which drives
  * the tap-to-place / one-finger-pan path. NOTE: Playwright's high-level
@@ -11,6 +15,36 @@ import { defineConfig, devices } from '@playwright/test'
  * `Input.dispatchTouchEvent`; see e2e/touch.spec.ts.
  */
 const CI = !!process.env.CI
+
+/** Where the build under test fetches packs.json + each pack's data.json/atlas. */
+const DATA_URL = process.env.VITE_DATA_URL ?? 'https://trisiak.github.io/factorio-pack-data'
+
+/**
+ * Sandboxed hosts route outbound HTTPS through an agent proxy (HTTPS_PROXY); the
+ * browser has to use it too or every data fetch fails. Point Chromium at it for
+ * `https=` **only**, so the local http://localhost:8080 test server stays direct.
+ * CI's network is direct, so the plumbing is conditional — never engaged there.
+ */
+const proxied = !!process.env.HTTPS_PROXY && !CI
+const proxyUse = proxied
+    ? { proxy: { server: `https=${process.env.HTTPS_PROXY}` }, ignoreHTTPSErrors: true }
+    : {}
+
+/**
+ * Chromium launch args, plus an explicit binary when the host stages one outside
+ * Playwright's cache (PLAYWRIGHT_CHROMIUM_PATH — e2e/run-e2e.sh covers the other
+ * flavours of "the browser isn't where Playwright looks").
+ */
+const launchOptions = {
+    // --enable-unsafe-swiftshader: allow WebGL via SwiftShader in headless
+    // Chromium that has no GPU (otherwise it can be blocklisted and the canvas
+    // never renders). --disable-dev-shm-usage: write Chromium's shared memory
+    // to /tmp instead of a possibly-tiny /dev/shm, avoiding renderer crashes.
+    args: ['--enable-unsafe-swiftshader', '--disable-dev-shm-usage'],
+    ...(process.env.PLAYWRIGHT_CHROMIUM_PATH
+        ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH }
+        : {}),
+}
 
 export default defineConfig({
     testDir: './e2e',
@@ -43,13 +77,8 @@ export default defineConfig({
     use: {
         baseURL: 'http://localhost:8080',
         trace: 'on-first-retry',
-        // --enable-unsafe-swiftshader: allow WebGL via SwiftShader in headless
-        // Chromium that has no GPU (otherwise it can be blocklisted and the canvas
-        // never renders). --disable-dev-shm-usage: write Chromium's shared memory
-        // to /tmp instead of a possibly-tiny /dev/shm, avoiding renderer crashes.
-        launchOptions: {
-            args: ['--enable-unsafe-swiftshader', '--disable-dev-shm-usage'],
-        },
+        launchOptions,
+        ...proxyUse,
     },
     projects: [
         {
@@ -68,5 +97,10 @@ export default defineConfig({
         url: 'http://localhost:8080',
         reuseExistingServer: !process.env.CI,
         timeout: 180_000,
+        // Pin the data source for the build under test rather than leaning on the
+        // vite config's build-time default, so what the suite exercises is
+        // explicit here (and overridable: set VITE_DATA_URL to test against a
+        // local `npm run serve:data` or a staging data plane).
+        env: { VITE_DATA_URL: DATA_URL },
     },
 })
