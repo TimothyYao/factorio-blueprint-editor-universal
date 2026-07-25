@@ -85,6 +85,21 @@ export class InventoryDialog extends Dialog {
     private m_pinText?: Text
     private m_clearCallBack?: () => void
     private m_clearBtn?: Container
+    /**
+     * Whether a quick tap commits outright on touch, skipping the usual
+     * tap-to-preview → ✓ Confirm two-step.
+     *
+     * On for the **module** selector. Filling a machine's module slots means
+     * opening this dialog once per slot, and the confirm step doubles the taps
+     * for a choice that's a handful of near-identical icons — you know which
+     * module you want before the dialog opens. Paired with "✕ Clear" (which also
+     * acts without confirmation) it makes every exit one tap: take a module, or
+     * empty the slot. The misclick risk the confirm step buys elsewhere isn't
+     * worth it here, since re-tapping the slot just corrects the choice.
+     *
+     * Long-press still previews, so the details are a hold away either way.
+     */
+    private readonly m_commitOnTap: boolean
 
     public constructor(
         title = 'Inventory',
@@ -96,6 +111,7 @@ export class InventoryDialog extends Dialog {
         super(InventoryDialog.computeWidth(itemsFilter, recentsKey), 442, title)
 
         this.m_clearCallBack = clearCallBack
+        this.m_commitOnTap = recentsKey === 'modules'
 
         this.m_cols = Math.floor(this.viewW / 38)
         this.m_itemsFilter = itemsFilter
@@ -334,6 +350,21 @@ export class InventoryDialog extends Dialog {
         return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
     }
 
+    /**
+     * On-screen centre (CSS px) of the first item button in the active group, or
+     * null if the group has none. Backs the `?test` probe so e2e can tap a real
+     * item without knowing which one the active tab happens to show.
+     */
+    public firstItemPosition(): { x: number; y: number } | null {
+        // The recents tab interleaves section-header Text with the buttons, so
+        // pick the first *Button* rather than the first child.
+        const button = this.activeGroup()?.children.find(c => c instanceof Button)
+        if (!button) return null
+        const r = button.getBounds().rectangle
+        if (r.width === 0 || r.height === 0) return null
+        return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
+    }
+
     /** Filter a name to what this selector allows (filter list, or placeable). */
     private isAllowed(name: string): boolean {
         return InventoryDialog.isItemAllowed(name, this.m_itemsFilter)
@@ -380,7 +411,7 @@ export class InventoryDialog extends Dialog {
     /**
      * An item button. Desktop: click commits, long-press previews (Confirm/Pin
      * bar). Touch: tap previews/focuses (deliberate Confirm-to-select, fewer
-     * misclicks) — see the pointerup handler.
+     * misclicks) — except in a **commit-on-tap** selector, see `m_commitOnTap`.
      */
     private makeItemButton(name: string): Button<Container> {
         const button = new Button<Container>(36, 36)
@@ -400,8 +431,9 @@ export class InventoryDialog extends Dialog {
             if (this.m_pressTimer) {
                 // released before the long-press fired → quick tap.
                 this.clearPressTimer()
-                if (inputMode.mode === 'desktop') {
+                if (inputMode.mode === 'desktop' || this.m_commitOnTap) {
                     // Desktop: a click commits immediately (precise pointer).
+                    // Commit-on-tap selectors do the same on touch — see below.
                     this.commitSelect(name)
                 } else {
                     // Touch: a tap *focuses* the item — shows its name/details and

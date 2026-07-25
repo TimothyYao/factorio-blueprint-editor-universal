@@ -44,6 +44,8 @@ interface ClearHook {
     editorClearHint: (name: string) => string | null
     quickbarItems: () => (string | null)[]
     quickbarSlotPos: (index: number) => { x: number; y: number } | null
+    inventoryFirstItemPos: () => { x: number; y: number } | null
+    inventoryOpen: () => boolean
 }
 
 async function waitForAppReady(page: Page): Promise<void> {
@@ -113,6 +115,18 @@ const readClearHint = (page: Page, entity: string): Promise<string | null> =>
 const readQuickbar = (page: Page): Promise<(string | null)[]> =>
     page.evaluate(() =>
         (window as unknown as { __FBE_TEST__: ClearHook }).__FBE_TEST__.quickbarItems()
+    )
+
+const readFirstItem = (page: Page): Promise<{ x: number; y: number } | null> =>
+    page.evaluate(() =>
+        (window as unknown as { __FBE_TEST__: ClearHook }).__FBE_TEST__.inventoryFirstItemPos()
+    )
+
+// Note: *not* getState().dialogOpen — that stays true for the entity editor the
+// selector was opened from, so it can't tell you the picker itself closed.
+const inventoryOpen = (page: Page): Promise<boolean> =>
+    page.evaluate(() =>
+        (window as unknown as { __FBE_TEST__: ClearHook }).__FBE_TEST__.inventoryOpen()
     )
 
 /**
@@ -305,6 +319,58 @@ test.describe('the clear-a-slot hint', () => {
         await waitForAppReady(page)
 
         expect(await readClearHint(page, 'train-stop')).toBeNull()
+    })
+})
+
+test.describe('module selector: one tap either way', () => {
+    // Both exits from the module picker act without confirmation — tap an item to
+    // take it, tap ✕ Clear to empty the slot. Filling a machine means reopening
+    // this dialog once per slot, so the usual touch tap-to-preview → ✓ Confirm
+    // two-step doubles the taps for a choice you have already made.
+    test('a tap takes the module and closes, with no Confirm step', async ({ page }) => {
+        await page.goto(`/?test&source=${encodeURIComponent(BP)}`)
+        await waitForAppReady(page)
+
+        // Start from an empty slot so "a module got set" is unambiguous.
+        const slot = await openSlot(page, 'assembling-machine-2', 'modules', 0)
+        await holdToClear(page, slot)
+        await expect
+            .poll(() => readModules(page, 'assembling-machine-2'))
+            .toEqual([null, 'speed-module'])
+
+        await tap(page, slot)
+        const item = await readFirstItem(page)
+        expect(item, 'the module picker should show at least one item').not.toBeNull()
+
+        await tap(page, item)
+
+        // One tap: the module is set and the picker is gone — no ✓ Confirm needed.
+        // (The entity editor underneath stays open, which is why this asserts on
+        // the picker rather than on dialogOpen.)
+        await expect
+            .poll(async () => (await readModules(page, 'assembling-machine-2'))[0])
+            .not.toBeNull()
+        await expect.poll(() => inventoryOpen(page)).toBe(false)
+    })
+
+    test('the recipe selector still requires Confirm on touch', async ({ page }) => {
+        // The one-tap shortcut is scoped to modules; everywhere else the deliberate
+        // two-step stays, so this guards the scoping rather than the shortcut.
+        test.skip(!isMobileProject(), 'desktop commits on click everywhere by design')
+
+        await page.goto(`/?test&source=${encodeURIComponent(BP)}`)
+        await waitForAppReady(page)
+
+        const slot = await openSlot(page, 'assembling-machine-2', 'recipe', 0)
+        await tap(page, slot) // opens the recipe picker
+        const item = await readFirstItem(page)
+        expect(item).not.toBeNull()
+
+        await tap(page, item)
+
+        // Still open, still on the old recipe — the tap only previewed.
+        expect(await inventoryOpen(page)).toBe(true)
+        expect(await readRecipe(page, 'assembling-machine-2')).toBe('electronic-circuit')
     })
 })
 

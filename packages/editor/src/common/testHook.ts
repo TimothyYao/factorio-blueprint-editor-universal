@@ -190,6 +190,18 @@ export interface FbeTestHook {
      */
     inventoryClearButtonPos: () => { x: number; y: number } | null
     /**
+     * On-screen centre of the first item button in the open selector's active
+     * group — lets a spec tap a real item without hardcoding which one the tab
+     * shows. Null when no selector is open / the group is empty.
+     */
+    inventoryFirstItemPos: () => { x: number; y: number } | null
+    /**
+     * Whether an item selector is open. Distinct from `getState().dialogOpen`,
+     * which stays true for the entity editor the selector was opened *from* —
+     * so "the picker closed" needs its own signal.
+     */
+    inventoryOpen: () => boolean
+    /**
      * Open `name`'s editor and report its clear-a-slot hint text (null when the
      * editor has no clearable slots — e.g. a logistic chest, whose filter setter
      * is unimplemented). The hint is canvas-drawn, so the DOM can't see it.
@@ -335,6 +347,11 @@ export function installTestHook(win: Window = window): void {
             const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
             return inv ? inv.clearButtonPosition() : null
         },
+        inventoryFirstItemPos: () => {
+            const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
+            return inv ? inv.firstItemPosition() : null
+        },
+        inventoryOpen: () => Dialog.openDialogs.some(d => d instanceof InventoryDialog),
         editorClearHint: name => {
             const e = findEntity(name)
             if (!e) return null

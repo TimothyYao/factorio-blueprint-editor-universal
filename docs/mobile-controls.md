@@ -157,6 +157,13 @@ pipelines at once made touch taps double-act via the browser's synthetic
   no dead button), and every entity editor holding a clearable slot shows a dim
   footer line — _"Hold a slot to clear it"_ on touch, _"Right-click a slot to
   clear it"_ on desktop — from a hint band the base `Editor` now reserves.
+  The **module selector commits on tap** (`m_commitOnTap`), so both ways out of
+  it are a single tap: take a module, or ✕ Clear the slot. Filling a machine
+  reopens the dialog once per slot, and the touch tap-to-preview → ✓ Confirm
+  two-step doubled the taps for a choice already made before the dialog opened;
+  ✕ Clear acting without confirmation is what made the asymmetry obvious. Scoped
+  to modules — recipes/filters/items keep the deliberate two-step, and long-press
+  still previews everywhere.
   Fixed en route: clearing a **splitter** filter threw a `TypeError`
   (`Entity`'s splitter setter indexed `filters[0]` of an array the `filters`
   setter had already emptied), so that slot couldn't be cleared on _either_ input.
@@ -285,6 +292,8 @@ pipelines at once made touch taps double-act via the browser's synthetic
     - **Inventory focus-tap.** On touch, a **tap** in the item picker now _focuses_
       the item (name/details + Confirm/Pin) instead of committing — selecting is a
       deliberate two-step, fewer misclicks. Desktop click-to-commit is unchanged.
+      _(Later narrowed: the **module** selector commits on tap instead — see the
+      clear-a-slot entry above. Everywhere else this still holds.)_
     - **Overflow on top.** The rail's ⋯ overflow now renders above the contextual
       bottom clusters (z22 > z21) so its buttons aren't hidden behind the d-pad.
     - Seams: `Blueprint.moveEntitiesBy` / `Entity.forceMoveBy`, `BlueprintContainer`
