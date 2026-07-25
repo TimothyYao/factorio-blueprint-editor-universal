@@ -83,8 +83,8 @@ pipelines at once made touch taps double-act via the browser's synthetic
   buttons to save space. (`index.html`, `index.styl`, `settingsPane.ts`)
 - ✅ **Test + deploy infra** — vitest (`npm test`), Playwright e2e
   (`npm run test:e2e`, desktop + Pixel-7 projects), GitHub Pages production
-  deploy + per-PR previews (shared atlas, `.nojekyll`). See
-  `.github/workflows/pages-*.yml`.
+  deploy + per-PR previews (both fetch pack data from the shared data plane via
+  `VITE_DATA_URL`; `.nojekyll`). See `.github/workflows/pages-*.yml`.
 - ✅ **Canvas e2e probe** — everything inside the editor is one `<canvas>`, so
   Playwright can't query on-canvas UI through the DOM. Loading with `?test`
   installs `window.__FBE_TEST__.getState()` (CSS px): logical input mode, screen

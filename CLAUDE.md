@@ -60,26 +60,36 @@ exporter is a separate Rust tool and is **not** a JS workspace.
   selector), `toasts.ts`.
 - `packages/exporter/` — **Rust** CLI that pulls Factorio's data + sprites and
   builds the atlas/data the editor consumes. Needs Factorio credentials; you
-  almost never need to run it (the committed atlas is baked into e2e builds).
-  Excluded from eslint/vitest.
-    - **Data packs (modpack support):** `data/output/` holds one sub-directory
-      per dump — `vanilla-2.0/` (base 2.0) and `space-age/` (2.0 + Space Age +
-      Quality + Elevated Rails), each with its own `data.json` + `*.basis` atlas
-      — plus a `packs.json` manifest. The editor renders one pack at a time,
-      chosen at runtime (`?pack=` query > persisted choice > default
-      `vanilla-2.0`); see `DATA_ROOT` / `DATA_PACK` / `setDataPack` in
-      `editor/src/common/globals.ts` and the "Data Pack" selector in the
-      website `settingsPane.ts`. The SA-aware rendering code is **backwards
-      compatible** (defensive null-guards + additive draw branches), so a single
-      build renders any pack. Adding a pack = drop a new `data/output/<id>/`
-      dump + a `packs.json` entry; no code changes.
+  almost never need to run it. Excluded from eslint/vitest.
+    - **The generated data is NOT in this repo.** It lives in the dedicated data
+      plane, [`trisiak/factorio-pack-data`](https://github.com/trisiak/factorio-pack-data),
+      published on GitHub Pages at `https://trisiak.github.io/factorio-pack-data/`
+      (CORS `*`). Every build points at it via `VITE_DATA_URL` → `__DATA_URL__` →
+      `DATA_ROOT` (production + PR previews set it in `.github/workflows/pages-*.yml`,
+      e2e in `playwright.config.ts`); nothing is copied into `dist/`.
+      `packages/exporter/data/output/` remains the exporter's local working
+      directory and is **gitignored** — a local run writes there and serves it on
+      `:8081`, which the dev server's `/data` proxy targets. That repo also holds
+      the **manifest of record** (`packs/packs.json`). Issue #8 tracks this move.
+    - **Data packs (modpack support):** the data plane publishes one
+      sub-directory per dump — `vanilla-2.0/` (base 2.0), `space-age/` (2.0 +
+      Space Age + Quality + Elevated Rails) and `space-exploration/` — each with
+      its own `data.json` + `*.basis` atlas, plus a `packs.json` manifest at the
+      root. The editor renders one pack at a time, chosen at runtime (`?pack=`
+      query > persisted choice > default `vanilla-2.0`); see `DATA_ROOT` /
+      `DATA_PACK` / `setDataPack` in `editor/src/common/globals.ts` and the
+      "Data Pack" selector in the website `settingsPane.ts`. The SA-aware
+      rendering code is **backwards compatible** (defensive null-guards +
+      additive draw branches), so a single build renders any pack. Adding a pack
+      = a new dump + `packs.json` entry **in the data repo**; no code changes
+      here.
     - **Browser artifact:** each pack also carries a `browser/` dir
       (`catalog.json` + `icons.webp` + `icons.json`) generated from Factorio's
       built-in dump flags — a compact, DOM-friendly projection consumed by the
       sibling fork [`trisiak/factorio-item-browser`](https://github.com/trisiak/factorio-item-browser)
       (see its `docs/data-plane.md` for the shared data-plane design, and the
-      exporter README's "Browser artifact" section for how it's produced).
-      Issue #8 tracks eventually moving all pack data to a dedicated repo.
+      exporter README's "Browser artifact" section for how it's produced). It is
+      published from the same data plane, alongside the editor tier.
 - `functions/corsproxy.js` — Cloudflare Pages Function for URL blueprint import.
   **Does not run on GitHub Pages**; paste-string import + editing do.
 - `e2e/` — Playwright specs. `docs/` — design/tracking docs.
@@ -113,10 +123,14 @@ Before declaring a change done, run the relevant subset of:
 - **Unit (vitest):** node environment, covers framework-free logic only
   (geometry, encoding, etc.). Files match `packages/**/*.test.ts`. The PixiJS
   rendering layer is **not** unit-tested — verify it by running the app.
-- **E2E (Playwright):** runs against a self-contained production build
-  (`build:website` bakes the atlas into `dist/`, `preview:website` serves :8080 —
-  no exporter/:8081 needed). The web server is started automatically by the
-  config. Two projects: `desktop-chromium` and `mobile-chromium` (Pixel 7 →
+- **E2E (Playwright):** runs against a production build served on :8080
+  (`build:website && preview:website`, started automatically by the config) that
+  fetches its pack data **live** from the data plane — so the suite doubles as a
+  canary for it. No exporter/:8081 needed. On a sandboxed host where outbound
+  HTTPS goes through an agent proxy, the config routes Chromium's `https=` traffic
+  through `HTTPS_PROXY` (never on CI, whose network is direct) and honours
+  `PLAYWRIGHT_CHROMIUM_PATH`. Two projects: `desktop-chromium` and
+  `mobile-chromium` (Pixel 7 →
   `isMobile + hasTouch`). Touch-only specs guard on
   `project.name === 'mobile-chromium'`. Playwright's high-level `touchscreen` API
   is **single-touch**; multi-touch (pinch) requires raw CDP

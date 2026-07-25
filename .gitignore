@@ -1,9 +1,13 @@
 node_modules
 packages/website/dist
+# Everything under the exporter's data dir is local scratch: the Factorio
+# download, the mod-portal cache, and — since the data plane took over hosting —
+# the generated packs themselves. `data/output/` is the exporter's working
+# directory (it still reads and writes it); the published copy of record lives in
+# https://github.com/trisiak/factorio-pack-data and is what every build fetches.
+# Nothing game-derived is committed here.
 packages/exporter/data/*
-!packages/exporter/data/output
-# per-pack sprite cache (output/<pack>/metadata.json) — a local build artifact
-packages/exporter/data/output/*/metadata.json
+packages/exporter/data/output/
 packages/exporter/target
 .env
 

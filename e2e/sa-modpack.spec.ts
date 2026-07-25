@@ -2,9 +2,15 @@ import { test, expect, type Page, type ConsoleMessage } from '@playwright/test'
 
 /**
  * Smoke coverage for the modpack data layer + Space Age rendering. Drives the
- * production build (which bakes both `vanilla-2.0` and `space-age` packs into
- * `dist/data/`), captures console output, and screenshots each scenario so a
- * human can eyeball the canvas (the PixiJS layer isn't unit-testable).
+ * production build against the live data plane (`vanilla-2.0` and `space-age`
+ * are two packs it publishes), captures console output, and screenshots each
+ * scenario so a human can eyeball the canvas (the PixiJS layer isn't
+ * unit-testable).
+ *
+ * The data root is a build-time constant (`VITE_DATA_URL`, see
+ * playwright.config.ts), so nothing below may assume its shape — the assertions
+ * key on the `<pack-id>/data.json` tail, which is stable across a local `/data`
+ * proxy and the published data plane alike.
  *
  * The fixture is a real Space Age space-platform blueprint (asteroid collectors,
  * space platform hub, crusher) — entities that exist ONLY in the space-age pack.
@@ -17,6 +23,16 @@ const SA_BLUEPRINT =
 // the sandbox, not app bugs — filter them so assertions only see app/page errors.
 const isAppError = (line: string): boolean =>
     !/net::ERR_|Failed to load resource|jsdelivr|firebaseio/i.test(line)
+
+/**
+ * `<data-root>/<pack-id>/data.json`, whatever the data root is — capture group 1
+ * is the pack id. Matching only the tail keeps these specs working against the
+ * published data plane, a preview deploy, or a local `/data` proxy.
+ */
+const packDataJson = /\/([^/]+)\/data\.json(?:[?#]|$)/
+/** Same, pinned to one pack id. */
+const packDataJsonFor = (pack: string): RegExp =>
+    new RegExp(`/${pack.replace(/\./g, '\\.')}/data\\.json(?:[?#]|$)`)
 
 /** Collect console messages + uncaught page errors for assertions/reporting. */
 function captureConsole(page: Page): { messages: string[]; appErrors: string[] } {
@@ -52,8 +68,7 @@ test.describe('modpack + Space Age', () => {
         const { appErrors } = captureConsole(page)
         const dataResp: string[] = []
         page.on('response', r => {
-            if (r.url().includes('/data/') && r.url().endsWith('data.json'))
-                dataResp.push(`${r.status()} ${r.url()}`)
+            if (r.url().endsWith('/data.json')) dataResp.push(`${r.status()} ${r.url()}`)
         })
         await page.goto('/?pack=space-age')
         await waitForReady(page)
@@ -124,7 +139,7 @@ test.describe('data pack switching (UI)', () => {
     function watchDataFetch(page: Page): string[] {
         const fetched: string[] = []
         page.on('response', r => {
-            const m = r.url().match(/\/data\/([^/]+)\/data\.json/)
+            const m = r.url().match(packDataJson)
             if (m) fetched.push(m[1])
         })
         return fetched
@@ -144,7 +159,7 @@ test.describe('data pack switching (UI)', () => {
         // Pick Space Age — this triggers setDataPack() → reload. Tolerate the
         // navigation interrupting the action; assert on the post-reload state.
         await Promise.all([
-            page.waitForResponse(r => /\/data\/space-age\/data\.json/.test(r.url()), {
+            page.waitForResponse(r => packDataJsonFor('space-age').test(r.url()), {
                 timeout: 60_000,
             }),
             packSelect(page)
@@ -179,7 +194,7 @@ test.describe('data pack switching (UI)', () => {
 
         // → space-age
         await Promise.all([
-            page.waitForResponse(r => /\/data\/space-age\/data\.json/.test(r.url()), {
+            page.waitForResponse(r => packDataJsonFor('space-age').test(r.url()), {
                 timeout: 60_000,
             }),
             packSelect(page)
@@ -191,7 +206,7 @@ test.describe('data pack switching (UI)', () => {
 
         // → back to vanilla
         await Promise.all([
-            page.waitForResponse(r => /\/data\/vanilla-2\.0\/data\.json/.test(r.url()), {
+            page.waitForResponse(r => packDataJsonFor('vanilla-2.0').test(r.url()), {
                 timeout: 60_000,
             }),
             packSelect(page)

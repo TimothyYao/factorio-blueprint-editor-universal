@@ -59,8 +59,10 @@ test.describe('modpack + Space Exploration', () => {
         const { appErrors } = captureConsole(page)
         const dataResp: string[] = []
         page.on('response', r => {
-            if (r.url().includes('/data/') && r.url().endsWith('data.json'))
-                dataResp.push(`${r.status()} ${r.url()}`)
+            // Tail-match only: the data root is a build-time constant
+            // (VITE_DATA_URL) pointing at the published data plane, so the URL
+            // shape above `<pack-id>/data.json` is not ours to assume.
+            if (r.url().endsWith('/data.json')) dataResp.push(`${r.status()} ${r.url()}`)
         })
         await page.goto('/?pack=space-exploration')
         await waitForReady(page)

@@ -1,8 +1,9 @@
 name: PR preview
 
-# Builds a slim per-PR preview (no atlas — it reuses the production deploy's via
-# VITE_DATA_URL) and publishes it to `pr-preview/pr-<N>/` on the `gh-pages`
-# branch, then comments the URL on the PR. On close, the preview is removed.
+# Builds a per-PR preview (app code only — the pack data comes from the shared
+# data plane via VITE_DATA_URL, same as production) and publishes it to
+# `pr-preview/pr-<N>/` on the `gh-pages` branch, then comments the URL on the PR.
+# On close, the preview is removed.
 
 on:
   pull_request:
@@ -34,13 +35,13 @@ jobs:
         if: github.event.action != 'closed'
         env:
           PUBLIC_BASE: /factorio-blueprint-editor/pr-preview/pr-${{ github.event.number }}/
-          # Reuse the production deploy's per-pack atlas instead of bundling our
-          # own (~70 MB/pack) copy. Production is now pack-aware — it serves
-          # data/<pack>/data.json + atlas — and the editor appends the active
-          # pack id to this root at runtime, so a preview fetches
-          # /factorio-blueprint-editor/data/<pack>/data.json from the prod deploy.
-          VITE_DATA_URL: /factorio-blueprint-editor/data
-          SKIP_DATA_COPY: 'true'
+          # Same pack data as production: the dedicated data plane, served
+          # cross-origin with `Access-Control-Allow-Origin: *`. The editor
+          # appends the active pack id at runtime, so a preview fetches
+          # <root>/<pack>/data.json + that pack's atlas. Nothing pack-related is
+          # bundled into the preview. See
+          # https://github.com/trisiak/factorio-pack-data.
+          VITE_DATA_URL: https://trisiak.github.io/factorio-pack-data
           # Firebase web config for the blueprint library's cloud sync (Phase 6).
           # GitHub repo *variables*, not secrets — Firebase web config is public
           # (it ships in the client bundle). Unset ⇒ empty ⇒ unconfigured ⇒ a

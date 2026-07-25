@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'fs'
 import { IngredientPrototype, ProductPrototype } from 'factorio:prototype'
+import { havePackData, readPackData } from './packDataFiles'
 import FD, { loadData } from './factorioData'
 import {
     abbreviateAmount,
@@ -181,7 +181,12 @@ describe('getIngredientAmount', () => {
 // `sand` by-product carries amount_min/amount_max/probability and no plain
 // `amount`, which produced a "NaNk" crafting rate.
 describe('se-cryonite-powder (shipped SE data — the cryonite crushing bug)', () => {
-    loadData(readFileSync('packages/exporter/data/output/space-exploration/data.json', 'utf8'))
+    // Collection-time load: guard explicitly (skipIf still runs the factory).
+    if (!havePackData('space-exploration')) {
+        it.skip('pack data absent — CI fetches it; locally see packDataFiles.ts', () => undefined)
+        return
+    }
+    loadData(readPackData('space-exploration'))
     const recipe = FD.recipes['se-cryonite-powder']
     const sand = recipe.results.find(r => r.name === 'sand')
 
@@ -215,7 +220,12 @@ describe('se-cryonite-powder (shipped SE data — the cryonite crushing bug)', (
 // catalyst. Productivity must scale the crystal output but leave the water
 // (i.e. the steam→water ratio) alone.
 describe('se-cryonite-crystal (shipped SE data — catalyst / ignored_by_productivity)', () => {
-    loadData(readFileSync('packages/exporter/data/output/space-exploration/data.json', 'utf8'))
+    // Collection-time load: guard explicitly (skipIf still runs the factory).
+    if (!havePackData('space-exploration')) {
+        it.skip('pack data absent — CI fetches it; locally see packDataFiles.ts', () => undefined)
+        return
+    }
+    loadData(readPackData('space-exploration'))
     const recipe = FD.recipes['se-cryonite-crystal']
     const crystal = recipe.results.find(r => r.name === 'se-cryonite-crystal')
     const water = recipe.results.find(r => r.name === 'water')
