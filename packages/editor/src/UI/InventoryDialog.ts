@@ -37,6 +37,20 @@ import { colors, styles } from './style'
 
 type InventoryItems = Container<Button<Container>>
 
+/**
+ * Wiring for the selector's escape-hatch button, passed when the dialog is
+ * opened *from a slot* (so the generic quickbar inventory, which has no
+ * originating slot, omits it and draws no button).
+ *
+ * `filled` only picks the label — "✕ Clear" vs "✕ Cancel". The action is the
+ * same either way: empty the slot, then close. On an already-empty slot that
+ * makes it a plain cancel.
+ */
+export interface SlotClear {
+    onClear: () => void
+    filled: boolean
+}
+
 /** Inventory Dialog - Displayed to the user if there is a need to select an item */
 export class InventoryDialog extends Dialog {
     /** Container for Inventory Group Buttons */
@@ -85,6 +99,7 @@ export class InventoryDialog extends Dialog {
     private m_pinText?: Text
     private m_clearCallBack?: () => void
     private m_clearBtn?: Container
+    private m_clearText?: Text
     /**
      * Whether a quick tap commits outright on touch, skipping the usual
      * tap-to-preview → ✓ Confirm two-step.
@@ -106,11 +121,11 @@ export class InventoryDialog extends Dialog {
         itemsFilter?: string[],
         selectedCallBack?: (selectedItem: string) => void,
         recentsKey?: string,
-        clearCallBack?: () => void
+        clear?: SlotClear
     ) {
         super(InventoryDialog.computeWidth(itemsFilter, recentsKey), 442, title)
 
-        this.m_clearCallBack = clearCallBack
+        this.m_clearCallBack = clear?.onClear
         this.m_commitOnTap = recentsKey === 'modules'
 
         this.m_cols = Math.floor(this.viewW / 38)
@@ -315,24 +330,33 @@ export class InventoryDialog extends Dialog {
         })
         this.addChild(this.m_confirmBtn)
 
-        // "✕ Clear" — the touch-reachable way to empty the slot this selector was
-        // opened from. Desktop clears by right-clicking the slot and touch by
-        // holding it, but neither is discoverable, so the picker offers the same
-        // action as a plain button (mirrors SignalPicker's ✕ None). It sits in
-        // the title row rather than the bottom bar because it is *always*
-        // available — unlike Confirm/Pin, which only appear while previewing —
-        // and the bottom strip is occupied by the recipe visualization.
-        if (clearCallBack) {
-            const clear = InventoryDialog.barButton('✕ Clear', 0x6b3636)
-            clear.container.position.set(this.width - 84, 8)
-            clear.container.visible = true
-            clear.container.on('pointerup', e => {
+        // The escape hatch, shown whenever this selector was opened *from a slot*.
+        //
+        // Two jobs, same action (empty the slot, then close), so one button does
+        // both — only the label changes with what the slot currently holds:
+        //   - filled → "✕ Clear": the discoverable equivalent of the right-click /
+        //     long-press clear, which nothing on screen can otherwise advertise.
+        //   - empty  → "✕ Cancel": leave without picking anything. Tapping away
+        //     from the dialog also closes it, but on a phone the picker covers
+        //     nearly the whole screen, so there is barely any canvas left to hit —
+        //     and Escape is desktop-only. Without this the first-time case (open a
+        //     recipe slot, change your mind) had no obvious way out at all.
+        //
+        // It sits in the title row rather than the bottom bar because it is
+        // *always* available — unlike Confirm/Pin, which only appear while
+        // previewing — and the bottom strip is occupied by the recipe strip.
+        if (clear) {
+            const btn = InventoryDialog.barButton(clear.filled ? '✕ Clear' : '✕ Cancel', 0x6b3636)
+            btn.container.position.set(this.width - 84, 8)
+            btn.container.visible = true
+            btn.container.on('pointerup', e => {
                 e.stopPropagation()
                 this.m_clearCallBack?.()
                 this.close()
             })
-            this.addChild(clear.container)
-            this.m_clearBtn = clear.container
+            this.addChild(btn.container)
+            this.m_clearBtn = btn.container
+            this.m_clearText = btn.text
         }
 
         this.setupTabScroll(groupIndex)
@@ -348,6 +372,11 @@ export class InventoryDialog extends Dialog {
         if (!this.m_clearBtn) return null
         const r = this.m_clearBtn.getBounds().rectangle
         return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
+    }
+
+    /** The escape-hatch button's label ("✕ Clear" / "✕ Cancel"), for the probe. */
+    public clearButtonLabel(): string | null {
+        return this.m_clearText?.text ?? null
     }
 
     /**

@@ -3,7 +3,7 @@ import { Entity } from '../core/Entity'
 import { DebugContainer } from './DebugContainer'
 import { QuickbarPanel } from './QuickbarPanel'
 import { EntityInfoPanel } from './EntityInfoPanel'
-import { InventoryDialog } from './InventoryDialog'
+import { InventoryDialog, SlotClear } from './InventoryDialog'
 import { SignalPicker, SignalChoice } from './SignalPicker'
 import { NumericKeypad } from './NumericKeypad'
 import { WiresPanel } from './WiresPanel'
@@ -65,24 +65,19 @@ export class UIContainer extends Container {
     }
 
     /**
-     * @param clearCallBack - When given, the dialog shows a "✕ Clear" button that
-     * empties the slot it was opened from. Omit it when there is nothing to clear
-     * (e.g. assigning an empty quickbar slot) so no dead button is drawn.
+     * @param clear - Pass when the dialog is opened *from a slot*: it draws the
+     * escape-hatch button that empties that slot and closes ("✕ Clear" when the
+     * slot holds something, "✕ Cancel" when it doesn't). Omit it when there is no
+     * originating slot (e.g. the generic quickbar inventory) so no button is drawn.
      */
     public createInventory(
         title?: string,
         itemsFilter?: string[],
         selectedCallBack?: (selectedItem: string) => void,
         recentsKey?: string,
-        clearCallBack?: () => void
+        clear?: SlotClear
     ): InventoryDialog {
-        const inv = new InventoryDialog(
-            title,
-            itemsFilter,
-            selectedCallBack,
-            recentsKey,
-            clearCallBack
-        )
+        const inv = new InventoryDialog(title, itemsFilter, selectedCallBack, recentsKey, clear)
         this.dialogsContainer.addChild(inv)
         return inv
     }

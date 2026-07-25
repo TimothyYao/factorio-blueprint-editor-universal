@@ -1,7 +1,7 @@
 import { Text } from 'pixi.js'
 import EventEmitter from 'eventemitter3'
 import { Entity, EntityEvents } from '../../core/Entity'
-import { inputMode } from '../../common/input'
+import { inputMode, type InputMode } from '../../common/input'
 import { styles } from '../style'
 import { Dialog } from '../controls/Dialog'
 import { Preview } from './components/Preview'
@@ -147,11 +147,26 @@ export abstract class Editor extends Dialog {
         this.m_clearHint = this.addLabel(
             12,
             this.m_contentHeight,
-            inputMode.mode === 'mobile'
-                ? 'Hold a slot to clear it'
-                : 'Right-click a slot to clear it',
+            Editor.clearHintFor(inputMode.mode),
             styles.dialog.hint
         )
+
+        // Input mode switches live (no reload), and an editor can be open across
+        // the switch — the settings pane is DOM, so toggling it doesn't close the
+        // canvas dialogs. Without this the hint would keep naming the gesture of
+        // the mode you just left. Unsubscribed on destroy so a closed editor
+        // doesn't leak a listener, same shape as onEntityChange.
+        const onModeChange = (mode: InputMode): void => {
+            if (this.m_clearHint && !this.m_clearHint.destroyed) {
+                this.m_clearHint.text = Editor.clearHintFor(mode)
+            }
+        }
+        inputMode.on('change', onModeChange)
+        this.once('destroyed', () => inputMode.off('change', onModeChange))
+    }
+
+    private static clearHintFor(mode: InputMode): string {
+        return mode === 'mobile' ? 'Hold a slot to clear it' : 'Right-click a slot to clear it'
     }
 
     /**

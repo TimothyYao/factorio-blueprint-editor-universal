@@ -8,6 +8,7 @@ import { InventoryDialog } from '../UI/InventoryDialog'
 import { Modules } from '../UI/editors/components/Modules'
 import { Filters } from '../UI/editors/components/Filters'
 import { Recipe } from '../UI/editors/components/Recipe'
+import { Editor } from '../UI/editors/Editor'
 import { Entity } from '../core/Entity'
 
 /**
@@ -189,6 +190,13 @@ export interface FbeTestHook {
      * no selector is open / it has nothing to clear.
      */
     inventoryClearButtonPos: () => { x: number; y: number } | null
+    /** The escape-hatch button's label — "✕ Clear", "✕ Cancel", or null if absent. */
+    inventoryClearButtonLabel: () => string | null
+    /**
+     * Flip the input mode, as the settings pane's Input Mode dropdown does. Lets
+     * a spec assert that live-mode-switch handling works on already-open UI.
+     */
+    setInputMode: (mode: InputMode) => void
     /**
      * On-screen centre of the first item button in the open selector's active
      * group — lets a spec tap a real item without hardcoding which one the tab
@@ -207,6 +215,12 @@ export interface FbeTestHook {
      * is unimplemented). The hint is canvas-drawn, so the DOM can't see it.
      */
     editorClearHint: (name: string) => string | null
+    /**
+     * The clear hint of the editor that is *already* open, without reopening it —
+     * `editorClearHint` closes and rebuilds, which would mask whether an open
+     * dialog reacts to a live input-mode switch.
+     */
+    openEditorClearHint: () => string | null
     /** Quickbar slot contents, `null` for an unassigned slot. */
     quickbarItems: () => (string | null)[]
     /** On-screen centre of quickbar slot `index`, or null if it isn't rendered. */
@@ -346,6 +360,17 @@ export function installTestHook(win: Window = window): void {
         inventoryClearButtonPos: () => {
             const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
             return inv ? inv.clearButtonPosition() : null
+        },
+        inventoryClearButtonLabel: () => {
+            const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
+            return inv ? inv.clearButtonLabel() : null
+        },
+        setInputMode: mode => {
+            inputMode.mode = mode
+        },
+        openEditorClearHint: () => {
+            const editor = Dialog.openDialogs.findLast(d => d instanceof Editor)
+            return editor ? editor.clearHintText : null
         },
         inventoryFirstItemPos: () => {
             const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)

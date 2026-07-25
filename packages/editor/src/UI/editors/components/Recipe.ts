@@ -28,8 +28,9 @@ export class Recipe extends Slot<undefined> {
                         this.m_Entity.recipe = name
                     },
                     'recipes',
-                    // Only offer "✕ Clear" when a recipe is actually set.
-                    this.m_Entity.recipe === undefined ? undefined : clear
+                    // "✕ Clear" once a recipe is set, "✕ Cancel" before then —
+                    // picking a recipe for the first time needs a way out too.
+                    { onClear: clear, filled: this.m_Entity.recipe !== undefined }
                 ),
             clear
         )

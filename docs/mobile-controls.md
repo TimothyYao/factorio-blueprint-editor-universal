@@ -151,12 +151,20 @@ pipelines at once made touch taps double-act via the browser's synthetic
   slots only; it now backs **every** slot — `Modules`, `Filters` and the quickbar
   dropped their raw `e.button === 2` handlers for it, so one gesture contract
   covers the lot and desktop right-click is unchanged.
-  Long-press is invisible, though, so two visible affordances back it up: the
-  item selector opened **from a filled slot** carries a **"✕ Clear"** button
-  (mirroring `SignalPicker`'s ✕ None; omitted when the slot is empty, so there's
-  no dead button), and every entity editor holding a clearable slot shows a dim
-  footer line — _"Hold a slot to clear it"_ on touch, _"Right-click a slot to
-  clear it"_ on desktop — from a hint band the base `Editor` now reserves.
+  Long-press is invisible, though, so two visible affordances back it up. The
+  item selector opened **from a slot** carries an escape-hatch button in its
+  title row (mirroring `SignalPicker`'s ✕ None), labelled for what it does:
+  **"✕ Clear"** when the slot holds something, **"✕ Cancel"** when it doesn't —
+  same action either way (empty the slot, then close). It's shown even on an
+  empty slot because it doubles as the way _out_ of the picker: tapping away
+  works but needs bare canvas, which a full-width picker on a phone barely
+  leaves, and Escape is desktop-only — so picking a recipe for the first time and
+  changing your mind previously had no obvious exit. And every entity editor
+  holding a clearable slot shows a dim footer line — _"Hold a slot to clear it"_
+  on touch, _"Right-click a slot to clear it"_ on desktop — from a hint band the
+  base `Editor` now reserves; it **re-renders on a live input-mode switch**
+  (`inputMode.on('change')`, unsubscribed on destroy), since the DOM settings
+  pane can be toggled with a canvas editor still open.
   The **module selector commits on tap** (`m_commitOnTap`), so both ways out of
   it are a single tap: take a module, or ✕ Clear the slot. Filling a machine
   reopens the dialog once per slot, and the touch tap-to-preview → ✓ Confirm

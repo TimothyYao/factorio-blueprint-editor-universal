@@ -82,8 +82,9 @@ export class Modules extends Container<Slot<number>> {
                 this.m_Entity.modules = this.m_Modules
             },
             'modules',
-            // Only offer "✕ Clear" when there is something in the slot.
-            this.m_Modules[index] === undefined ? undefined : () => this.clear(index)
+            // "✕ Clear" on a filled slot, "✕ Cancel" on an empty one — either way
+            // it leaves the slot empty and closes.
+            { onClear: () => this.clear(index), filled: this.m_Modules[index] !== undefined }
         )
     }
 

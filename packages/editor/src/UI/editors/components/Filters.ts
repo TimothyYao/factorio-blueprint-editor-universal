@@ -232,8 +232,9 @@ export class Filters extends Container<Slot<number>> {
                 }
             },
             undefined,
-            // Only offer "✕ Clear" when there is something in the slot.
-            this.m_Filters[index].name === undefined ? undefined : () => this.clear(index)
+            // "✕ Clear" on a filled slot, "✕ Cancel" on an empty one — either way
+            // it leaves the slot empty and closes.
+            { onClear: () => this.clear(index), filled: this.m_Filters[index].name !== undefined }
         )
         inv.on('close', () => this.emit('selection-ended'))
     }

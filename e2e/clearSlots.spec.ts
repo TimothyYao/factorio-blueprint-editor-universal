@@ -38,6 +38,7 @@ type SlotKind = 'modules' | 'filters' | 'recipe'
 interface ClearHook {
     openEditorSlot: (name: string, kind: SlotKind, index: number) => { x: number; y: number } | null
     inventoryClearButtonPos: () => { x: number; y: number } | null
+    inventoryClearButtonLabel: () => string | null
     entityModules: (name: string) => (string | null)[] | null
     entityFilters: (name: string) => (string | null)[] | null
     entityRecipe: (name: string) => string | null
@@ -46,6 +47,8 @@ interface ClearHook {
     quickbarSlotPos: (index: number) => { x: number; y: number } | null
     inventoryFirstItemPos: () => { x: number; y: number } | null
     inventoryOpen: () => boolean
+    openEditorClearHint: () => string | null
+    setInputMode: (mode: 'desktop' | 'mobile') => void
 }
 
 async function waitForAppReady(page: Page): Promise<void> {
@@ -97,6 +100,11 @@ const readFilters = (page: Page, entity: string): Promise<(string | null)[] | nu
 const readClearButton = (page: Page): Promise<{ x: number; y: number } | null> =>
     page.evaluate(() =>
         (window as unknown as { __FBE_TEST__: ClearHook }).__FBE_TEST__.inventoryClearButtonPos()
+    )
+
+const readClearButtonLabel = (page: Page): Promise<string | null> =>
+    page.evaluate(() =>
+        (window as unknown as { __FBE_TEST__: ClearHook }).__FBE_TEST__.inventoryClearButtonLabel()
     )
 
 const readRecipe = (page: Page, entity: string): Promise<string | null> =>
@@ -202,6 +210,8 @@ test.describe('clearing a filled slot', () => {
 
         const clearBtn = await readClearButton(page)
         expect(clearBtn, '✕ Clear should be offered for a filled slot').not.toBeNull()
+        // Filled ⇒ the destructive label, not the cancel one.
+        expect(await readClearButtonLabel(page)).toBe('✕ Clear')
 
         await tap(page, clearBtn)
         await expect
@@ -209,8 +219,13 @@ test.describe('clearing a filled slot', () => {
             .toEqual(['speed-module', null])
     })
 
-    test('an empty module slot opens a picker with no ✕ Clear', async ({ page }) => {
-        // Nothing to clear ⇒ no dead button. Clear the slot first, then reopen it.
+    test('an empty slot labels the button ✕ Cancel and it backs out harmlessly', async ({
+        page,
+    }) => {
+        // There is nothing to *clear* on an empty slot, but the button is still the
+        // way out of the picker — tapping away needs bare canvas, which a picker on
+        // a phone barely leaves, and Escape is desktop-only. So it stays, labelled
+        // for what it does here: cancel.
         await page.goto(`/?test&source=${encodeURIComponent(BP)}`)
         await waitForAppReady(page)
 
@@ -221,7 +236,34 @@ test.describe('clearing a filled slot', () => {
             .toEqual([null, 'speed-module'])
 
         await tap(page, slot)
-        expect(await readClearButton(page), 'an empty slot has nothing to clear').toBeNull()
+        expect(await readClearButtonLabel(page)).toBe('✕ Cancel')
+
+        const cancel = await readClearButton(page)
+        expect(cancel).not.toBeNull()
+        await tap(page, cancel)
+
+        // Backed out: picker closed, and the slot is still empty — cancelling
+        // must not have set anything.
+        await expect.poll(() => inventoryOpen(page)).toBe(false)
+        expect(await readModules(page, 'assembling-machine-2')).toEqual([null, 'speed-module'])
+    })
+
+    test('a first-time recipe pick can be cancelled out of', async ({ page }) => {
+        // The case that prompted this: open a recipe slot that has never been set,
+        // change your mind. Before, the picker offered no button at all.
+        await page.goto(`/?test&source=${encodeURIComponent(BP)}`)
+        await waitForAppReady(page)
+
+        const slot = await openSlot(page, 'assembling-machine-2', 'recipe', 0)
+        await holdToClear(page, slot) // start from "never set"
+        await expect.poll(() => readRecipe(page, 'assembling-machine-2')).toBeNull()
+
+        await tap(page, slot)
+        expect(await readClearButtonLabel(page)).toBe('✕ Cancel')
+
+        await tap(page, await readClearButton(page))
+        await expect.poll(() => inventoryOpen(page)).toBe(false)
+        expect(await readRecipe(page, 'assembling-machine-2')).toBeNull()
     })
 
     test('right-click still clears a module slot', async ({ page }) => {
@@ -319,6 +361,36 @@ test.describe('the clear-a-slot hint', () => {
         await waitForAppReady(page)
 
         expect(await readClearHint(page, 'train-stop')).toBeNull()
+    })
+
+    test('follows a live input-mode switch while the editor stays open', async ({ page }) => {
+        // Input mode switches without a reload and the settings pane is DOM, so
+        // toggling it leaves canvas dialogs open — a hint computed once at
+        // construction would keep naming the gesture of the mode you just left.
+        await page.goto(`/?test&source=${encodeURIComponent(BP)}`)
+        await waitForAppReady(page)
+
+        // Open the editor once and leave it open across the switch.
+        await openSlot(page, 'assembling-machine-2', 'modules', 0)
+
+        const setMode = (mode: 'desktop' | 'mobile'): Promise<void> =>
+            page.evaluate(
+                m =>
+                    (window as unknown as { __FBE_TEST__: ClearHook }).__FBE_TEST__.setInputMode(m),
+                mode
+            )
+        const openHint = (): Promise<string | null> =>
+            page.evaluate(() =>
+                (
+                    window as unknown as { __FBE_TEST__: ClearHook }
+                ).__FBE_TEST__.openEditorClearHint()
+            )
+
+        await setMode('mobile')
+        await expect.poll(openHint).toBe('Hold a slot to clear it')
+
+        await setMode('desktop')
+        await expect.poll(openHint).toBe('Right-click a slot to clear it')
     })
 })
 
