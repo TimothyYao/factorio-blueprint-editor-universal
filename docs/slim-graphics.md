@@ -161,9 +161,15 @@ auth-fronted hosting guidance.
       <br>`exporter/src/slim.rs` (`--slim <rect-report.json>`, README section) +
       `core/slimPackCensus.test.ts`, which replays the census against a locally
       generated variant and asserts every rect resolves inside the shipped textures.
-- [ ] Generate `vanilla-2.0-slim` as the **temporary iteration pack**,
-      publish via the data plane, verify in-editor (census + e2e + tour).
-      <br>Generated and census-verified locally (1963 textures, 71 MB → ~18 MB);
-      publishing, the e2e tour and the visual QA pass are what remain.
+- [x] Generate `vanilla-2.0-slim` and publish via the data plane
+      (2026-07-26): the data repo's deploy gained a `slim` build mode (census
+      rect report over the base pack's committed data.json, `--download-only`
+      for the source PNGs, `--slim`, byte/JSON drift check vs the committed
+      `data.json` + `textures.json` sidecar; slim packs skip-and-omit from the
+      served manifest until first built). Built end-to-end in CI and serving at
+      `https://trisiak.github.io/factorio-pack-data/vanilla-2.0-slim/`. Renders
+      only on builds with transform support (this branch / its PR preview with
+      `?pack=vanilla-2.0-slim`) until #83 merges — then flip the data repo's
+      `FBE_REF` TODO back to `master`.
 - [ ] Iterate: size numbers, visual QA, then SA/SE variants; then the
       unlock paths; then decide the public-hosting end-state (#29).
