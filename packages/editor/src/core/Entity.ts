@@ -460,6 +460,33 @@ export class Entity extends EventEmitter<EntityEvents> {
             }
         }
     }
+    /**
+     * Whether the `filters` setter can actually write this entity's filter slots.
+     *
+     * Only splitters and inserters can — the logistic chests hit an unimplemented
+     * `logisticChestFilters` setter (2.0 request-sections were never wired up) and
+     * the infinity chest/pipe fall through the switch unhandled. The editor uses
+     * this so it doesn't advertise a clear gesture for slots that can't be
+     * written; the slots themselves stay visible and readable as before.
+     */
+    public get canEditFilters(): boolean {
+        switch (this.name) {
+            case 'splitter':
+            case 'fast-splitter':
+            case 'express-splitter':
+            case 'turbo-splitter':
+            case 'burner-inserter':
+            case 'inserter':
+            case 'long-handed-inserter':
+            case 'fast-inserter':
+            case 'bulk-inserter':
+            case 'stack-inserter':
+                return true
+            default:
+                return false
+        }
+    }
+
     public set filters(list: IFilter[]) {
         const FILTERS =
             list === undefined || list.length === 0 ? undefined : list.filter(f => !!f.name)
@@ -544,12 +571,21 @@ export class Entity extends EventEmitter<EntityEvents> {
         return []
     }
     private set splitterFilter(filters: IFilter[]) {
-        const filter = filters === undefined ? undefined : filters[0].name
-        if (this.m_rawEntity.filter === filter) return
+        // `filters` arrives already stripped of nameless entries by the `filters`
+        // setter, so clearing the (single) splitter filter hands us an empty array
+        // — indexing it unguarded used to throw. Compare against the raw entity's
+        // *name*, not the `{ name }` wrapper object, so an unchanged filter really
+        // does short-circuit instead of writing a redundant history entry.
+        const filter = filters?.[0]?.name
+        const current =
+            typeof this.m_rawEntity.filter === 'string' ? undefined : this.m_rawEntity.filter?.name
+        if (current === filter) return
 
         this.m_BP.history.startTransaction()
 
-        const f = { name: filter }
+        // Clear by removing the key outright rather than storing `{ name: undefined }`,
+        // which would serialize an empty `filter: {}` into the exported blueprint.
+        const f = filter === undefined ? undefined : { name: filter }
 
         this.m_BP.history
             .updateValue(this.m_rawEntity, 'filter', f, 'Change splitter filter')

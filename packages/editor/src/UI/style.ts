@@ -4,6 +4,7 @@ const colors = {
     text: {
         title: 0xffe6c0,
         normal: 0xfafafa,
+        hint: 0x9e9e9e,
         link: 0x03a9f4,
         accent: 0xff8a65,
     },
@@ -109,6 +110,15 @@ const styles = {
             fontFamily,
             fontWeight: '300',
             fontSize: 14,
+        }),
+        // Dim footer line for an affordance the UI can't show any other way
+        // (e.g. "Hold a slot to clear it") — present but visually subordinate to
+        // the controls it describes.
+        hint: new TextStyle({
+            fill: colors.text.hint,
+            fontFamily,
+            fontWeight: '300',
+            fontSize: 12,
         }),
     },
     icon: {

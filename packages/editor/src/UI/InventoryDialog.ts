@@ -37,6 +37,20 @@ import { colors, styles } from './style'
 
 type InventoryItems = Container<Button<Container>>
 
+/**
+ * Wiring for the selector's escape-hatch button, passed when the dialog is
+ * opened *from a slot* (so the generic quickbar inventory, which has no
+ * originating slot, omits it and draws no button).
+ *
+ * `filled` only picks the label — "✕ Clear" vs "✕ Cancel". The action is the
+ * same either way: empty the slot, then close. On an already-empty slot that
+ * makes it a plain cancel.
+ */
+export interface SlotClear {
+    onClear: () => void
+    filled: boolean
+}
+
 /** Inventory Dialog - Displayed to the user if there is a need to select an item */
 export class InventoryDialog extends Dialog {
     /** Container for Inventory Group Buttons */
@@ -83,14 +97,36 @@ export class InventoryDialog extends Dialog {
     private m_confirmBtn?: Container
     private m_pinBtn?: Container
     private m_pinText?: Text
+    private m_clearCallBack?: () => void
+    private m_clearBtn?: Container
+    private m_clearText?: Text
+    /**
+     * Whether a quick tap commits outright on touch, skipping the usual
+     * tap-to-preview → ✓ Confirm two-step.
+     *
+     * On for the **module** selector. Filling a machine's module slots means
+     * opening this dialog once per slot, and the confirm step doubles the taps
+     * for a choice that's a handful of near-identical icons — you know which
+     * module you want before the dialog opens. Paired with "✕ Clear" (which also
+     * acts without confirmation) it makes every exit one tap: take a module, or
+     * empty the slot. The misclick risk the confirm step buys elsewhere isn't
+     * worth it here, since re-tapping the slot just corrects the choice.
+     *
+     * Long-press still previews, so the details are a hold away either way.
+     */
+    private readonly m_commitOnTap: boolean
 
     public constructor(
         title = 'Inventory',
         itemsFilter?: string[],
         selectedCallBack?: (selectedItem: string) => void,
-        recentsKey?: string
+        recentsKey?: string,
+        clear?: SlotClear
     ) {
         super(InventoryDialog.computeWidth(itemsFilter, recentsKey), 442, title)
+
+        this.m_clearCallBack = clear?.onClear
+        this.m_commitOnTap = recentsKey === 'modules'
 
         this.m_cols = Math.floor(this.viewW / 38)
         this.m_itemsFilter = itemsFilter
@@ -294,8 +330,68 @@ export class InventoryDialog extends Dialog {
         })
         this.addChild(this.m_confirmBtn)
 
+        // The escape hatch, shown whenever this selector was opened *from a slot*.
+        //
+        // Two jobs, same action (empty the slot, then close), so one button does
+        // both — only the label changes with what the slot currently holds:
+        //   - filled → "✕ Clear": the discoverable equivalent of the right-click /
+        //     long-press clear, which nothing on screen can otherwise advertise.
+        //   - empty  → "✕ Cancel": leave without picking anything. Tapping away
+        //     from the dialog also closes it, but on a phone the picker covers
+        //     nearly the whole screen, so there is barely any canvas left to hit —
+        //     and Escape is desktop-only. Without this the first-time case (open a
+        //     recipe slot, change your mind) had no obvious way out at all.
+        //
+        // It sits in the title row rather than the bottom bar because it is
+        // *always* available — unlike Confirm/Pin, which only appear while
+        // previewing — and the bottom strip is occupied by the recipe strip.
+        if (clear) {
+            const btn = InventoryDialog.barButton(clear.filled ? '✕ Clear' : '✕ Cancel', 0x6b3636)
+            btn.container.position.set(this.width - 84, 8)
+            btn.container.visible = true
+            btn.container.on('pointerup', e => {
+                e.stopPropagation()
+                this.m_clearCallBack?.()
+                this.close()
+            })
+            this.addChild(btn.container)
+            this.m_clearBtn = btn.container
+            this.m_clearText = btn.text
+        }
+
         this.setupTabScroll(groupIndex)
         this.setupItemScroll()
+    }
+
+    /**
+     * On-screen centre (CSS px) of the "✕ Clear" button, or null when this
+     * selector has nothing to clear. Backs the `?test` probe so e2e can click the
+     * button for real rather than guessing at the (scaled, clamped) layout.
+     */
+    public clearButtonPosition(): { x: number; y: number } | null {
+        if (!this.m_clearBtn) return null
+        const r = this.m_clearBtn.getBounds().rectangle
+        return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
+    }
+
+    /** The escape-hatch button's label ("✕ Clear" / "✕ Cancel"), for the probe. */
+    public clearButtonLabel(): string | null {
+        return this.m_clearText?.text ?? null
+    }
+
+    /**
+     * On-screen centre (CSS px) of the first item button in the active group, or
+     * null if the group has none. Backs the `?test` probe so e2e can tap a real
+     * item without knowing which one the active tab happens to show.
+     */
+    public firstItemPosition(): { x: number; y: number } | null {
+        // The recents tab interleaves section-header Text with the buttons, so
+        // pick the first *Button* rather than the first child.
+        const button = this.activeGroup()?.children.find(c => c instanceof Button)
+        if (!button) return null
+        const r = button.getBounds().rectangle
+        if (r.width === 0 || r.height === 0) return null
+        return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
     }
 
     /** Filter a name to what this selector allows (filter list, or placeable). */
@@ -344,7 +440,7 @@ export class InventoryDialog extends Dialog {
     /**
      * An item button. Desktop: click commits, long-press previews (Confirm/Pin
      * bar). Touch: tap previews/focuses (deliberate Confirm-to-select, fewer
-     * misclicks) — see the pointerup handler.
+     * misclicks) — except in a **commit-on-tap** selector, see `m_commitOnTap`.
      */
     private makeItemButton(name: string): Button<Container> {
         const button = new Button<Container>(36, 36)
@@ -364,8 +460,9 @@ export class InventoryDialog extends Dialog {
             if (this.m_pressTimer) {
                 // released before the long-press fired → quick tap.
                 this.clearPressTimer()
-                if (inputMode.mode === 'desktop') {
+                if (inputMode.mode === 'desktop' || this.m_commitOnTap) {
                     // Desktop: a click commits immediately (precise pointer).
+                    // Commit-on-tap selectors do the same on touch — see below.
                     this.commitSelect(name)
                 } else {
                     // Touch: a tap *focuses* the item — shows its name/details and

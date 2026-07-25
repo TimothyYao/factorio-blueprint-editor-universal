@@ -70,3 +70,39 @@ export async function dragOneFinger(
         await cdp.detach()
     }
 }
+
+/**
+ * Hold a single finger down at one point, then release — the touch gesture that
+ * *clears* a slot (`bindSlotGestures`, 500 ms). Playwright's `touchscreen.tap()`
+ * releases immediately, so the hold has to go over CDP like the drag above.
+ *
+ * Coordinates are canvas/element-relative, same as `dragOneFinger`. No moves are
+ * sent: the recognizer cancels the long-press on a drag past its slop, so a
+ * still finger is exactly what we want.
+ *
+ * `holdMs` is padded far past the recognizer's 500 ms threshold: that timer is a
+ * `setTimeout` on the page's main thread, which a parallel suite on software
+ * WebGL can starve for the better part of a second. If the release lands before
+ * the timer fires, the gesture is (correctly) read as a *tap* — so an
+ * under-generous hold doesn't fail loudly, it silently exercises the wrong path.
+ */
+export async function longPressOneFinger(
+    page: Page,
+    at: { x: number; y: number },
+    holdMs = 1_500
+): Promise<void> {
+    const box = await page.locator('#editor').boundingBox()
+    const x = (box?.x ?? 0) + at.x
+    const y = (box?.y ?? 0) + at.y
+    const cdp = await page.context().newCDPSession(page)
+    try {
+        await cdp.send('Input.dispatchTouchEvent', {
+            type: 'touchStart',
+            touchPoints: [{ x, y }],
+        })
+        await page.waitForTimeout(holdMs)
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+    } finally {
+        await cdp.detach()
+    }
+}

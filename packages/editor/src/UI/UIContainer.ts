@@ -3,10 +3,11 @@ import { Entity } from '../core/Entity'
 import { DebugContainer } from './DebugContainer'
 import { QuickbarPanel } from './QuickbarPanel'
 import { EntityInfoPanel } from './EntityInfoPanel'
-import { InventoryDialog } from './InventoryDialog'
+import { InventoryDialog, SlotClear } from './InventoryDialog'
 import { SignalPicker, SignalChoice } from './SignalPicker'
 import { NumericKeypad } from './NumericKeypad'
 import { WiresPanel } from './WiresPanel'
+import { Editor } from './editors/Editor'
 import { createEditor } from './editors/factory'
 
 export class UIContainer extends Container {
@@ -54,20 +55,29 @@ export class UIContainer extends Container {
         this.debugContainer.visible = visible
     }
 
-    public createEditor(entity: Entity): void {
+    /** @returns The created editor, or undefined if the entity has none. */
+    public createEditor(entity: Entity): Editor | undefined {
         const editor = createEditor(entity)
         if (editor) {
             this.dialogsContainer.addChild(editor)
         }
+        return editor
     }
 
+    /**
+     * @param clear - Pass when the dialog is opened *from a slot*: it draws the
+     * escape-hatch button that empties that slot and closes ("✕ Clear" when the
+     * slot holds something, "✕ Cancel" when it doesn't). Omit it when there is no
+     * originating slot (e.g. the generic quickbar inventory) so no button is drawn.
+     */
     public createInventory(
         title?: string,
         itemsFilter?: string[],
         selectedCallBack?: (selectedItem: string) => void,
-        recentsKey?: string
+        recentsKey?: string,
+        clear?: SlotClear
     ): InventoryDialog {
-        const inv = new InventoryDialog(title, itemsFilter, selectedCallBack, recentsKey)
+        const inv = new InventoryDialog(title, itemsFilter, selectedCallBack, recentsKey, clear)
         this.dialogsContainer.addChild(inv)
         return inv
     }

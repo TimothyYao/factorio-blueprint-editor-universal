@@ -1,8 +1,9 @@
-import { Container, FederatedPointerEvent } from 'pixi.js'
+import { Container } from 'pixi.js'
 import EventEmitter from 'eventemitter3'
 import G from '../../../common/globals'
 import { Entity, EntityEvents } from '../../../core/Entity'
 import { Slot } from '../../controls/Slot'
+import { bindSlotGestures } from '../../controls/gestures'
 import F from '../../controls/functions'
 
 /** Module Slots for Entity */
@@ -32,7 +33,11 @@ export class Modules extends Container<Slot<number>> {
             const slot = new Slot<number>()
             slot.position.set((slotIndex % cols) * 38, Math.floor(slotIndex / cols) * 38)
             slot.data = slotIndex
-            slot.on('pointerdown', this.onSlotPointerDown, this)
+            bindSlotGestures(
+                slot,
+                () => this.openPicker(slotIndex),
+                () => this.clear(slotIndex)
+            )
             if (this.m_Modules[slotIndex] !== undefined) {
                 slot.content = F.CreateIcon(this.m_Modules[slotIndex])
             }
@@ -67,24 +72,25 @@ export class Modules extends Container<Slot<number>> {
         this.emit('changed')
     }
 
-    /** Event handler for click on slot */
-    private onSlotPointerDown(e: FederatedPointerEvent): void {
-        e.stopPropagation()
-        const slot = e.target as Slot<number>
-        const index = slot.data
-        if (e.button === 0) {
-            G.UI.createInventory(
-                'Select Module',
-                this.m_Entity.acceptedModules,
-                name => {
-                    this.m_Modules[index] = name
-                    this.m_Entity.modules = this.m_Modules
-                },
-                'modules'
-            )
-        } else if (e.button === 2) {
-            this.m_Modules[index] = undefined
-            this.m_Entity.modules = this.m_Modules
-        }
+    /** Tap/left-click: pick a module for `index`. */
+    private openPicker(index: number): void {
+        G.UI.createInventory(
+            'Select Module',
+            this.m_Entity.acceptedModules,
+            name => {
+                this.m_Modules[index] = name
+                this.m_Entity.modules = this.m_Modules
+            },
+            'modules',
+            // "✕ Clear" on a filled slot, "✕ Cancel" on an empty one — either way
+            // it leaves the slot empty and closes.
+            { onClear: () => this.clear(index), filled: this.m_Modules[index] !== undefined }
+        )
+    }
+
+    /** Long-press / right-click (or the picker's ✕ Clear): empty the slot. */
+    private clear(index: number): void {
+        this.m_Modules[index] = undefined
+        this.m_Entity.modules = this.m_Modules
     }
 }

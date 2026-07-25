@@ -4,11 +4,12 @@ import G from '../common/globals'
 import { inputMode } from '../common/input'
 import { Panel } from './controls/Panel'
 import { Slot } from './controls/Slot'
+import { bindSlotGestures } from './controls/gestures'
 import F from './controls/functions'
 import { colors } from './style'
 import { fitToWidthScale } from './quickbarLayout'
 
-class QuickbarSlot extends Slot<string | undefined> {
+export class QuickbarSlot extends Slot<string | undefined> {
     public get itemName(): string {
         return this.data
     }
@@ -90,15 +91,18 @@ export class QuickbarPanel extends Panel {
                     quickbarSlot.assignItem(itemNames[r * 10 + i])
                 }
 
-                quickbarSlot.on('pointerdown', e => {
-                    // Use Case 1:   Left Click  & Slot=Empty & Mouse=Painting                      >> Assign Mouse Item to Slot
-                    // Use Case 2:   Left Click  & Slot=Item  & Mouse=Painting                      >> Assign Slot Item to Mouse
-                    // Use Case 2.5: Left Click  & Slot=Item  & Mouse=Painting & Item=PaintingItem  >> Destroy Painting Item
-                    // Use Case 3:   Left Click  & Slot=Empty & Mouse=Empty                         >> Assign Slot Item to Selected Inv item
-                    // Use Case 4:   Left Click  & Slot=Item  & Mouse=Empty                         >> Assign Slot Item to Mouse
-                    // Use Case 5:   Right Click & Slot=*     & Mouse=*                             >> Unassign Slot
-
-                    if (e.button === 0) {
+                // Use Case 1:   Activate    & Slot=Empty & Mouse=Painting                      >> Assign Mouse Item to Slot
+                // Use Case 2:   Activate    & Slot=Item  & Mouse=Painting                      >> Assign Slot Item to Mouse
+                // Use Case 2.5: Activate    & Slot=Item  & Mouse=Painting & Item=PaintingItem  >> Destroy Painting Item
+                // Use Case 3:   Activate    & Slot=Empty & Mouse=Empty                         >> Assign Slot Item to Selected Inv item
+                // Use Case 4:   Activate    & Slot=Item  & Mouse=Empty                         >> Assign Slot Item to Mouse
+                // Use Case 5:   Clear       & Slot=*     & Mouse=*                             >> Unassign Slot
+                //
+                // "Activate" is a left-click or a tap; "Clear" is a right-click or
+                // a long-press (touch has no right-click) — see bindSlotGestures.
+                bindSlotGestures(
+                    quickbarSlot,
+                    () => {
                         if (G.BPC.mode === EditorMode.PAINT) {
                             if (quickbarSlot.itemName) {
                                 if (quickbarSlot.itemName === G.BPC.paintContainer.getItemName()) {
@@ -116,7 +120,7 @@ export class QuickbarPanel extends Panel {
                             // UC4
                             G.BPC.spawnPaintContainer(quickbarSlot.itemName)
                         } else {
-                            // UC3
+                            // UC3 — an empty slot has nothing to clear, so no ✕ Clear.
                             G.UI.createInventory(
                                 'Inventory',
                                 undefined,
@@ -124,11 +128,10 @@ export class QuickbarPanel extends Panel {
                                 'items'
                             )
                         }
-                    } else if (e.button === 2) {
-                        // UC5
-                        quickbarSlot.unassignItem()
-                    }
-                })
+                    },
+                    // UC5
+                    () => quickbarSlot.unassignItem()
+                )
 
                 this.slots[r * 10 + i] = quickbarSlot
                 this.slotsContainer.addChild(quickbarSlot)
@@ -159,6 +162,11 @@ export class QuickbarPanel extends Panel {
 
     public serialize(): string[] {
         return this.slots.map(s => s.itemName)
+    }
+
+    /** Slot `index`, or undefined if out of range. Used by the `?test` probe. */
+    public slotAt(index: number): QuickbarSlot | undefined {
+        return this.slots[index]
     }
 
     /** Whether `name` is currently in any quickbar slot. */

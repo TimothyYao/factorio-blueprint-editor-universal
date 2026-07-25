@@ -4,6 +4,11 @@ import { EditorMode } from '../containers/BlueprintContainer'
 import { PaintEntityContainer } from '../containers/PaintEntityContainer'
 import { PaintBlueprintContainer } from '../containers/PaintBlueprintContainer'
 import { Dialog } from '../UI/controls/Dialog'
+import { InventoryDialog } from '../UI/InventoryDialog'
+import { Modules } from '../UI/editors/components/Modules'
+import { Filters } from '../UI/editors/components/Filters'
+import { Recipe } from '../UI/editors/components/Recipe'
+import { Editor } from '../UI/editors/Editor'
 import { Entity } from '../core/Entity'
 
 /**
@@ -161,6 +166,70 @@ export interface FbeTestHook {
     wireColorPixelCounts: () => { red: number; green: number; copper: number }
     /** Number of circuit-network highlight boxes currently shown (#49 hover highlight). */
     networkHighlightCount: () => number
+    /**
+     * Logical slot contents for the clear-a-slot specs — `null` for an empty slot.
+     * Read *through the entity*, so a cleared slot has to have actually been
+     * written back to the blueprint (not merely blanked in the dialog).
+     */
+    entityModules: (name: string) => (string | null)[] | null
+    entityFilters: (name: string) => (string | null)[] | null
+    entityRecipe: (name: string) => string | null
+    /**
+     * Open `name`'s editor and return the on-screen centre (canvas-relative CSS
+     * px, the same frame as `dragOneFinger`) of its module or filter slot `index`
+     * — so the spec can right-click / long-press the slot *for real* instead of
+     * reimplementing the dialog's scaled, clamped layout maths.
+     */
+    openEditorSlot: (
+        name: string,
+        kind: 'modules' | 'filters' | 'recipe',
+        index: number
+    ) => { x: number; y: number } | null
+    /**
+     * On-screen centre of the open item-selector's "✕ Clear" button, or null when
+     * no selector is open / it has nothing to clear.
+     */
+    inventoryClearButtonPos: () => { x: number; y: number } | null
+    /** The escape-hatch button's label — "✕ Clear", "✕ Cancel", or null if absent. */
+    inventoryClearButtonLabel: () => string | null
+    /**
+     * Flip the input mode, as the settings pane's Input Mode dropdown does. Lets
+     * a spec assert that live-mode-switch handling works on already-open UI.
+     */
+    setInputMode: (mode: InputMode) => void
+    /**
+     * On-screen centre of the first item button in the open selector's active
+     * group — lets a spec tap a real item without hardcoding which one the tab
+     * shows. Null when no selector is open / the group is empty.
+     */
+    inventoryFirstItemPos: () => { x: number; y: number } | null
+    /**
+     * Whether an item selector is open. Distinct from `getState().dialogOpen`,
+     * which stays true for the entity editor the selector was opened *from* —
+     * so "the picker closed" needs its own signal.
+     */
+    inventoryOpen: () => boolean
+    /**
+     * Open `name`'s editor and report its clear-a-slot hint text (null when the
+     * editor has no clearable slots — e.g. a logistic chest, whose filter setter
+     * is unimplemented). The hint is canvas-drawn, so the DOM can't see it.
+     */
+    editorClearHint: (name: string) => string | null
+    /**
+     * The clear hint of the editor that is *already* open, without reopening it —
+     * `editorClearHint` closes and rebuilds, which would mask whether an open
+     * dialog reacts to a live input-mode switch.
+     */
+    openEditorClearHint: () => string | null
+    /** Quickbar slot contents, `null` for an unassigned slot. */
+    quickbarItems: () => (string | null)[]
+    /** On-screen centre of quickbar slot `index`, or null if it isn't rendered. */
+    quickbarSlotPos: (index: number) => { x: number; y: number } | null
+    /**
+     * Seed quickbar slot 0 with a known item, so a spec has something to clear
+     * without driving the assign flow (which is not what those tests are about).
+     */
+    quickbarAssign: (name?: string) => void
 }
 
 /** Approximate per-channel match against a target colour (tolerant of AA edges). */
@@ -257,6 +326,75 @@ export function installTestHook(win: Window = window): void {
             return { red, green, copper }
         },
         networkHighlightCount: () => G.BPC.overlayContainer.networkHighlightCount,
+        // `Entity.modules` is a *sparse* array (`new Array(moduleSlots)` with only
+        // filled stacks assigned), and `map` skips holes — which would serialize
+        // across CDP as `undefined` rather than the `null` an empty slot means.
+        // `Array.from` visits every index, so holes normalize to `null`.
+        entityModules: name => {
+            const mods = findEntity(name)?.modules
+            return mods ? Array.from(mods, m => m ?? null) : null
+        },
+        entityFilters: name => {
+            const filters = findEntity(name)?.filters
+            return filters ? Array.from(filters, f => f?.name ?? null) : null
+        },
+        entityRecipe: name => findEntity(name)?.recipe ?? null,
+        openEditorSlot: (name, kind, index) => {
+            const e = findEntity(name)
+            if (!e) return null
+            Dialog.closeAll()
+            const editor = G.UI.createEditor(e)
+            if (!editor) return null
+            // The recipe control *is* a Slot (Recipe extends Slot), so it sits
+            // directly on the editor rather than inside a group container.
+            const target =
+                kind === 'recipe'
+                    ? editor.children.find(c => c instanceof Recipe)
+                    : editor.children.find(c =>
+                          kind === 'modules' ? c instanceof Modules : c instanceof Filters
+                      )?.children[index]
+            if (!target) return null
+            const r = target.getBounds().rectangle
+            return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
+        },
+        inventoryClearButtonPos: () => {
+            const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
+            return inv ? inv.clearButtonPosition() : null
+        },
+        inventoryClearButtonLabel: () => {
+            const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
+            return inv ? inv.clearButtonLabel() : null
+        },
+        setInputMode: mode => {
+            inputMode.mode = mode
+        },
+        openEditorClearHint: () => {
+            const editor = Dialog.openDialogs.findLast(d => d instanceof Editor)
+            return editor ? editor.clearHintText : null
+        },
+        inventoryFirstItemPos: () => {
+            const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
+            return inv ? inv.firstItemPosition() : null
+        },
+        inventoryOpen: () => Dialog.openDialogs.some(d => d instanceof InventoryDialog),
+        editorClearHint: name => {
+            const e = findEntity(name)
+            if (!e) return null
+            Dialog.closeAll()
+            return G.UI.createEditor(e)?.clearHintText ?? null
+        },
+        quickbarItems: () =>
+            G.UI.quickbarPanel.serialize().map(itemName => itemName ?? null) as (string | null)[],
+        quickbarSlotPos: index => {
+            const slot = G.UI.quickbarPanel.slotAt(index)
+            if (!slot) return null
+            const r = slot.getBounds().rectangle
+            if (r.width === 0 || r.height === 0) return null
+            return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
+        },
+        quickbarAssign: (name = 'fast-inserter') => {
+            G.UI.quickbarPanel.slotAt(0)?.assignItem(name)
+        },
     }
     ;(win as unknown as Record<string, unknown>)[TEST_HOOK_KEY] = hook
 }

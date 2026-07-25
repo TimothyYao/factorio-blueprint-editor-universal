@@ -144,6 +144,48 @@ pipelines at once made touch taps double-act via the browser's synthetic
   on `pointerdown`, and **long-press clears** a slot (touch has no right-click). The
   base `Dialog` scales each editor to fit a narrow viewport. Known debt: the editors
   use ad-hoc absolute layout (#59).
+- ✅ **Clearing a slot works on touch — everywhere, and it's discoverable** —
+  emptying a module / recipe / filter / quickbar slot was **right-click only**, so
+  on touch it was simply unreachable. `bindSlotGestures` (tap activates,
+  long-press/right-click clears) already existed but was wired into the circuit
+  slots only; it now backs **every** slot — `Modules`, `Filters` and the quickbar
+  dropped their raw `e.button === 2` handlers for it, so one gesture contract
+  covers the lot and desktop right-click is unchanged.
+  Long-press is invisible, though, so two visible affordances back it up. The
+  item selector opened **from a slot** carries an escape-hatch button in its
+  title row (mirroring `SignalPicker`'s ✕ None), labelled for what it does:
+  **"✕ Clear"** when the slot holds something, **"✕ Cancel"** when it doesn't —
+  same action either way (empty the slot, then close). It's shown even on an
+  empty slot because it doubles as the way _out_ of the picker: tapping away
+  works but needs bare canvas, which a full-width picker on a phone barely
+  leaves, and Escape is desktop-only — so picking a recipe for the first time and
+  changing your mind previously had no obvious exit. And every entity editor
+  holding a clearable slot shows a dim footer line — _"Hold a slot to clear it"_
+  on touch, _"Right-click a slot to clear it"_ on desktop — from a hint band the
+  base `Editor` now reserves; it **re-renders on a live input-mode switch**
+  (`inputMode.on('change')`, unsubscribed on destroy), since the DOM settings
+  pane can be toggled with a canvas editor still open.
+  The **module selector commits on tap** (`m_commitOnTap`), so both ways out of
+  it are a single tap: take a module, or ✕ Clear the slot. Filling a machine
+  reopens the dialog once per slot, and the touch tap-to-preview → ✓ Confirm
+  two-step doubled the taps for a choice already made before the dialog opened;
+  ✕ Clear acting without confirmation is what made the asymmetry obvious. Scoped
+  to modules — recipes/filters/items keep the deliberate two-step, and long-press
+  still previews everywhere.
+  Fixed en route: clearing a **splitter** filter threw a `TypeError`
+  (`Entity`'s splitter setter indexed `filters[0]` of an array the `filters`
+  setter had already emptied), so that slot couldn't be cleared on _either_ input.
+  Seams: `UI/controls/gestures.ts`, `UI/editors/Editor.ts`
+  (`declareClearableSlots`), `InventoryDialog` + `UIContainer.createInventory`'s
+  `clearCallBack`, `core/Entity.ts` `splitterFilter`. Covered by
+  `e2e/clearSlots.spec.ts` (long-press on both projects, right-click on desktop,
+  the ✕ Clear round-trip, and the splitter regression) via new `?test` probes
+  (`openEditorSlot`, `entityModules`/`entityFilters`, `inventoryClearButtonPos`)
+  plus a `longPressOneFinger` CDP helper.
+  Known gap: **logistic-chest** filters still can't be cleared — `Entity`'s
+  `logisticChestFilters` setter is an unimplemented `throw` (pre-existing; 2.0
+  request-sections were never wired up), so chest filters are read-only whatever
+  the input mode.
 
 ## Not done / next
 
@@ -258,6 +300,8 @@ pipelines at once made touch taps double-act via the browser's synthetic
     - **Inventory focus-tap.** On touch, a **tap** in the item picker now _focuses_
       the item (name/details + Confirm/Pin) instead of committing — selecting is a
       deliberate two-step, fewer misclicks. Desktop click-to-commit is unchanged.
+      _(Later narrowed: the **module** selector commits on tap instead — see the
+      clear-a-slot entry above. Everywhere else this still holds.)_
     - **Overflow on top.** The rail's ⋯ overflow now renders above the contextual
       bottom clusters (z22 > z21) so its buttons aren't hidden behind the d-pad.
     - Seams: `Blueprint.moveEntitiesBy` / `Entity.forceMoveBy`, `BlueprintContainer`

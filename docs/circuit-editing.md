@@ -60,7 +60,10 @@ Reusable building blocks:
   **`CycleButton`** (tap-to-cycle operators), **`CircuitCondition`** (enable
   checkbox + condition row) — `UI/editors/components/`.
 - **`bindSlotGestures`** (`UI/controls/gestures.ts`) — tap activates a slot,
-  long-press (or right-click) **clears** it (touch has no right-click).
+  long-press (or right-click) **clears** it (touch has no right-click). Now the
+  contract for **every** slot in the editor, not just the circuit ones — the
+  module / filter / quickbar slots were moved onto it (see
+  `docs/mobile-controls.md`).
 - **`createCircuitNetworkBadges`** — red/green network ids (connected components
   of the wire graph, combinator input/output separate), shown in the info panel
   and at the top of each editor.
@@ -81,6 +84,12 @@ Editing is touch-usable: selection via the full-size `SignalPicker` (the editor
 itself stays compact), big tap targets, `pointerdown` handlers, the canvas
 keypad (no OS keyboard), and long-press to clear. The base `Dialog` scales the
 whole editor to fit a narrow viewport.
+
+Because a long-press is invisible, each editor also carries a dim footer hint
+naming the gesture — _"Hold a slot to clear it"_ / _"Right-click a slot to clear
+it"_ per input mode. Editors declare they have clearable slots via
+`Editor.declareClearableSlots()`; the combinator editors call it directly, and
+`addRecipe`/`addModules`/`addFilters`/`addCircuitCondition` call it for you.
 
 ## Related tickets
 

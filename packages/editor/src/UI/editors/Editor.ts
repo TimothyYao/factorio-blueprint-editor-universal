@@ -1,5 +1,8 @@
+import { Text } from 'pixi.js'
 import EventEmitter from 'eventemitter3'
 import { Entity, EntityEvents } from '../../core/Entity'
+import { inputMode, type InputMode } from '../../common/input'
+import { styles } from '../style'
 import { Dialog } from '../controls/Dialog'
 import { Preview } from './components/Preview'
 import { Recipe } from './components/Recipe'
@@ -10,21 +13,38 @@ import { createCircuitNetworkBadges } from '../circuitNetworkBadges'
 
 /** Editor */
 export abstract class Editor extends Dialog {
+    /**
+     * Footer band reserved below every editor's content for the clear-a-slot
+     * hint. Reserved unconditionally so subclasses keep passing their existing
+     * hand-tuned content heights (editorLayout's sizing, the chest's computed
+     * height, …) without each having to know about the hint; an editor with no
+     * clearable slots just gets the extra padding.
+     */
+    private static readonly HINT_H = 20
+
     /** Blueprint Editor Entity reference */
     protected readonly m_Entity: Entity
 
     /** Reference to preview container */
     protected readonly m_Preview: Preview
 
+    /** Content height (i.e. the dialog height minus the hint band). */
+    private readonly m_contentHeight: number
+
+    /** The clear-a-slot hint, created on the first declareClearableSlots() call. */
+    private m_clearHint?: Text
+
     /**
      * Base Constructor for Editors
      *
      * @param width - Width of the Editor Dialog
-     * @param height - Height of the Editor Dialog
+     * @param height - Height of the Editor Dialog (excluding the hint band)
      * @param entity - Reference to Entity Data
      */
     public constructor(width: number, height: number, entity: Entity) {
-        super(width, height, entity.entityData.localised_name as string)
+        super(width, height + Editor.HINT_H, entity.entityData.localised_name as string)
+
+        this.m_contentHeight = height
 
         // Store reference to entity for later use
         this.m_Entity = entity
@@ -55,6 +75,7 @@ export abstract class Editor extends Dialog {
         const recipe = new Recipe(this.m_Entity)
         recipe.position.set(x, y)
         this.addChild(recipe)
+        this.declareClearableSlots()
 
         // Return component in case extension wants to use it
         return recipe
@@ -71,6 +92,7 @@ export abstract class Editor extends Dialog {
         const modules = new Modules(this.m_Entity, columns)
         modules.position.set(x, y)
         this.addChild(modules)
+        this.declareClearableSlots()
 
         // Return component in case extension wants to use it
         return modules
@@ -87,6 +109,9 @@ export abstract class Editor extends Dialog {
         const filters = new Filters(this.m_Entity, amount)
         filters.position.set(x, y)
         this.addChild(filters)
+        // Logistic/infinity chests have filter slots the setter can't write yet
+        // (Entity.canEditFilters), so don't promise a clear gesture there.
+        if (this.m_Entity.canEditFilters) this.declareClearableSlots()
 
         // Return component in case extension wants to use it
         return filters
@@ -101,7 +126,56 @@ export abstract class Editor extends Dialog {
         const cc = new CircuitCondition(this.m_Entity)
         cc.position.set(x, y)
         this.addChild(cc)
+        this.declareClearableSlots()
         return cc
+    }
+
+    /**
+     * Declare that this editor holds at least one slot that can be emptied, which
+     * reveals the footer hint naming the gesture that does it.
+     *
+     * Clearing a slot is otherwise invisible — desktop right-clicks it and touch
+     * holds it, and neither is something a UI can show. (The pickers opened *from*
+     * a filled slot also carry a "✕ Clear" button; the hint covers the slots you
+     * can clear without opening anything, and the counted-chest filters, whose
+     * filled slots jump straight to the count field instead of the picker.)
+     *
+     * Idempotent — editors that add several kinds of slot just call it per slot.
+     */
+    protected declareClearableSlots(): void {
+        if (this.m_clearHint) return
+        this.m_clearHint = this.addLabel(
+            12,
+            this.m_contentHeight,
+            Editor.clearHintFor(inputMode.mode),
+            styles.dialog.hint
+        )
+
+        // Input mode switches live (no reload), and an editor can be open across
+        // the switch — the settings pane is DOM, so toggling it doesn't close the
+        // canvas dialogs. Without this the hint would keep naming the gesture of
+        // the mode you just left. Unsubscribed on destroy so a closed editor
+        // doesn't leak a listener, same shape as onEntityChange.
+        const onModeChange = (mode: InputMode): void => {
+            if (this.m_clearHint && !this.m_clearHint.destroyed) {
+                this.m_clearHint.text = Editor.clearHintFor(mode)
+            }
+        }
+        inputMode.on('change', onModeChange)
+        this.once('destroyed', () => inputMode.off('change', onModeChange))
+    }
+
+    private static clearHintFor(mode: InputMode): string {
+        return mode === 'mobile' ? 'Hold a slot to clear it' : 'Right-click a slot to clear it'
+    }
+
+    /**
+     * The clear-a-slot hint's text, or null when this editor has no clearable
+     * slots. Backs the `?test` probe — the hint is canvas-drawn, so e2e has no
+     * other way to assert it renders (and says the right thing per input mode).
+     */
+    public get clearHintText(): string | null {
+        return this.m_clearHint?.text ?? null
     }
 
     protected onEntityChange<T extends EventEmitter.EventNames<EntityEvents>>(

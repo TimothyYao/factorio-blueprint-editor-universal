@@ -84,6 +84,8 @@ export class DeciderCombinatorEditor extends Editor {
         })
         hint.position.set(x, 178)
         this.addChild(hint)
+
+        this.declareClearableSlots()
     }
 
     private commit(): void {
