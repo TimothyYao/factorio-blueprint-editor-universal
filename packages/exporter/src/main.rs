@@ -48,6 +48,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if slim_report.is_some() && (browser_only || skip_browser) {
         return Err("--slim cannot be combined with --browser-only / --skip-browser".into());
     }
+    // `--download-only` ensures the Factorio install (+ portal mods) and exits —
+    // CI's slim build needs the source PNGs on disk without running any pipeline.
+    // `--exit` skips the :8081 serve loop at the end of any run, so CI invocations
+    // complete instead of serving forever (the interactive default is unchanged).
+    let download_only = has_flag("--download-only");
+    let exit_after = has_flag("--exit");
+    if download_only && (browser_only || skip_browser || slim_report.is_some()) {
+        return Err("--download-only cannot be combined with other modes".into());
+    }
     let packs_path = DATA_DIR.join("output").join("packs.json");
     let packs = setup::read_packs(&packs_path).await?;
     let pack = setup::select_pack(&packs, pack_arg.as_deref())?;
@@ -66,6 +75,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let output_dir = DATA_DIR.join("output").join(&pack.id);
     let base_factorio_dir = DATA_DIR.join(factorio_dir_name);
 
+    if download_only {
+        setup::download_factorio(&DATA_DIR, &base_factorio_dir, FACTORIO_VERSION, pack).await?;
+        setup::download_portal_mods(&DATA_DIR, &base_factorio_dir, pack).await?;
+        println!("Download complete.");
+        return Ok(());
+    }
     if let Some(report) = &slim_report {
         slim::run_slim(
             &DATA_DIR,
@@ -98,6 +113,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             )
             .await?;
         }
+    }
+
+    if exit_after {
+        return Ok(());
     }
 
     let static_ = Static::new(Path::new("data/output/"));
