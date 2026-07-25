@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'fs'
 import FD, { loadData, getRecipeIconSourceName } from './factorioData'
+import { havePackData, readPackData } from './packDataFiles'
 import { Entity } from './Entity'
 import type { IEntity } from '../types'
 import type { Blueprint } from './Blueprint'
@@ -41,8 +41,8 @@ function resolvesToIcon(name: string, seen = new Set<string>()): boolean {
 }
 
 describe.each(['vanilla-2.0', 'space-age', 'space-exploration'])('recipe icons: %s', pack => {
-    it('every recipe resolves to a renderable icon', () => {
-        loadData(readFileSync(`packages/exporter/data/output/${pack}/data.json`, 'utf8'))
+    it.skipIf(!havePackData(pack))('every recipe resolves to a renderable icon', () => {
+        loadData(readPackData(pack))
         const unresolved = Object.keys(FD.recipes).filter(name => !resolvesToIcon(name))
         expect(unresolved, `recipes with no renderable icon: ${unresolved.join(', ')}`).toEqual([])
     })
@@ -60,8 +60,8 @@ const stubBP = undefined as unknown as Blueprint
 describe.each(['vanilla-2.0', 'space-age', 'space-exploration'])(
     'assembler fluid getters: %s',
     pack => {
-        it('never throw for any recipe', () => {
-            loadData(readFileSync(`packages/exporter/data/output/${pack}/data.json`, 'utf8'))
+        it.skipIf(!havePackData(pack))('never throw for any recipe', () => {
+            loadData(readPackData(pack))
             const threw: string[] = []
             for (const recipe of Object.keys(FD.recipes)) {
                 const e = new Entity(

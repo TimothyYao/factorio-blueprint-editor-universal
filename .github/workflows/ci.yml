@@ -34,6 +34,17 @@ jobs:
         with:
           node-version: 22
       - run: npm install --legacy-peer-deps
+      # The editor-routing audit (editorRouting.test.ts, the #28 ratchet) reads
+      # each pack's data.json, which is no longer committed — fetch the JSON
+      # tiers from the data plane so the audit always runs in CI. Locally the
+      # test self-skips when the files are absent.
+      - name: Fetch pack data for the routing audit
+        run: |
+          for p in vanilla-2.0 space-age space-exploration; do
+            mkdir -p "packages/exporter/data/output/$p"
+            curl -fsSL "https://trisiak.github.io/factorio-pack-data/$p/data.json" \
+              -o "packages/exporter/data/output/$p/data.json"
+          done
       - run: npm test
 
   type-check:

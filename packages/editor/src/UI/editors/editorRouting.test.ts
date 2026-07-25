@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'fs'
 import FD, { loadData } from '../../core/factorioData'
 import { Entity } from '../../core/Entity'
 import type { IEntity } from '../../types'
 import type { Blueprint } from '../../core/Blueprint'
 import { editorKindFor } from './factory'
+import { havePackData, readPackData } from '../../core/packDataFiles'
 
 // editorKindFor reads only name/entityData/type/acceptedRecipes/moduleSlots —
 // none of which touch the Blueprint — so a stub BP is enough to build entities.
@@ -45,8 +45,8 @@ const KNOWN_GAPS: Record<string, string[]> = {
 }
 
 describe.each(Object.keys(KNOWN_GAPS))('editor routing: %s', pack => {
-    it('matches the known-gap baseline', () => {
-        loadData(readFileSync(`packages/exporter/data/output/${pack}/data.json`, 'utf8'))
+    it.skipIf(!havePackData(pack))('matches the known-gap baseline', () => {
+        loadData(readPackData(pack))
 
         const gaps: string[] = []
         let withEditor = 0

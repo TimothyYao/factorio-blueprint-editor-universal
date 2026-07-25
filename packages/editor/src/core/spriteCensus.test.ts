@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'fs'
 import FD, { loadData } from './factorioData'
+import { havePackData, readPackData } from './packDataFiles'
 import { getSpriteData, clearSpriteDataCache, SPRITE_GENERATION_FAILED } from './spriteDataBuilder'
 
 /**
@@ -31,7 +31,7 @@ const BASELINES: Record<string, { partial: number; failed: number }> = {
 }
 
 describe.each(Object.keys(BASELINES))('sprite census: %s', pack => {
-    it('matches the ratchet baseline', () => {
+    it.skipIf(!havePackData(pack))('matches the ratchet baseline', () => {
         // Both loadData and the generator cache are module-global; clear the
         // cache so this pack's tally can't be served generators that closed
         // over a previously loaded pack's prototypes (cache keys are names,
@@ -40,7 +40,7 @@ describe.each(Object.keys(BASELINES))('sprite census: %s', pack => {
         // Repo-root relative: vitest runs with the repo root as cwd (the root
         // vitest.config.ts), and the tsconfig types don't cover __dirname /
         // import.meta.url, so a plain relative path is the portable option.
-        loadData(readFileSync(`packages/exporter/data/output/${pack}/data.json`, 'utf8'))
+        loadData(readPackData(pack))
 
         const failed: string[] = []
         const partial: string[] = []
