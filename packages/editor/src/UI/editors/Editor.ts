@@ -154,6 +154,15 @@ export abstract class Editor extends Dialog {
         )
     }
 
+    /**
+     * The clear-a-slot hint's text, or null when this editor has no clearable
+     * slots. Backs the `?test` probe — the hint is canvas-drawn, so e2e has no
+     * other way to assert it renders (and says the right thing per input mode).
+     */
+    public get clearHintText(): string | null {
+        return this.m_clearHint?.text ?? null
+    }
+
     protected onEntityChange<T extends EventEmitter.EventNames<EntityEvents>>(
         event: T,
         fn: EventEmitter.EventListener<EntityEvents, T>

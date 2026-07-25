@@ -9,7 +9,7 @@ import F from './controls/functions'
 import { colors } from './style'
 import { fitToWidthScale } from './quickbarLayout'
 
-class QuickbarSlot extends Slot<string | undefined> {
+export class QuickbarSlot extends Slot<string | undefined> {
     public get itemName(): string {
         return this.data
     }
@@ -162,6 +162,11 @@ export class QuickbarPanel extends Panel {
 
     public serialize(): string[] {
         return this.slots.map(s => s.itemName)
+    }
+
+    /** Slot `index`, or undefined if out of range. Used by the `?test` probe. */
+    public slotAt(index: number): QuickbarSlot | undefined {
+        return this.slots[index]
     }
 
     /** Whether `name` is currently in any quickbar slot. */

@@ -25,15 +25,25 @@ import { longPressOneFinger } from './touchGestures'
 const BP =
     '0eNq1kl1qwzAQhK9S9lkqsfPTRlcpIcjyJl0qr4y0DjHGdy+yS9K0pVBIn8SI3ZnRhwaofIdtJBYwA5BgA+bTnQJvK/RgwHm0UScfJD0c6CxdRFBwwpgoMJj1ptyuttv1qnxals8LBeQCJzAvAyQ6svXZXvoWwcwpCtg2WdmUsKk88VE31r0Soy5hVEBc4xlMMe4UIAsJ4ew3iX7PXVNhBFP87qSgDYlkKjlANnxcK+inc1QQ0dFUCj06iYHJaUfRdZQfn5vOoVTn9Y+g1CLWugl153GqOo8NQLwnPiFLiP28dlUrBUmsewOzUOBCl4kX424c1X3di1v3Xfb/gqy8IKvQusDfIW1uIN0TQ/GvGIq/YFheMBxsEp1aTyIYf/gyE4vNxOJAPs9ce1IMrFtvBSHHjO/kmB6J'
 
+// A storage chest (filter slots the setter can't write — see Entity.canEditFilters)
+// and a train stop (no slots at all): the two editors that must *not* advertise a
+// clear gesture.
+const CHEST_BP =
+    '0eNp1kcFqwzAQRH8lzFkuseu0taB/0VsxQXE36YIsudK6JBj9e5HchpbQ07LD8GbYXXCwM02BnUAvYKER+pemYM2BLDQGSyZU0XqJm+GdomyOfJY5EBQ+KUT2Dnr30HRt1+3a5vG+edoq8OBdhH5dEPnkjM0hcpkIes1ScGbMWxQfzImqgkZSYPdGZ+g69QrkhIVpBZXlsnfzeKAAXf+DUJh8ZCm1Fpyht3c7hUuZSSHQx0xR9ke2QiFmT6Qh29eUn3iFq+OP+p3JwbtqskbyGQY/TiYY8QEaz0WY813r1Kc+JXXTvblyJBh2VRQ/3RZvS+02KUQxq46X/IBiz+Qv+PSX5Q=='
+
 const isMobileProject = (): boolean => test.info().project.name === 'mobile-chromium'
 
-type SlotKind = 'modules' | 'filters'
+type SlotKind = 'modules' | 'filters' | 'recipe'
 
 interface ClearHook {
     openEditorSlot: (name: string, kind: SlotKind, index: number) => { x: number; y: number } | null
     inventoryClearButtonPos: () => { x: number; y: number } | null
     entityModules: (name: string) => (string | null)[] | null
     entityFilters: (name: string) => (string | null)[] | null
+    entityRecipe: (name: string) => string | null
+    editorClearHint: (name: string) => string | null
+    quickbarItems: () => (string | null)[]
+    quickbarSlotPos: (index: number) => { x: number; y: number } | null
 }
 
 async function waitForAppReady(page: Page): Promise<void> {
@@ -85,6 +95,24 @@ const readFilters = (page: Page, entity: string): Promise<(string | null)[] | nu
 const readClearButton = (page: Page): Promise<{ x: number; y: number } | null> =>
     page.evaluate(() =>
         (window as unknown as { __FBE_TEST__: ClearHook }).__FBE_TEST__.inventoryClearButtonPos()
+    )
+
+const readRecipe = (page: Page, entity: string): Promise<string | null> =>
+    page.evaluate(
+        name => (window as unknown as { __FBE_TEST__: ClearHook }).__FBE_TEST__.entityRecipe(name),
+        entity
+    )
+
+const readClearHint = (page: Page, entity: string): Promise<string | null> =>
+    page.evaluate(
+        name =>
+            (window as unknown as { __FBE_TEST__: ClearHook }).__FBE_TEST__.editorClearHint(name),
+        entity
+    )
+
+const readQuickbar = (page: Page): Promise<(string | null)[]> =>
+    page.evaluate(() =>
+        (window as unknown as { __FBE_TEST__: ClearHook }).__FBE_TEST__.quickbarItems()
     )
 
 /**
@@ -216,5 +244,114 @@ test.describe('clearing a filled slot', () => {
 
         await expect.poll(() => readFilters(page, 'fast-splitter')).toEqual([])
         expect(errors, 'clearing the filter must not throw').toEqual([])
+    })
+
+    test('long-press clears a recipe slot', async ({ page }) => {
+        // The recipe slot was already on bindSlotGestures, but it now also feeds
+        // the picker a clear callback — and "recipes" is half the point of this
+        // change, so it gets its own guard rather than riding on the module tests.
+        await page.goto(`/?test&source=${encodeURIComponent(BP)}`)
+        await waitForAppReady(page)
+
+        expect(await readRecipe(page, 'assembling-machine-2')).toBe('electronic-circuit')
+
+        const slot = await openSlot(page, 'assembling-machine-2', 'recipe', 0)
+        await holdToClear(page, slot)
+
+        await expect.poll(() => readRecipe(page, 'assembling-machine-2')).toBeNull()
+    })
+
+    test('the picker clears a recipe via ✕ Clear', async ({ page }) => {
+        await page.goto(`/?test&source=${encodeURIComponent(BP)}`)
+        await waitForAppReady(page)
+
+        const slot = await openSlot(page, 'assembling-machine-2', 'recipe', 0)
+        await tap(page, slot)
+
+        const clearBtn = await readClearButton(page)
+        expect(clearBtn, '✕ Clear should be offered for a set recipe').not.toBeNull()
+
+        await tap(page, clearBtn)
+        await expect.poll(() => readRecipe(page, 'assembling-machine-2')).toBeNull()
+    })
+})
+
+test.describe('the clear-a-slot hint', () => {
+    test('names the gesture that matches the input mode', async ({ page }) => {
+        // The hint is the only *visible* trace of a gesture that is otherwise
+        // undiscoverable, so it has to render and has to name the right gesture:
+        // touch has no right-click, and a desktop user has nothing to "hold".
+        await page.goto(`/?test&source=${encodeURIComponent(BP)}`)
+        await waitForAppReady(page)
+
+        const hint = await readClearHint(page, 'assembling-machine-2')
+        expect(hint).toBe(
+            isMobileProject() ? 'Hold a slot to clear it' : 'Right-click a slot to clear it'
+        )
+    })
+
+    test('is absent on an editor whose slots cannot be cleared', async ({ page }) => {
+        // A storage chest has filter slots, but Entity.logisticChestFilters is an
+        // unimplemented `throw` — so the editor must not promise a clear gesture
+        // there (Entity.canEditFilters gates it).
+        await page.goto(`/?test&source=${encodeURIComponent(CHEST_BP)}`)
+        await waitForAppReady(page)
+
+        expect(await readClearHint(page, 'storage-chest')).toBeNull()
+    })
+
+    test('is absent on an editor with no slots at all', async ({ page }) => {
+        await page.goto(`/?test&source=${encodeURIComponent(CHEST_BP)}`)
+        await waitForAppReady(page)
+
+        expect(await readClearHint(page, 'train-stop')).toBeNull()
+    })
+})
+
+test.describe('quickbar slots', () => {
+    // The quickbar is retired on mobile (its slots still work, but nothing renders
+    // to press), so this is the desktop contract — and the refactor onto
+    // bindSlotGestures is exactly the kind of change that could silently break it.
+    test.skip(() => isMobileProject(), 'the quickbar is retired on mobile')
+
+    test('long-press unassigns a quickbar slot', async ({ page }) => {
+        await page.goto(`/?test&source=${encodeURIComponent(BP)}`)
+        await waitForAppReady(page)
+
+        // Seed slot 0 by picking an item through the (empty-slot) picker path.
+        await page.evaluate(() =>
+            (
+                window as unknown as { __FBE_TEST__: { quickbarAssign: () => void } }
+            ).__FBE_TEST__.quickbarAssign()
+        )
+        await expect.poll(async () => (await readQuickbar(page))[0]).toBe('fast-inserter')
+
+        const slot = await page.evaluate(() =>
+            (window as unknown as { __FBE_TEST__: ClearHook }).__FBE_TEST__.quickbarSlotPos(0)
+        )
+        expect(slot, 'quickbar slot 0 should be rendered on desktop').not.toBeNull()
+
+        await holdToClear(page, slot)
+        await expect.poll(async () => (await readQuickbar(page))[0]).toBeNull()
+    })
+
+    test('right-click still unassigns a quickbar slot', async ({ page }) => {
+        await page.goto(`/?test&source=${encodeURIComponent(BP)}`)
+        await waitForAppReady(page)
+
+        await page.evaluate(() =>
+            (
+                window as unknown as { __FBE_TEST__: { quickbarAssign: () => void } }
+            ).__FBE_TEST__.quickbarAssign()
+        )
+        await expect.poll(async () => (await readQuickbar(page))[0]).toBe('fast-inserter')
+
+        const slot = await page.evaluate(() =>
+            (window as unknown as { __FBE_TEST__: ClearHook }).__FBE_TEST__.quickbarSlotPos(0)
+        )
+        const o = await canvasOrigin(page)
+        await page.mouse.click(o.x + slot.x, o.y + slot.y, { button: 'right' })
+
+        await expect.poll(async () => (await readQuickbar(page))[0]).toBeNull()
     })
 })

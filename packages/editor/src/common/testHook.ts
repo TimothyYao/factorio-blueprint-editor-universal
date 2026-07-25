@@ -7,6 +7,7 @@ import { Dialog } from '../UI/controls/Dialog'
 import { InventoryDialog } from '../UI/InventoryDialog'
 import { Modules } from '../UI/editors/components/Modules'
 import { Filters } from '../UI/editors/components/Filters'
+import { Recipe } from '../UI/editors/components/Recipe'
 import { Entity } from '../core/Entity'
 
 /**
@@ -180,7 +181,7 @@ export interface FbeTestHook {
      */
     openEditorSlot: (
         name: string,
-        kind: 'modules' | 'filters',
+        kind: 'modules' | 'filters' | 'recipe',
         index: number
     ) => { x: number; y: number } | null
     /**
@@ -188,6 +189,21 @@ export interface FbeTestHook {
      * no selector is open / it has nothing to clear.
      */
     inventoryClearButtonPos: () => { x: number; y: number } | null
+    /**
+     * Open `name`'s editor and report its clear-a-slot hint text (null when the
+     * editor has no clearable slots — e.g. a logistic chest, whose filter setter
+     * is unimplemented). The hint is canvas-drawn, so the DOM can't see it.
+     */
+    editorClearHint: (name: string) => string | null
+    /** Quickbar slot contents, `null` for an unassigned slot. */
+    quickbarItems: () => (string | null)[]
+    /** On-screen centre of quickbar slot `index`, or null if it isn't rendered. */
+    quickbarSlotPos: (index: number) => { x: number; y: number } | null
+    /**
+     * Seed quickbar slot 0 with a known item, so a spec has something to clear
+     * without driving the assign flow (which is not what those tests are about).
+     */
+    quickbarAssign: (name?: string) => void
 }
 
 /** Approximate per-channel match against a target colour (tolerant of AA edges). */
@@ -303,17 +319,39 @@ export function installTestHook(win: Window = window): void {
             Dialog.closeAll()
             const editor = G.UI.createEditor(e)
             if (!editor) return null
-            const group = editor.children.find(c =>
-                kind === 'modules' ? c instanceof Modules : c instanceof Filters
-            )
-            const slot = group?.children[index]
-            if (!slot) return null
-            const r = slot.getBounds().rectangle
+            // The recipe control *is* a Slot (Recipe extends Slot), so it sits
+            // directly on the editor rather than inside a group container.
+            const target =
+                kind === 'recipe'
+                    ? editor.children.find(c => c instanceof Recipe)
+                    : editor.children.find(c =>
+                          kind === 'modules' ? c instanceof Modules : c instanceof Filters
+                      )?.children[index]
+            if (!target) return null
+            const r = target.getBounds().rectangle
             return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
         },
         inventoryClearButtonPos: () => {
             const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
             return inv ? inv.clearButtonPosition() : null
+        },
+        editorClearHint: name => {
+            const e = findEntity(name)
+            if (!e) return null
+            Dialog.closeAll()
+            return G.UI.createEditor(e)?.clearHintText ?? null
+        },
+        quickbarItems: () =>
+            G.UI.quickbarPanel.serialize().map(itemName => itemName ?? null) as (string | null)[],
+        quickbarSlotPos: index => {
+            const slot = G.UI.quickbarPanel.slotAt(index)
+            if (!slot) return null
+            const r = slot.getBounds().rectangle
+            if (r.width === 0 || r.height === 0) return null
+            return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
+        },
+        quickbarAssign: (name = 'fast-inserter') => {
+            G.UI.quickbarPanel.slotAt(0)?.assignItem(name)
         },
     }
     ;(win as unknown as Record<string, unknown>)[TEST_HOOK_KEY] = hook
