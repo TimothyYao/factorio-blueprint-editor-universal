@@ -6,9 +6,10 @@ import EDITOR, {
     Editor,
     FD,
     inputMode,
-    DATA_ROOT,
     DATA_PACK,
     setDataPack,
+    loadPackManifest,
+    packSelectorOptions,
 } from '@fbe/editor'
 import type { InputMode } from '@fbe/editor'
 
@@ -139,13 +140,19 @@ export function initSettingsPane(
     // manifest next to the data dirs; the controller is created synchronously
     // here (so it sits right under Input Mode) and populated once the manifest
     // loads. Switching a pack reloads the app to re-fetch its atlas + data.json.
+    //
+    // Unlike the library panel's pack list (canonical ids only), this selector
+    // lists **graphics variants** individually — picking textures is exactly what
+    // it's for. dat.gui has no option groups, so `packSelectorOptions` groups them
+    // by adjacency (each base pack immediately followed by its own variants) and
+    // labels variants with their tier, e.g. "Vanilla 2.0 (slim)".
     const dataPackFolder = gui.addFolder('Data Pack')
     const dataPackProxy = { pack: DATA_PACK }
-    fetch(`${DATA_ROOT}/packs.json`)
-        .then(r => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-        .then((packs: { id: string; label?: string }[]) => {
+    loadPackManifest()
+        .then(packs => {
+            if (packs.length === 0) return
             const options: Record<string, string> = {}
-            for (const p of packs) options[p.label ?? p.id] = p.id
+            for (const p of packSelectorOptions(packs)) options[p.label] = p.id
             dataPackFolder
                 .add(dataPackProxy, 'pack', options)
                 .name('Active pack')

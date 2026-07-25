@@ -629,7 +629,7 @@ pub async fn extract(
 /// Delete every `*.basis` under `output_dir` that isn't in `referenced`, then
 /// remove any directories left empty by the deletions. Returns the count
 /// removed. Scoped to `.basis` only — `data.json`/`metadata.json` are untouched.
-async fn prune_unreferenced_basis(
+pub async fn prune_unreferenced_basis(
     output_dir: &Path,
     referenced: &HashSet<PathBuf>,
 ) -> Result<usize, Box<dyn Error>> {

@@ -15,6 +15,7 @@ import {
     ExtendedSpriteData,
     SPRITE_GENERATION_FAILED,
 } from '../core/spriteDataBuilder'
+import { resolveSpriteFilename } from '../core/spriteCensus'
 import { UnknownEntitySprite } from './UnknownEntitySprite'
 import FD, { ColorWithAlpha, getColor, getEntitySize } from '../core/factorioData'
 import { BlendMode } from 'factorio:prototype'
@@ -181,18 +182,13 @@ export class EntitySprite extends Sprite {
             const data = spriteData[i]
             if (!data) continue
             if (data.draw_as_shadow) continue
-            if (!data.filename && (data as any).filenames) {
-                // Use direction-based index if entity has direction, otherwise first file
-                const dirIndex = entity.direction ? Math.floor(entity.direction / 4) : 0
-                const filenames = (data as any).filenames as string[]
-                data.filename = filenames[Math.min(dirIndex, filenames.length - 1)]
-            }
-            if (!data.filename && (data as any).stripes?.[0]?.filename) {
-                // Animations whose frames are split across multiple files via
-                // `stripes` (e.g. SE's core miner). Render the first frame, which
-                // is the top-left of the first stripe — data.x/y default to 0.
-                data.filename = (data as any).stripes[0].filename
-            }
+            // Resolve which file this part draws: a plain `filename`, else the
+            // direction-indexed `filenames[]`, else the first `stripes[]` entry
+            // (animations whose frames are split across files, e.g. SE's core
+            // miner — frame 0 is the top-left of the first stripe, and data.x/y
+            // default to 0). Shared with the sprite census / rect report so the
+            // slim-graphics crops are computed from exactly what's drawn here.
+            if (!data.filename) data.filename = resolveSpriteFilename(data, entity.direction)
             if (!data.filename) continue
 
             const texture = G.getTexture(

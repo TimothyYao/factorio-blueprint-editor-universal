@@ -465,7 +465,7 @@ async fn update_manifest(
 
 /// Serialize `value` with 4-space indentation (matching the committed manifest)
 /// and a trailing newline.
-fn write_manifest_pretty(path: &Path, value: &serde_json::Value) -> Result<(), Box<dyn Error>> {
+pub fn write_manifest_pretty(path: &Path, value: &serde_json::Value) -> Result<(), Box<dyn Error>> {
     let mut buf = Vec::new();
     let formatter = serde_json::ser::PrettyFormatter::with_indent(b"    ");
     let mut ser = serde_json::Serializer::with_formatter(&mut buf, formatter);
