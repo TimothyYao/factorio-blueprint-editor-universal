@@ -7,6 +7,7 @@ import { InventoryDialog } from './InventoryDialog'
 import { SignalPicker, SignalChoice } from './SignalPicker'
 import { NumericKeypad } from './NumericKeypad'
 import { WiresPanel } from './WiresPanel'
+import { Editor } from './editors/Editor'
 import { createEditor } from './editors/factory'
 
 export class UIContainer extends Container {
@@ -54,20 +55,34 @@ export class UIContainer extends Container {
         this.debugContainer.visible = visible
     }
 
-    public createEditor(entity: Entity): void {
+    /** @returns The created editor, or undefined if the entity has none. */
+    public createEditor(entity: Entity): Editor | undefined {
         const editor = createEditor(entity)
         if (editor) {
             this.dialogsContainer.addChild(editor)
         }
+        return editor
     }
 
+    /**
+     * @param clearCallBack - When given, the dialog shows a "✕ Clear" button that
+     * empties the slot it was opened from. Omit it when there is nothing to clear
+     * (e.g. assigning an empty quickbar slot) so no dead button is drawn.
+     */
     public createInventory(
         title?: string,
         itemsFilter?: string[],
         selectedCallBack?: (selectedItem: string) => void,
-        recentsKey?: string
+        recentsKey?: string,
+        clearCallBack?: () => void
     ): InventoryDialog {
-        const inv = new InventoryDialog(title, itemsFilter, selectedCallBack, recentsKey)
+        const inv = new InventoryDialog(
+            title,
+            itemsFilter,
+            selectedCallBack,
+            recentsKey,
+            clearCallBack
+        )
         this.dialogsContainer.addChild(inv)
         return inv
     }

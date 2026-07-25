@@ -56,6 +56,11 @@ export abstract class Dialog extends Panel {
         return Dialog.s_openDialogs.length > 0
     }
 
+    /** Currently open dialogs, oldest first. Read-only; used by the `?test` probe. */
+    public static get openDialogs(): readonly Dialog[] {
+        return Dialog.s_openDialogs
+    }
+
     public static isOpen<T extends Dialog>(dialog: T): boolean {
         return !!Dialog.s_openDialogs.find(d => d === dialog)
     }

@@ -61,6 +61,7 @@ export class ConstantCombinatorEditor extends Editor {
         this.countField.position.set(x + 52, y + ROWS * STEP + 4)
         this.addChild(this.countField)
 
+        this.declareClearableSlots()
         this.refreshSlots()
     }
 

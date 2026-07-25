@@ -15,6 +15,9 @@ export class Recipe extends Slot<undefined> {
 
         this.m_Entity = entity
         this.updateContent(this.m_Entity.recipe)
+        const clear = (): void => {
+            this.m_Entity.recipe = undefined
+        }
         bindSlotGestures(
             this,
             () =>
@@ -24,11 +27,11 @@ export class Recipe extends Slot<undefined> {
                     name => {
                         this.m_Entity.recipe = name
                     },
-                    'recipes'
+                    'recipes',
+                    // Only offer "✕ Clear" when a recipe is actually set.
+                    this.m_Entity.recipe === undefined ? undefined : clear
                 ),
-            () => {
-                this.m_Entity.recipe = undefined
-            }
+            clear
         )
 
         this.onEntityChange('recipe', recipe => this.updateContent(recipe))

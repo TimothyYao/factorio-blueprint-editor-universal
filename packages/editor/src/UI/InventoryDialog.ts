@@ -83,14 +83,19 @@ export class InventoryDialog extends Dialog {
     private m_confirmBtn?: Container
     private m_pinBtn?: Container
     private m_pinText?: Text
+    private m_clearCallBack?: () => void
+    private m_clearBtn?: Container
 
     public constructor(
         title = 'Inventory',
         itemsFilter?: string[],
         selectedCallBack?: (selectedItem: string) => void,
-        recentsKey?: string
+        recentsKey?: string,
+        clearCallBack?: () => void
     ) {
         super(InventoryDialog.computeWidth(itemsFilter, recentsKey), 442, title)
+
+        this.m_clearCallBack = clearCallBack
 
         this.m_cols = Math.floor(this.viewW / 38)
         this.m_itemsFilter = itemsFilter
@@ -294,8 +299,39 @@ export class InventoryDialog extends Dialog {
         })
         this.addChild(this.m_confirmBtn)
 
+        // "✕ Clear" — the touch-reachable way to empty the slot this selector was
+        // opened from. Desktop clears by right-clicking the slot and touch by
+        // holding it, but neither is discoverable, so the picker offers the same
+        // action as a plain button (mirrors SignalPicker's ✕ None). It sits in
+        // the title row rather than the bottom bar because it is *always*
+        // available — unlike Confirm/Pin, which only appear while previewing —
+        // and the bottom strip is occupied by the recipe visualization.
+        if (clearCallBack) {
+            const clear = InventoryDialog.barButton('✕ Clear', 0x6b3636)
+            clear.container.position.set(this.width - 84, 8)
+            clear.container.visible = true
+            clear.container.on('pointerup', e => {
+                e.stopPropagation()
+                this.m_clearCallBack?.()
+                this.close()
+            })
+            this.addChild(clear.container)
+            this.m_clearBtn = clear.container
+        }
+
         this.setupTabScroll(groupIndex)
         this.setupItemScroll()
+    }
+
+    /**
+     * On-screen centre (CSS px) of the "✕ Clear" button, or null when this
+     * selector has nothing to clear. Backs the `?test` probe so e2e can click the
+     * button for real rather than guessing at the (scaled, clamped) layout.
+     */
+    public clearButtonPosition(): { x: number; y: number } | null {
+        if (!this.m_clearBtn) return null
+        const r = this.m_clearBtn.getBounds().rectangle
+        return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
     }
 
     /** Filter a name to what this selector allows (filter list, or placeable). */

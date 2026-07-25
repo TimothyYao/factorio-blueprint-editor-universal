@@ -4,6 +4,9 @@ import { EditorMode } from '../containers/BlueprintContainer'
 import { PaintEntityContainer } from '../containers/PaintEntityContainer'
 import { PaintBlueprintContainer } from '../containers/PaintBlueprintContainer'
 import { Dialog } from '../UI/controls/Dialog'
+import { InventoryDialog } from '../UI/InventoryDialog'
+import { Modules } from '../UI/editors/components/Modules'
+import { Filters } from '../UI/editors/components/Filters'
 import { Entity } from '../core/Entity'
 
 /**
@@ -161,6 +164,30 @@ export interface FbeTestHook {
     wireColorPixelCounts: () => { red: number; green: number; copper: number }
     /** Number of circuit-network highlight boxes currently shown (#49 hover highlight). */
     networkHighlightCount: () => number
+    /**
+     * Logical slot contents for the clear-a-slot specs — `null` for an empty slot.
+     * Read *through the entity*, so a cleared slot has to have actually been
+     * written back to the blueprint (not merely blanked in the dialog).
+     */
+    entityModules: (name: string) => (string | null)[] | null
+    entityFilters: (name: string) => (string | null)[] | null
+    entityRecipe: (name: string) => string | null
+    /**
+     * Open `name`'s editor and return the on-screen centre (canvas-relative CSS
+     * px, the same frame as `dragOneFinger`) of its module or filter slot `index`
+     * — so the spec can right-click / long-press the slot *for real* instead of
+     * reimplementing the dialog's scaled, clamped layout maths.
+     */
+    openEditorSlot: (
+        name: string,
+        kind: 'modules' | 'filters',
+        index: number
+    ) => { x: number; y: number } | null
+    /**
+     * On-screen centre of the open item-selector's "✕ Clear" button, or null when
+     * no selector is open / it has nothing to clear.
+     */
+    inventoryClearButtonPos: () => { x: number; y: number } | null
 }
 
 /** Approximate per-channel match against a target colour (tolerant of AA edges). */
@@ -257,6 +284,37 @@ export function installTestHook(win: Window = window): void {
             return { red, green, copper }
         },
         networkHighlightCount: () => G.BPC.overlayContainer.networkHighlightCount,
+        // `Entity.modules` is a *sparse* array (`new Array(moduleSlots)` with only
+        // filled stacks assigned), and `map` skips holes — which would serialize
+        // across CDP as `undefined` rather than the `null` an empty slot means.
+        // `Array.from` visits every index, so holes normalize to `null`.
+        entityModules: name => {
+            const mods = findEntity(name)?.modules
+            return mods ? Array.from(mods, m => m ?? null) : null
+        },
+        entityFilters: name => {
+            const filters = findEntity(name)?.filters
+            return filters ? Array.from(filters, f => f?.name ?? null) : null
+        },
+        entityRecipe: name => findEntity(name)?.recipe ?? null,
+        openEditorSlot: (name, kind, index) => {
+            const e = findEntity(name)
+            if (!e) return null
+            Dialog.closeAll()
+            const editor = G.UI.createEditor(e)
+            if (!editor) return null
+            const group = editor.children.find(c =>
+                kind === 'modules' ? c instanceof Modules : c instanceof Filters
+            )
+            const slot = group?.children[index]
+            if (!slot) return null
+            const r = slot.getBounds().rectangle
+            return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
+        },
+        inventoryClearButtonPos: () => {
+            const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
+            return inv ? inv.clearButtonPosition() : null
+        },
     }
     ;(win as unknown as Record<string, unknown>)[TEST_HOOK_KEY] = hook
 }

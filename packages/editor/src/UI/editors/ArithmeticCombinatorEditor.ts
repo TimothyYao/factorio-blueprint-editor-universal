@@ -84,6 +84,8 @@ export class ArithmeticCombinatorEditor extends Editor {
         const arrow = new Text({ text: '= result', style: styles.dialog.label })
         arrow.position.set(x + 44, 146)
         this.addChild(arrow)
+
+        this.declareClearableSlots()
     }
 
     private commit(): void {

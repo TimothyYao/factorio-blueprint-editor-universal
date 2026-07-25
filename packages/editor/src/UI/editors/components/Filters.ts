@@ -1,9 +1,10 @@
-import { Text, Container, FederatedPointerEvent } from 'pixi.js'
+import { Text, Container } from 'pixi.js'
 import EventEmitter from 'eventemitter3'
 import FD from '../../../core/factorioData'
 import G from '../../../common/globals'
 import F from '../../controls/functions'
 import { Slot } from '../../controls/Slot'
+import { bindSlotGestures } from '../../controls/gestures'
 import { Entity, EntityEvents, IFilter } from '../../../core/Entity'
 
 /** Module Slots for Entity */
@@ -96,7 +97,11 @@ export class Filters extends Container<Slot<number>> {
             const slot = new Slot<number>()
             slot.position.set(Math.floor((slotIndex % 6) * 38), Math.floor(slotIndex / 6) * 38)
             slot.data = slotIndex
-            slot.on('pointerdown', this.onSlotPointerDown, this)
+            bindSlotGestures(
+                slot,
+                () => this.activate(slotIndex),
+                () => this.clear(slotIndex)
+            )
             this.addChild(slot)
         }
         this.m_UpdateSlots()
@@ -199,41 +204,46 @@ export class Filters extends Container<Slot<number>> {
         this.emit('changed')
     }
 
-    /** Slot pointer down event handler */
-    private readonly onSlotPointerDown = (e: FederatedPointerEvent): void => {
-        e.stopPropagation()
-        const slot = e.target as Slot<number>
-        const index = slot.data
-        if (e.button === 0) {
-            if (!this.m_Amount || this.m_Filters[index].name === undefined) {
-                this.emit('selection-started')
-                const inv = G.UI.createInventory(
-                    'Select Filter',
-                    this.m_Entity.acceptedFilters,
-                    name => {
-                        this.m_Filters[index].name = name
-                        if (this.m_Amount) {
-                            this.m_Filters[index].count = FD.items[name].stack_size
-                        }
-                        this.m_Entity.filters = this.m_Filters
+    /**
+     * Tap/left-click. An *empty* slot (or any slot on a countless entity) opens
+     * the filter picker; on a counted entity a *filled* slot instead hands the
+     * index to the editor's count field, which is what you nearly always want
+     * once the filter itself is set.
+     */
+    private activate(index: number): void {
+        if (this.m_Amount && this.m_Filters[index].name !== undefined) {
+            this.emit('selected', index, this.m_Filters[index].count)
+            return
+        }
 
-                        if (this.m_Amount) {
-                            this.emit('selected', index, this.m_Filters[index].count)
-                        }
-                    }
-                )
-                inv.on('close', () => this.emit('selection-ended'))
-            } else {
+        this.emit('selection-started')
+        const inv = G.UI.createInventory(
+            'Select Filter',
+            this.m_Entity.acceptedFilters,
+            name => {
+                this.m_Filters[index].name = name
+                if (this.m_Amount) {
+                    this.m_Filters[index].count = FD.items[name].stack_size
+                }
+                this.m_Entity.filters = this.m_Filters
+
                 if (this.m_Amount) {
                     this.emit('selected', index, this.m_Filters[index].count)
                 }
-            }
-        } else if (e.button === 2) {
-            this.m_Filters[index].name = undefined
-            this.m_Entity.filters = this.m_Filters
-            if (this.m_Amount) {
-                this.emit('selected', -1, 0)
-            }
+            },
+            undefined,
+            // Only offer "✕ Clear" when there is something in the slot.
+            this.m_Filters[index].name === undefined ? undefined : () => this.clear(index)
+        )
+        inv.on('close', () => this.emit('selection-ended'))
+    }
+
+    /** Long-press / right-click (or the picker's ✕ Clear): empty the slot. */
+    private clear(index: number): void {
+        this.m_Filters[index].name = undefined
+        this.m_Entity.filters = this.m_Filters
+        if (this.m_Amount) {
+            this.emit('selected', -1, 0)
         }
     }
 }
