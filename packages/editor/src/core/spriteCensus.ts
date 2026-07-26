@@ -31,6 +31,13 @@ export interface FileRects {
     bbox: [number, number, number, number]
     rects: number
     /**
+     * Footprint (max selection-box side, tiles) of the SMALLEST entity that
+     * samples this file. Small entities (inserters, belts, poles) are the
+     * blueprint's fine print — the slim build keeps their encoder quality
+     * higher than big buildings', which tolerate blur.
+     */
+    tiles?: number
+    /**
      * The file is drawn as a prototype icon somewhere. Icons are
      * legibility-critical and tiny, so the slim build keeps any such file at
      * original resolution (crop still applies) — see docs/slim-graphics.md.
@@ -49,6 +56,8 @@ export type RectReport = Record<string, FileRects>
 export interface SerializedFileRects {
     bbox: [number, number, number, number] | null
     rects: number
+    /** Smallest sampling entity's footprint (max selection-box side, tiles). */
+    tiles?: number
     /** Present (true) when the file is drawn as a prototype icon somewhere. */
     icon?: boolean
 }
@@ -333,12 +342,29 @@ function collectOverlayRects(report: RectReport): void {
  * all 16 directions and every draw variant), prototype icons, tile variants, and
  * the overlay/utility sprites. Requires `loadData()` to have run.
  */
+/** Max selection-box side in tiles; entities without one count as small (1). */
+function entityTiles(name: string): number {
+    // The prototype type declares a readonly tuple; the dumped data is plain
+    // [[x1, y1], [x2, y2]] arrays — read it structurally.
+    const box = (FD.entities[name] as unknown as { selection_box?: readonly (readonly number[])[] })
+        ?.selection_box
+    if (!box || box.length < 2) return 1
+    const [p1, p2] = box
+    return Math.max(p2[0] - p1[0], p2[1] - p1[1])
+}
+
+function noteTiles(report: RectReport, file: string, tiles: number): void {
+    const cur = report[file]
+    if (cur) cur.tiles = Math.min(cur.tiles ?? Infinity, tiles)
+}
+
 export function collectSpriteRects(): { report: RectReport; buckets: CensusBuckets } {
     const report: RectReport = {}
     const buckets = censusEntities({
         dirs: ALL_DIRECTIONS,
         allVariants: true,
-        onParts: (_name, dir, parts) => {
+        onParts: (name, dir, parts) => {
+            const tiles = entityTiles(name)
             for (const part of parts) {
                 if (!part) continue
                 const file = resolveSpriteFilename(part, dir)
@@ -348,11 +374,18 @@ export function collectSpriteRects(): { report: RectReport; buckets: CensusBucke
                 // excluding a rect we might yet draw is the dangerous direction.
                 // Including shadows costs a slightly larger bbox; keep them.
                 accumulate(report, spriteRectOf(part, file))
+                noteTiles(report, file, tiles)
             }
         },
     })
     collectIconRects(report)
     collectTileRects(report)
+    const beforeOverlay = new Set(Object.keys(report))
     collectOverlayRects(report)
+    // Overlay/utility sprites (wire dots, arrows, the underground markers) are
+    // small on-canvas UI — pin their files to the small-entity quality tier.
+    for (const file of Object.keys(report)) {
+        if (!beforeOverlay.has(file)) noteTiles(report, file, 1)
+    }
     return { report, buckets }
 }

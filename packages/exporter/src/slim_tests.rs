@@ -234,3 +234,29 @@ async fn manifest_entry_declares_the_variant_additively() {
         serde_json::from_str(&std::fs::read_to_string(&packs_path).unwrap()).unwrap();
     assert_eq!(manifest.as_array().unwrap().len(), 2);
 }
+
+#[test]
+fn quality_tiers_follow_icon_then_footprint() {
+    let icon = ReportEntry {
+        bbox: None,
+        rects: 1,
+        icon: true,
+        tiles: Some(9.0),
+    };
+    let small = ReportEntry {
+        bbox: None,
+        rects: 1,
+        icon: false,
+        tiles: Some(1.0),
+    };
+    let building = ReportEntry {
+        bbox: None,
+        rects: 1,
+        icon: false,
+        tiles: Some(3.0),
+    };
+    assert_eq!(quality_for(Some(&icon)), ICON_BASIS_QUALITY); // icon wins over size
+    assert_eq!(quality_for(Some(&small)), SMALL_BASIS_QUALITY);
+    assert_eq!(quality_for(Some(&building)), BUILDING_BASIS_QUALITY);
+    assert_eq!(quality_for(None), BUILDING_BASIS_QUALITY); // never sampled → blur
+}

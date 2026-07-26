@@ -48,13 +48,31 @@ const SLIM_SCALE: f64 = 0.5;
 /// Suffix appended to the base pack's id to name the variant.
 const SLIM_SUFFIX: &str = "-slim";
 
-/// ETC1S encoder quality (basisu `-q`, 1–255; the tool's default is 128) for
-/// NON-icon textures. Lowering it sheds bytes at the SAME pixel density — the
-/// loss reads as softening rather than blockiness, which visual QA preferred
-/// over dropping resolution further. Icons keep the default quality (and full
-/// resolution): legibility floor.
-const SLIM_BASIS_QUALITY: u32 = 64;
+/// ETC1S encoder quality tiers (basisu `-q`, 1–255; tool default 128).
+/// Lowering quality sheds bytes at the SAME pixel density — the loss reads as
+/// softening rather than blockiness, which visual QA preferred over dropping
+/// resolution further. Three tiers, chosen per file from the rect report:
+/// icons keep the default (legibility floor); files sampled by SMALL entities
+/// (inserters, belts, poles — the blueprint's fine print — `tiles` at most
+/// SMALL_ENTITY_TILES) hold the mid tier; files only big buildings draw take
+/// the full blur.
 const ICON_BASIS_QUALITY: u32 = 128;
+const SMALL_BASIS_QUALITY: u32 = 64;
+const BUILDING_BASIS_QUALITY: u32 = 32;
+/// Max selection-box side (tiles) that still counts as a small entity. 2.25
+/// keeps 1×1/1×2 logistics plus 2×2 (big poles, stone furnaces) sharp; 3×3
+/// machines and up blur.
+const SMALL_ENTITY_TILES: f64 = 2.25;
+
+/// The quality tier for one report entry (absent entry = never sampled by the
+/// editor — blur it like a building; it ships only as safety padding).
+fn quality_for(entry: Option<&ReportEntry>) -> u32 {
+    match entry {
+        Some(e) if e.icon => ICON_BASIS_QUALITY,
+        Some(e) if e.tiles.is_some_and(|t| t <= SMALL_ENTITY_TILES) => SMALL_BASIS_QUALITY,
+        _ => BUILDING_BASIS_QUALITY,
+    }
+}
 
 /// One rect-report entry. `bbox` is `null` when the file is requested WHOLE
 /// somewhere (a zero-size `getTexture` call), which makes it uncroppable.
@@ -70,6 +88,10 @@ struct ReportEntry {
     /// readability at inventory sizes.
     #[serde(default)]
     icon: bool,
+    /// Footprint (max selection-box side, tiles) of the smallest entity that
+    /// samples this file — drives the encoder-quality tier.
+    #[serde(default)]
+    tiles: Option<f64>,
 }
 
 type Report = HashMap<String, ReportEntry>;
@@ -421,11 +443,7 @@ async fn build_one(
     // (they're a rounding error of the total). The census crop still applies.
     let is_icon = entry.is_some_and(|e| e.icon);
     let scale = if is_icon { 1.0 } else { SLIM_SCALE };
-    let quality = if is_icon {
-        ICON_BASIS_QUALITY
-    } else {
-        SLIM_BASIS_QUALITY
-    };
+    let quality = quality_for(entry);
     let crop = crop_rect(bbox, img_w, img_h);
     let transform = Transform { crop, scale };
     let identity = is_identity(&transform, img_w, img_h);

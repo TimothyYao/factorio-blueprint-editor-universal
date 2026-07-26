@@ -86,6 +86,7 @@ for (const file of Object.keys(report).sort()) {
         bbox: unbounded ? null : [x, y, w, h],
         rects: entry.rects,
         ...(entry.usedAsIcon ? { icon: true } : {}),
+        ...(entry.tiles !== undefined ? { tiles: Math.round(entry.tiles * 100) / 100 } : {}),
     }
 }
 
