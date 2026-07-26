@@ -205,7 +205,10 @@ auth-fronted hosting guidance.
 - [x] The "mod pack" vs "graphics" two-axis settings split (2026-07-26): the
       Data Pack folder now carries a canonical-only **Mod pack** select and a
       **Graphics** select listing the manifest's hosted tiers ("Full · hosted",
-      "Slim · hosted") next to a "(planned)" placeholder for the unlock paths —
+      "Low quality · hosted" — the `slim` tier reads "Low quality" in the UI,
+      naming what the user trades; "slim" stays the machine-facing name in pack
+      ids, the manifest and these docs) next to a "(planned)" placeholder for
+      the unlock paths —
       naming in the UI which tiers are publicly available and which have to be
       brought. Switching mod packs carries the tier over when the target
       publishes it; picking the placeholder explains (toast) and reverts.

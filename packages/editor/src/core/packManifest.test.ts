@@ -56,11 +56,11 @@ describe('graphicsOptions', () => {
     it('lists the base tier first, then variants, labelled by tier', () => {
         expect(graphicsOptions(MANIFEST, 'vanilla-2.0')).toEqual([
             { id: 'vanilla-2.0', label: 'Full' },
-            { id: 'vanilla-2.0-slim', label: 'Slim' },
+            { id: 'vanilla-2.0-slim', label: 'Low quality' },
         ])
         expect(graphicsOptions(MANIFEST, 'space-age')).toEqual([
             { id: 'space-age', label: 'Full' },
-            { id: 'space-age-slim', label: 'Slim' },
+            { id: 'space-age-slim', label: 'Low quality' },
         ])
     })
 
@@ -72,7 +72,7 @@ describe('graphicsOptions', () => {
 
     it('still lists a variant whose base is absent, and none for an unknown id', () => {
         const orphan: PackManifestEntry[] = [{ id: 'x-slim', variantOf: 'x', graphics: 'slim' }]
-        expect(graphicsOptions(orphan, 'x')).toEqual([{ id: 'x-slim', label: 'Slim' }])
+        expect(graphicsOptions(orphan, 'x')).toEqual([{ id: 'x-slim', label: 'Low quality' }])
         expect(graphicsOptions(MANIFEST, 'some-modpack')).toEqual([])
     })
 })
