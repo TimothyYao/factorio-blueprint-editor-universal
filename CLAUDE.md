@@ -83,6 +83,15 @@ exporter is a separate Rust tool and is **not** a JS workspace.
       additive draw branches), so a single build renders any pack. Adding a pack
       = a new dump + `packs.json` entry **in the data repo**; no code changes
       here.
+    - **Graphics variants (slim packs):** a pack may also be published as a
+      graphics-only **variant** — same `data.json`, smaller textures — declared
+      in the manifest with `variantOf` + `graphics`. Everything that scopes user
+      state (the blueprint library's top tier, the scratchpad/active leaf) keys
+      on the **canonical** id (`variantOf ?? id`), so switching variants swaps
+      textures and nothing else. The editor applies the variant's
+      `textures.json` (crop + scale) at the `getTexture` seam; the exporter's
+      `--slim` mode builds one from a rect report (`npm run rect-report`). The
+      design record and its status list live in **`docs/slim-graphics.md`**.
     - **Browser artifact:** each pack also carries a `browser/` dir
       (`catalog.json` + `icons.webp` + `icons.json`) generated from Factorio's
       built-in dump flags — a compact, DOM-friendly projection consumed by the
@@ -112,6 +121,7 @@ npm install --legacy-peer-deps
 | Unit tests (watch)            | `npm run test:watch`                           |
 | E2E tests (Playwright)        | `npm run test:e2e`                             |
 | E2E tests (UI mode)           | `npm run test:e2e:ui`                          |
+| Sprite rect report            | `npm run rect-report -- <pack> [out.json]`     |
 | Lint                          | `npm run lint` (`npm run lint:fix` to autofix) |
 | Format check / fix            | `npm run format` / `npm run format:fix`        |
 

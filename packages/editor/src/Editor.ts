@@ -12,7 +12,7 @@ import EventEmitter from 'eventemitter3'
 import basisTranscoderJS from './basis/transcoder.1.16.4.js?url'
 import basisTranscoderWASM from './basis/transcoder.1.16.4.wasm?url'
 import { loadData } from './core/factorioData'
-import G, { DATA_URL, Logger } from './common/globals'
+import G, { DATA_URL, Logger, loadTextureTransforms } from './common/globals'
 import { Entity } from './core/Entity'
 import { Blueprint, oilOutpostSettings, IOilOutpostSettings } from './core/Blueprint'
 import { BlueprintContainer, EditorMode, GridPattern } from './containers/BlueprintContainer'
@@ -65,6 +65,10 @@ export class Editor {
             fetch(`${DATA_URL}/data.json`)
                 .then(res => res.text())
                 .then(modules => loadData(modules)),
+            // Graphics-variant support: the pack's optional textures.json sidecar,
+            // in place before the first getTexture. Absent on a full pack (404 =
+            // identity transforms), so this is a no-op there.
+            loadTextureTransforms(),
             app.init({
                 canvas,
                 preference: 'webgpu',
