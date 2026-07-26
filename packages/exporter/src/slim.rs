@@ -56,6 +56,12 @@ struct ReportEntry {
     #[serde(default)]
     #[allow(dead_code)] // informational in the report; not used by the build
     rects: u64,
+    /// The file is drawn as a prototype icon somewhere. Icons are tiny and
+    /// legibility-critical, so they keep original resolution (scale 1.0; the
+    /// census crop still applies) — a rounding error in bytes, a big win in
+    /// readability at inventory sizes.
+    #[serde(default)]
+    icon: bool,
 }
 
 type Report = HashMap<String, ReportEntry>;
@@ -401,12 +407,17 @@ async fn build_one(
     failures: Arc<Mutex<Vec<String>>>,
 ) -> Result<Built, Box<dyn Error>> {
     let (img_w, img_h) = image::image_dimensions(&job.src)?;
-    let bbox = report.get(&job.rel).and_then(|e| e.bbox);
-    let crop = crop_rect(bbox, img_w, img_h);
-    let transform = Transform {
-        crop,
-        scale: SLIM_SCALE,
+    let entry = report.get(&job.rel);
+    let bbox = entry.and_then(|e| e.bbox);
+    // Icon files keep original resolution — legibility floor beats bytes there
+    // (they're a rounding error of the total). The census crop still applies.
+    let scale = if entry.is_some_and(|e| e.icon) {
+        1.0
+    } else {
+        SLIM_SCALE
     };
+    let crop = crop_rect(bbox, img_w, img_h);
+    let transform = Transform { crop, scale };
     let identity = is_identity(&transform, img_w, img_h);
     let cropped = crop != [0, 0, img_w, img_h];
 
@@ -416,12 +427,12 @@ async fn build_one(
         .ok_or("PathBuf to &str failed")?
         .to_string();
     let (len, mtime) = len_and_mtime(&job.src).await?;
-    let stamp = (len, mtime, crop, SLIM_SCALE);
+    let stamp = (len, mtime, crop, scale);
 
     // Unchanged source AND unchanged crop, and the output is still there.
     let up_to_date = old_metadata.get(&key) == Some(&stamp) && job.dst.is_file();
     if !up_to_date {
-        let (sw, sh) = scaled_size(crop[2], crop[3], SLIM_SCALE);
+        let (sw, sh) = scaled_size(crop[2], crop[3], scale);
         let src = image::open(&job.src)?.to_rgba8();
         let cut = crop_onto_canvas(&src, crop);
         // Lanczos3: the sharpest of the crate's filters for a 2× reduction, which

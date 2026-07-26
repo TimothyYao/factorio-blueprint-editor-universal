@@ -30,6 +30,12 @@ export interface SpriteRect extends Rect {
 export interface FileRects {
     bbox: [number, number, number, number]
     rects: number
+    /**
+     * The file is drawn as a prototype icon somewhere. Icons are
+     * legibility-critical and tiny, so the slim build keeps any such file at
+     * original resolution (crop still applies) — see docs/slim-graphics.md.
+     */
+    usedAsIcon?: boolean
 }
 
 /** In-memory rect report: `path -> union bbox + rect count`. */
@@ -43,6 +49,8 @@ export type RectReport = Record<string, FileRects>
 export interface SerializedFileRects {
     bbox: [number, number, number, number] | null
     rects: number
+    /** Present (true) when the file is drawn as a prototype icon somewhere. */
+    icon?: boolean
 }
 export type SerializedRectReport = Record<string, SerializedFileRects>
 
@@ -239,7 +247,9 @@ function collectIconRects(report: RectReport): void {
         dark_background_icons?: readonly { icon: string; icon_size?: number }[]
     }
     const push = (file: string, size = DEFAULT_ICON_SIZE): void => {
-        if (file) accumulate(report, { file, x: 0, y: 0, w: size, h: size })
+        if (!file) return
+        accumulate(report, { file, x: 0, y: 0, w: size, h: size })
+        report[file].usedAsIcon = true
     }
     const visit = (owner: IconOwner): void => {
         if (!owner) return

@@ -82,7 +82,11 @@ for (const file of Object.keys(report).sort()) {
     const unbounded = !Number.isFinite(w) || !Number.isFinite(h)
     if (unbounded) whole += 1
     rects += entry.rects
-    sorted[file] = { bbox: unbounded ? null : [x, y, w, h], rects: entry.rects }
+    sorted[file] = {
+        bbox: unbounded ? null : [x, y, w, h],
+        rects: entry.rects,
+        ...(entry.usedAsIcon ? { icon: true } : {}),
+    }
 }
 
 writeFileSync(out, `${JSON.stringify(sorted, null, 2)}\n`)
