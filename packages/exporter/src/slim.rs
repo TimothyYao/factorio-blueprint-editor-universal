@@ -55,7 +55,7 @@ const SLIM_SUFFIX: &str = "-slim";
 ///   ≤ MID_TILES  (4.5)   → scale 0.5,  q64  (fine print AND beacon/assembler
 ///                                            class — both at their floor)
 ///   ≤ LARGE_TILES (7.5)  → scale 0.5,  q32  (refinery class tolerates blur)
-///   > LARGE_TILES        → scale 0.25, q64  (the giants: one step deeper)
+///   over LARGE_TILES     → scale 0.25, q64  (the giants: one step deeper)
 ///   never sampled        → the large tier (ships as safety padding only)
 const ICON_TIER: (f64, u32) = (1.0, 128);
 const MID_TIER: (f64, u32) = (0.5, 64);

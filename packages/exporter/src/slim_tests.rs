@@ -32,13 +32,13 @@ fn an_unbounded_bbox_is_the_whole_image() {
 }
 
 #[test]
-fn crop_snaps_outward_to_even_coordinates() {
-    // Origin floors down to even, far edge ceils up to even — so the crop can
-    // only ever grow, never shave a sprite's edge, and the 0.5× texel pairing
-    // stays aligned with the original image's own pixel grid.
+fn crop_snaps_outward_to_multiples_of_four() {
+    // Origin floors down to a multiple of 4, far edge ceils up to one — so the
+    // crop can only ever grow, never shave a sprite's edge, and the texel grid
+    // stays aligned with the original image at every tier scale (0.5 and 0.25).
     assert_eq!(
         crop_rect(Some([3.0, 5.0, 10.0, 10.0]), 256, 128),
-        [2, 4, 12, 12]
+        [0, 4, 16, 12]
     );
     assert_eq!(
         crop_rect(Some([4.0, 4.0, 8.0, 8.0]), 256, 128),
@@ -54,7 +54,7 @@ fn crop_may_extend_past_the_image() {
     // missing-texture checkerboard where the full pack shows nothing.
     assert_eq!(
         crop_rect(Some([0.0, 0.0, 342.0, 220.0]), 288, 220),
-        [0, 0, 342, 220]
+        [0, 0, 344, 220]
     );
     // A bogus origin past the image still yields a non-empty crop.
     let c = crop_rect(Some([300.0, 300.0, 10.0, 10.0]), 256, 128);
@@ -65,7 +65,7 @@ fn crop_may_extend_past_the_image() {
 fn odd_bbox_dimensions_are_rounded_outward() {
     assert_eq!(
         crop_rect(Some([0.0, 0.0, 101.0, 33.0]), 101, 33),
-        [0, 0, 102, 34]
+        [0, 0, 104, 36]
     );
 }
 
