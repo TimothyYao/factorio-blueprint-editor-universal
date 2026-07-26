@@ -82,8 +82,19 @@ single seam, a no-op at scale 1. The mapping math itself is pure and unit-tested
 
 ## What slimming does
 
-1. **Downscale** every sprite 0.5× (Factorio ships HR ~2× art, so this is
-   roughly native-resolution quality) → ~4× size reduction across the board.
+1. **Downscale + re-encode on a footprint tier ladder** (sealed 2026-07-26
+   after four visual-QA rounds). Per-file, keyed by the census: **icons**
+   keep full resolution and default encoder quality (they sit at the
+   recognizability floor already); entity sprites tier by the footprint of
+   the smallest entity that samples the file (max selection-box side, in
+   tiles): **≤ 4.5 tiles** → 0.5× at basisu quality 64 (the beacon /
+   assembler / inserter class, where blur costs recognizability first);
+   **≤ 7.5 tiles** → 0.5× at quality 32 (the refinery class reads fine
+   softened); **above** → 0.25× at quality 64 (SE giants have resolution to
+   spare, and the restored quality keeps the coarser grid clean).
+   Overlay/utility files pin to the small tier; files the census can't
+   attribute to an entity take the middle tier. Factorio ships HR ~2× art,
+   so 0.5× is roughly native-resolution quality.
 2. **Strip animation frames.** The editor renders frame 0 only (idle
    animations are #29/#53, paused). Animation sheets carry `frame_count`
    / `line_length` / `direction_count` grids; naively cropping "the first
@@ -95,18 +106,23 @@ single seam, a no-op at scale 1. The mapping math itself is pure and unit-tested
    bounding box of its actually-sampled rects. Whatever the editor can draw
    survives by construction; everything else (trailing frames, unused
    layers) is dropped.
-3. **Encoder quality** (visual QA round 2): non-icon textures encode at
-   ETC1S quality 64 (basisu `-q`; tool default 128) — bytes shed at the same
-   pixel density read as softening, not blockiness, which QA preferred over
-   deeper downscales. Icons keep default quality and full resolution.
+3. **Why a ladder, not one knob** (visual QA rounds 2–4): bytes shed at the
+   same pixel density read as softening, not blockiness — usually preferable
+   to deeper downscales — but the softening lands hardest on small
+   buildings (the base beacon sat at its recognizability floor) while huge
+   sprites barely register it. So small footprints keep quality and huge
+   ones take the resolution step instead; sizes come out the same
+   (vanilla 63 → 18 MB, SE 220 → 52 MB) with the blur spent where it isn't
+   seen.
 
 **Nothing is dropped.** The census enumerates what the editor _draws_; a file
 referenced by `data.json` that it never samples (UI-only art, unreferenced
 layers) is still shipped — downscaled but uncropped — rather than dropped. A
 dropped file that some code path does reach is a visible hole, while keeping it
 costs only the 4× the downscale gives anyway. The exporter's run log counts the
-two buckets separately. Crop rectangles are snapped outward to even coordinates
-so the 0.5× texel grid stays aligned with the original image's.
+two buckets separately. Crop rectangles are snapped outward to multiples of 4
+so every tier's texel grid (down to the 0.25× one) stays aligned with the
+original image's.
 
 A gap visual QA caught: beacon **module visualisations** sample
 tier-indexed variation strips of dedicated sheets, which an empty-modules
@@ -180,5 +196,12 @@ auth-fronted hosting guidance.
       only on builds with transform support (this branch / its PR preview with
       `?pack=vanilla-2.0-slim`) until #83 merges — then flip the data repo's
       `FBE_REF` TODO back to `master`.
-- [ ] Iterate: size numbers, visual QA, then SA/SE variants; then the
-      unlock paths; then decide the public-hosting end-state (#29).
+- [x] Iterate: four visual-QA rounds settled the footprint tier ladder
+      (sealed 2026-07-26). Along the way: icons restored to full quality, the
+      module-visualisation census gap fixed, `space-exploration-slim`
+      generated and published beside `vanilla-2.0-slim` — both live on the
+      data plane, built in CI from the committed sidecars. Sizes: vanilla
+      63 → 18 MB, SE 220 → 52 MB.
+- [ ] Next: the "mod pack" vs "graphics" two-axis settings split (name the
+      distinction in the UI, not just the manifest); a `space-age` slim
+      variant; the unlock paths; the public-hosting end-state (#29).
