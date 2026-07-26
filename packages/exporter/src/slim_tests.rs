@@ -236,27 +236,22 @@ async fn manifest_entry_declares_the_variant_additively() {
 }
 
 #[test]
-fn quality_tiers_follow_icon_then_footprint() {
-    let icon = ReportEntry {
+fn tier_ladder_follows_icon_then_footprint() {
+    let entry = |icon: bool, tiles: Option<f64>| ReportEntry {
         bbox: None,
         rects: 1,
-        icon: true,
-        tiles: Some(9.0),
+        icon,
+        tiles,
     };
-    let small = ReportEntry {
-        bbox: None,
-        rects: 1,
-        icon: false,
-        tiles: Some(1.0),
-    };
-    let building = ReportEntry {
-        bbox: None,
-        rects: 1,
-        icon: false,
-        tiles: Some(3.0),
-    };
-    assert_eq!(quality_for(Some(&icon)), ICON_BASIS_QUALITY); // icon wins over size
-    assert_eq!(quality_for(Some(&small)), SMALL_BASIS_QUALITY);
-    assert_eq!(quality_for(Some(&building)), BUILDING_BASIS_QUALITY);
-    assert_eq!(quality_for(None), BUILDING_BASIS_QUALITY); // never sampled → blur
+    // Icon wins over any footprint.
+    assert_eq!(tier_for(Some(&entry(true, Some(9.0)))), ICON_TIER);
+    // Fine print and beacon/assembler class share the mid tier.
+    assert_eq!(tier_for(Some(&entry(false, Some(1.0)))), MID_TIER);
+    assert_eq!(tier_for(Some(&entry(false, Some(3.0)))), MID_TIER);
+    // Refinery class blurs; the giants take the resolution step instead.
+    assert_eq!(tier_for(Some(&entry(false, Some(5.0)))), LARGE_TIER);
+    assert_eq!(tier_for(Some(&entry(false, Some(9.0)))), HUGE_TIER);
+    // Never sampled / no footprint → large tier (safety padding only).
+    assert_eq!(tier_for(Some(&entry(false, None))), LARGE_TIER);
+    assert_eq!(tier_for(None), LARGE_TIER);
 }

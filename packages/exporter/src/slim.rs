@@ -41,36 +41,40 @@ use tokio::process::Command;
 use crate::browser::write_manifest_pretty;
 use crate::setup::{self, Pack};
 
-/// Downscale factor applied to every texture. A later compression-quality pass
-/// (basisu settings) is an orthogonal knob; this one is the resolution.
-const SLIM_SCALE: f64 = 0.5;
-
 /// Suffix appended to the base pack's id to name the variant.
 const SLIM_SUFFIX: &str = "-slim";
 
-/// ETC1S encoder quality tiers (basisu `-q`, 1–255; tool default 128).
-/// Lowering quality sheds bytes at the SAME pixel density — the loss reads as
-/// softening rather than blockiness, which visual QA preferred over dropping
-/// resolution further. Three tiers, chosen per file from the rect report:
-/// icons keep the default (legibility floor); files sampled by SMALL entities
-/// (inserters, belts, poles — the blueprint's fine print — `tiles` at most
-/// SMALL_ENTITY_TILES) hold the mid tier; files only big buildings draw take
-/// the full blur.
-const ICON_BASIS_QUALITY: u32 = 128;
-const SMALL_BASIS_QUALITY: u32 = 64;
-const BUILDING_BASIS_QUALITY: u32 = 32;
-/// Max selection-box side (tiles) that still counts as a small entity. 2.25
-/// keeps 1×1/1×2 logistics plus 2×2 (big poles, stone furnaces) sharp; 3×3
-/// machines and up blur.
-const SMALL_ENTITY_TILES: f64 = 2.25;
+/// Per-file (downscale, basisu `-q`) chosen by a footprint ladder over the
+/// rect report's `tiles` (smallest sampling entity's max selection-box side).
+/// Visual-QA calibration: at a fixed zoom a small building spends few texels,
+/// so encoder loss eats a big fraction of its identity — while the huge SE
+/// structures have texels to spare and take a RESOLUTION step instead (with
+/// quality restored, so the fewer pixels aren't double-punished).
+///
+///   icons                → scale 1.0,  q128 (legibility floor)
+///   ≤ MID_TILES  (4.5)   → scale 0.5,  q64  (fine print AND beacon/assembler
+///                                            class — both at their floor)
+///   ≤ LARGE_TILES (7.5)  → scale 0.5,  q32  (refinery class tolerates blur)
+///   > LARGE_TILES        → scale 0.25, q64  (the giants: one step deeper)
+///   never sampled        → the large tier (ships as safety padding only)
+const ICON_TIER: (f64, u32) = (1.0, 128);
+const MID_TIER: (f64, u32) = (0.5, 64);
+const LARGE_TIER: (f64, u32) = (0.5, 32);
+const HUGE_TIER: (f64, u32) = (0.25, 64);
+const MID_TILES: f64 = 4.5;
+const LARGE_TILES: f64 = 7.5;
 
-/// The quality tier for one report entry (absent entry = never sampled by the
-/// editor — blur it like a building; it ships only as safety padding).
-fn quality_for(entry: Option<&ReportEntry>) -> u32 {
+/// The (scale, quality) tier for one report entry.
+fn tier_for(entry: Option<&ReportEntry>) -> (f64, u32) {
     match entry {
-        Some(e) if e.icon => ICON_BASIS_QUALITY,
-        Some(e) if e.tiles.is_some_and(|t| t <= SMALL_ENTITY_TILES) => SMALL_BASIS_QUALITY,
-        _ => BUILDING_BASIS_QUALITY,
+        Some(e) if e.icon => ICON_TIER,
+        Some(e) => match e.tiles {
+            Some(t) if t <= MID_TILES => MID_TIER,
+            Some(t) if t <= LARGE_TILES => LARGE_TIER,
+            Some(_) => HUGE_TIER,
+            None => LARGE_TIER,
+        },
+        None => LARGE_TIER,
     }
 }
 
@@ -136,12 +140,13 @@ fn crop_rect(bbox: Option<[f64; 4]>, img_w: u32, img_h: u32) -> [u32; 4] {
     if !(x.is_finite() && y.is_finite() && w.is_finite() && h.is_finite()) {
         return [0, 0, img_w, img_h];
     }
-    // Origin: floor, non-negative, snap DOWN to even.
-    let x0 = (x.floor().max(0.0) as u32) & !1;
-    let y0 = (y.floor().max(0.0) as u32) & !1;
-    // Far edge: ceil, snap UP to even (`(v + 1) & !1`), at least one pixel.
-    let x1 = ((((x + w).ceil().max(0.0) as u32) + 1) & !1).max(x0 + 2);
-    let y1 = ((((y + h).ceil().max(0.0) as u32) + 1) & !1).max(y0 + 2);
+    // Origin: floor, non-negative, snap DOWN to a multiple of 4 (keeps the
+    // texel grid aligned for every tier scale, 0.5 and 0.25 alike).
+    let x0 = (x.floor().max(0.0) as u32) & !3;
+    let y0 = (y.floor().max(0.0) as u32) & !3;
+    // Far edge: ceil, snap UP to a multiple of 4, at least one texel block.
+    let x1 = ((((x + w).ceil().max(0.0) as u32) + 3) & !3).max(x0 + 4);
+    let y1 = ((((y + h).ceil().max(0.0) as u32) + 3) & !3).max(y0 + 4);
     [x0, y0, x1 - x0, y1 - y0]
 }
 
@@ -441,9 +446,7 @@ async fn build_one(
     let bbox = entry.and_then(|e| e.bbox);
     // Icon files keep original resolution — legibility floor beats bytes there
     // (they're a rounding error of the total). The census crop still applies.
-    let is_icon = entry.is_some_and(|e| e.icon);
-    let scale = if is_icon { 1.0 } else { SLIM_SCALE };
-    let quality = quality_for(entry);
+    let (scale, quality) = tier_for(entry);
     let crop = crop_rect(bbox, img_w, img_h);
     let transform = Transform { crop, scale };
     let identity = is_identity(&transform, img_w, img_h);
