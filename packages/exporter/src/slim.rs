@@ -48,6 +48,14 @@ const SLIM_SCALE: f64 = 0.5;
 /// Suffix appended to the base pack's id to name the variant.
 const SLIM_SUFFIX: &str = "-slim";
 
+/// ETC1S encoder quality (basisu `-q`, 1–255; the tool's default is 128) for
+/// NON-icon textures. Lowering it sheds bytes at the SAME pixel density — the
+/// loss reads as softening rather than blockiness, which visual QA preferred
+/// over dropping resolution further. Icons keep the default quality (and full
+/// resolution): legibility floor.
+const SLIM_BASIS_QUALITY: u32 = 64;
+const ICON_BASIS_QUALITY: u32 = 128;
+
 /// One rect-report entry. `bbox` is `null` when the file is requested WHOLE
 /// somewhere (a zero-size `getTexture` call), which makes it uncroppable.
 #[derive(Deserialize, Default)]
@@ -69,7 +77,7 @@ type Report = HashMap<String, ReportEntry>;
 /// Incremental-build stamp for one source PNG: `(len, mtime, crop, scale)`. The
 /// crop and scale are part of it so an updated rect report rebuilds exactly the
 /// textures whose crop moved, rather than everything or nothing.
-type Stamp = (u64, u64, [u32; 4], f64);
+type Stamp = (u64, u64, [u32; 4], f64, u32);
 type StampMap = HashMap<String, Stamp>;
 
 /// One `textures.json` entry: the region of the ORIGINAL image this file holds,
@@ -411,10 +419,12 @@ async fn build_one(
     let bbox = entry.and_then(|e| e.bbox);
     // Icon files keep original resolution — legibility floor beats bytes there
     // (they're a rounding error of the total). The census crop still applies.
-    let scale = if entry.is_some_and(|e| e.icon) {
-        1.0
+    let is_icon = entry.is_some_and(|e| e.icon);
+    let scale = if is_icon { 1.0 } else { SLIM_SCALE };
+    let quality = if is_icon {
+        ICON_BASIS_QUALITY
     } else {
-        SLIM_SCALE
+        SLIM_BASIS_QUALITY
     };
     let crop = crop_rect(bbox, img_w, img_h);
     let transform = Transform { crop, scale };
@@ -427,7 +437,7 @@ async fn build_one(
         .ok_or("PathBuf to &str failed")?
         .to_string();
     let (len, mtime) = len_and_mtime(&job.src).await?;
-    let stamp = (len, mtime, crop, scale);
+    let stamp = (len, mtime, crop, scale, quality);
 
     // Unchanged source AND unchanged crop, and the output is still there.
     let up_to_date = old_metadata.get(&key) == Some(&stamp) && job.dst.is_file();
@@ -459,6 +469,7 @@ async fn build_one(
         let status = Command::new("./basisu")
             .args(["-no_multithreading"])
             .args(["-mipmap"])
+            .args(["-q", &quality.to_string()])
             .args(["-file", tmp_path.to_str().ok_or("PathBuf to &str failed")?])
             .args([
                 "-output_file",

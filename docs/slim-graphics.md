@@ -95,8 +95,10 @@ single seam, a no-op at scale 1. The mapping math itself is pure and unit-tested
    bounding box of its actually-sampled rects. Whatever the editor can draw
    survives by construction; everything else (trailing frames, unused
    layers) is dropped.
-3. `basisu` settings stay as-is initially (a compression-quality pass is a
-   later, orthogonal knob).
+3. **Encoder quality** (visual QA round 2): non-icon textures encode at
+   ETC1S quality 64 (basisu `-q`; tool default 128) — bytes shed at the same
+   pixel density read as softening, not blockiness, which QA preferred over
+   deeper downscales. Icons keep default quality and full resolution.
 
 **Nothing is dropped.** The census enumerates what the editor _draws_; a file
 referenced by `data.json` that it never samples (UI-only art, unreferenced
@@ -105,6 +107,13 @@ dropped file that some code path does reach is a visible hole, while keeping it
 costs only the 4× the downscale gives anyway. The exporter's run log counts the
 two buckets separately. Crop rectangles are snapped outward to even coordinates
 so the 0.5× texel grid stays aligned with the original image's.
+
+A gap visual QA caught: beacon **module visualisations** sample
+tier-indexed variation strips of dedicated sheets, which an empty-modules
+walk never touches — composited modules rendered as the placeholder
+checkerboard on slim packs. The census now draws one variant per module item
+(all slots filled), so every tier's rect is in the report; the slim-census
+verifier guards the class.
 
 Beyond entity sprites the rect report also enumerates the other `getTexture`
 call sites, since they share files with nothing else to protect them: prototype

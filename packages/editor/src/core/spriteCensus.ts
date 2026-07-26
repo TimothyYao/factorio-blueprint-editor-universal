@@ -92,9 +92,12 @@ export function spriteRectOf(data: ExtendedSpriteData, file: string): SpriteRect
  * cartesian product is millions of calls for no extra coverage: these knobs pick
  * independent sprite sets). `undefined` entries keep the defaults.
  *
- * Deliberately absent: `modules`, `displayPanelIcon` and `trainStopColor` — the
- * first two draw *icon* files, which the rect report enumerates directly from the
- * prototypes, and the third is a tint.
+ * Deliberately absent: `displayPanelIcon` (draws an icon file, which the rect
+ * report enumerates directly from the prototypes) and `trainStopColor` (a tint).
+ * `modules` IS enumerated: beacon module visualisations sample variation-indexed
+ * strips of dedicated sheets (`slot.pictures` shifted by module tier — see
+ * `draw_beacon`), which the empty-modules walk never touches; missing them
+ * turned composited modules into the placeholder checkerboard on slim packs.
  */
 function drawVariants(): Partial<DrawData>[] {
     // The combinator operator symbols live side by side in one sheet; each
@@ -137,6 +140,12 @@ function drawVariants(): Partial<DrawData>[] {
         { assemblerHasFluidInputs: true, assemblerHasFluidOutputs: true },
         { selectorCombinatorSelectMax: true },
         ...operators.map(operator => ({ operator }) as Partial<DrawData>),
+        // One variant per module item, every slot filled with it, so every
+        // tier's variation rect (and the +1 empty-slot offset next to it) lands
+        // in the report. 8 covers every beacon's slot count.
+        ...Object.keys(FD.items ?? {})
+            .filter(name => FD.items[name].type === 'module')
+            .map(name => ({ modules: Array(8).fill(name) as string[] }) as Partial<DrawData>),
     ]
 }
 
