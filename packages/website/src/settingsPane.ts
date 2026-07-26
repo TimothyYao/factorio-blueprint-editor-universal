@@ -148,23 +148,21 @@ export function initSettingsPane(
     // labels variants with their tier, e.g. "Vanilla 2.0 (slim)".
     const dataPackFolder = gui.addFolder('Data Pack')
     const dataPackProxy = { pack: DATA_PACK }
-    loadPackManifest()
-        .then(packs => {
-            if (packs.length === 0) return
-            const options: Record<string, string> = {}
-            for (const p of packSelectorOptions(packs)) options[p.label] = p.id
-            dataPackFolder
-                .add(dataPackProxy, 'pack', options)
-                .name('Active pack')
-                .onChange((id: string) => {
-                    if (id !== DATA_PACK) setDataPack(id)
-                })
-            dataPackFolder.open()
-        })
-        .catch(() => {
-            // No manifest (e.g. an old single-dump deploy) — leave the folder
-            // empty rather than surfacing an error; the default pack still loads.
-        })
+    // loadPackManifest never rejects — a missing manifest (e.g. an old
+    // single-dump deploy) resolves to [], and we leave the folder empty rather
+    // than surfacing an error; the default pack still loads.
+    loadPackManifest().then(packs => {
+        if (packs.length === 0) return
+        const options: Record<string, string> = {}
+        for (const p of packSelectorOptions(packs)) options[p.label] = p.id
+        dataPackFolder
+            .add(dataPackProxy, 'pack', options)
+            .name('Active pack')
+            .onChange((id: string) => {
+                if (id !== DATA_PACK) setDataPack(id)
+            })
+        dataPackFolder.open()
+    })
 
     if (localStorage.getItem('debug')) {
         const debug = Boolean(localStorage.getItem('debug'))

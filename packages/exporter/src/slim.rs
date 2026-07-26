@@ -117,12 +117,13 @@ struct Transform {
 /// The crop rectangle to use for an image: the report's union bbox, or the whole
 /// image when the file has no (or an unbounded) entry.
 ///
-/// The rectangle is snapped OUTWARD to even coordinates. At 0.5× each shipped
-/// texel covers an original pixel pair `(2i, 2i+1)`; an even crop origin keeps
-/// that pairing aligned with the original image's own grid, so an even
-/// original-space coordinate still lands on a whole texel. Snapping the far edge
-/// outward (and the size to even) keeps the last column/row of a sprite instead of
-/// shaving half a pixel off it.
+/// The rectangle is snapped OUTWARD to multiples of 4. At 0.5× each shipped
+/// texel covers an original pixel pair `(2i, 2i+1)`, and at the ladder's deepest
+/// 0.25× tier a quad `(4i..4i+3)`; a multiple-of-4 crop origin keeps both
+/// groupings aligned with the original image's own grid, so an aligned
+/// original-space coordinate still lands on a whole texel at every tier.
+/// Snapping the far edge outward (and the size to a multiple of 4) keeps the
+/// last columns/rows of a sprite instead of shaving fractional pixels off them.
 ///
 /// The bbox is deliberately **not clamped to the image**: `data.json` routinely
 /// addresses rects that run past the source PNG's edge (a 4-direction sheet whose
@@ -316,7 +317,9 @@ pub async fn run_slim(
             .unwrap(),
     );
 
-    let tmp_dir = std::env::temp_dir().join("__FBE_SLIM__");
+    // Per-process name: concurrent runs (or leftovers from a crashed one) never
+    // share a scratch dir, so the remove_dir_all below only ever eats our own.
+    let tmp_dir = std::env::temp_dir().join(format!("__FBE_SLIM_{}__", std::process::id()));
     tokio::fs::create_dir_all(&tmp_dir).await?;
 
     let built = Arc::new(Mutex::new(Vec::<Built>::new()));
