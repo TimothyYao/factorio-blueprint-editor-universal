@@ -22,14 +22,14 @@ import {
     loadPackManifest,
     getCanonicalDataPack,
 } from './common/globals'
-import { canonicalPackId, canonicalPacks, packSelectorOptions } from './core/packManifest'
+import { canonicalPackId, canonicalPacks, graphicsOptions } from './core/packManifest'
 import type { PackManifestEntry } from './core/packManifest'
 
 export * from './core/bpString'
 export { Editor, Book, Blueprint, GridPattern, EditorMode, FD, inputMode, installTestHook }
 export { DATA_ROOT, DATA_PACK, DEFAULT_DATA_PACK, setDataPack }
 export { loadPackManifest, getCanonicalDataPack, canonicalPackId, canonicalPacks }
-export { packSelectorOptions }
+export { graphicsOptions }
 export type { InputMode, EditorTestState, FbeTestHook, PackManifestEntry }
 export default {
     registerAction,

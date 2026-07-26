@@ -198,7 +198,11 @@ editor
             bp = book.selectBlueprint(index)
             await editor.loadBlueprint(bp)
         }
-        changeBookForIndexSelector = initSettingsPane(editor, changeBookIndex).changeBook
+        changeBookForIndexSelector = initSettingsPane(
+            editor,
+            changeBookIndex,
+            createToast
+        ).changeBook
 
         // The pack manifest comes first: it resolves the active pack's canonical
         // id, which is what the library is scoped by. Best effort — an

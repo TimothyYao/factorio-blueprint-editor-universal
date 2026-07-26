@@ -173,7 +173,7 @@ auth-fronted hosting guidance.
       pack selector (variant grouping in the UI).
       <br>`core/textureTransform.ts` (pure mapping math + tests),
       `core/packManifest.ts` (`canonicalPackId` / `canonicalPacks` /
-      `packSelectorOptions` + tests), `common/globals.ts` (the seam, the shared
+      `graphicsOptions` + tests), `common/globals.ts` (the seam, the shared
       `packs.json` fetch), `website/index.ts` (library scoped by canonical id),
       `website/settingsPane.ts` (variant-aware selector).
 - [x] Rect report: extract the census enumeration into a reusable script
@@ -202,6 +202,17 @@ auth-fronted hosting guidance.
       generated and published beside `vanilla-2.0-slim` — both live on the
       data plane, built in CI from the committed sidecars. Sizes: vanilla
       63 → 18 MB, SE 220 → 52 MB.
-- [ ] Next: the "mod pack" vs "graphics" two-axis settings split (name the
-      distinction in the UI, not just the manifest); a `space-age` slim
-      variant; the unlock paths; the public-hosting end-state (#29).
+- [x] The "mod pack" vs "graphics" two-axis settings split (2026-07-26): the
+      Data Pack folder now carries a canonical-only **Mod pack** select and a
+      **Graphics** select listing the manifest's hosted tiers ("Full · hosted",
+      "Slim · hosted") next to a "(planned)" placeholder for the unlock paths —
+      naming in the UI which tiers are publicly available and which have to be
+      brought. Switching mod packs carries the tier over when the target
+      publishes it; picking the placeholder explains (toast) and reverts.
+      <br>`packManifest.ts` (`graphicsOptions`, replacing the single-axis
+      `packSelectorOptions`) + `settingsPane.ts`; e2e: "graphics tier
+      switching (UI)" in `sa-modpack.spec.ts` (also a live slim-variant
+      canary).
+- [ ] Next: a `space-age` slim variant; the unlock paths (private URL / own
+      game files) — the placeholder's toast is their UI stub; the
+      public-hosting end-state (#29).

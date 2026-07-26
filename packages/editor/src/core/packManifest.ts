@@ -65,35 +65,28 @@ export function canonicalPacks(manifest: PackManifestEntry[]): { id: string; lab
 }
 
 /**
- * The manifest ordered for the settings pane's pack selector: base packs in
- * manifest order, each immediately followed by its own variants. dat.gui's
- * dropdown has no option groups, so adjacency + a label that names the tier is
- * how variants are "grouped". Variants without a label get one synthesized from
- * their base's label and `graphics` tier (e.g. "Vanilla 2.0 (slim)").
+ * The graphics tiers published for ONE canonical pack, for the settings pane's
+ * "Graphics" axis: the base entry first (labelled "Full"), then its variants in
+ * manifest order, labelled by their `graphics` tier ("slim" → "Slim"). Being in
+ * the manifest is what "publicly hosted" means, so everything returned here is
+ * selectable today — the axis exists so those tiers can sit next to (and be told
+ * apart from) the unlock paths that aren't built yet, which the settings pane
+ * lists as "(planned)" placeholders (docs/slim-graphics.md). An unknown/unlisted
+ * id yields an empty list; callers decide the fallback.
  */
-export function packSelectorOptions(
-    manifest: PackManifestEntry[]
+export function graphicsOptions(
+    manifest: PackManifestEntry[],
+    canonicalId: string
 ): { id: string; label: string }[] {
-    const label = (p: PackManifestEntry): string => {
-        if (p.label) return p.label
-        if (!p.variantOf) return p.id
-        const base = manifest.find(b => b.id === p.variantOf)
-        const baseLabel = base?.label ?? p.variantOf
-        return p.graphics ? `${baseLabel} (${p.graphics})` : `${baseLabel} (variant)`
-    }
+    const tierLabel = (g?: string): string =>
+        g ? g.charAt(0).toUpperCase() + g.slice(1) : 'Variant'
     const out: { id: string; label: string }[] = []
-    const emitted = new Set<string>()
-    const emit = (p: PackManifestEntry): void => {
-        if (emitted.has(p.id)) return
-        emitted.add(p.id)
-        out.push({ id: p.id, label: label(p) })
+    // Base first — an orphan variant (base not in the manifest) still lists.
+    if (manifest.some(p => p.id === canonicalId && !p.variantOf)) {
+        out.push({ id: canonicalId, label: 'Full' })
     }
     for (const p of manifest) {
-        if (p.variantOf) continue
-        emit(p)
-        for (const v of manifest) if (v.variantOf === p.id) emit(v)
+        if (p.variantOf === canonicalId) out.push({ id: p.id, label: tierLabel(p.graphics) })
     }
-    // Orphan variants (base not in the manifest) still deserve an entry.
-    for (const p of manifest) emit(p)
     return out
 }

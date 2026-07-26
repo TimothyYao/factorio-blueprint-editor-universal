@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-    PackManifestEntry,
-    canonicalPackId,
-    canonicalPacks,
-    packSelectorOptions,
-} from './packManifest'
+import { PackManifestEntry, canonicalPackId, canonicalPacks, graphicsOptions } from './packManifest'
 
 /**
  * Graphics variants (docs/slim-graphics.md): a slim pack is the same game data as
@@ -57,27 +52,27 @@ describe('canonicalPacks', () => {
     })
 })
 
-describe('packSelectorOptions', () => {
-    it('orders each base pack immediately before its own variants', () => {
-        expect(packSelectorOptions(MANIFEST)).toEqual([
-            { id: 'vanilla-2.0', label: 'Vanilla 2.0' },
-            // No label in the manifest — synthesized from the base + graphics tier.
-            { id: 'vanilla-2.0-slim', label: 'Vanilla 2.0 (slim)' },
-            { id: 'space-age', label: 'Space Age (2.0)' },
-            { id: 'space-age-slim', label: 'Space Age (slim)' },
+describe('graphicsOptions', () => {
+    it('lists the base tier first, then variants, labelled by tier', () => {
+        expect(graphicsOptions(MANIFEST, 'vanilla-2.0')).toEqual([
+            { id: 'vanilla-2.0', label: 'Full' },
+            { id: 'vanilla-2.0-slim', label: 'Slim' },
+        ])
+        expect(graphicsOptions(MANIFEST, 'space-age')).toEqual([
+            { id: 'space-age', label: 'Full' },
+            { id: 'space-age-slim', label: 'Slim' },
         ])
     })
 
-    it('still lists a variant whose base is absent', () => {
-        expect(packSelectorOptions([{ id: 'x-slim', variantOf: 'x', graphics: 'slim' }])).toEqual([
-            { id: 'x-slim', label: 'x (slim)' },
+    it('lists just the base tier for a pack with no variants', () => {
+        expect(graphicsOptions([{ id: 'a', label: 'A' }], 'a')).toEqual([
+            { id: 'a', label: 'Full' },
         ])
     })
 
-    it('is the identity on a manifest with no variants', () => {
-        expect(packSelectorOptions([{ id: 'a', label: 'A' }, { id: 'b' }])).toEqual([
-            { id: 'a', label: 'A' },
-            { id: 'b', label: 'b' },
-        ])
+    it('still lists a variant whose base is absent, and none for an unknown id', () => {
+        const orphan: PackManifestEntry[] = [{ id: 'x-slim', variantOf: 'x', graphics: 'slim' }]
+        expect(graphicsOptions(orphan, 'x')).toEqual([{ id: 'x-slim', label: 'Slim' }])
+        expect(graphicsOptions(MANIFEST, 'some-modpack')).toEqual([])
     })
 })
