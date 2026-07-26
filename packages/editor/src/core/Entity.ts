@@ -413,6 +413,17 @@ export class Entity extends EventEmitter<EntityEvents> {
     }
 
     /** Count of filter slots */
+    /**
+     * A logistic container's role — `storage` / `requester` / `buffer` /
+     * `passive-provider` / `active-provider`; undefined for anything else. Lets
+     * the chest editor branch on behaviour instead of the vanilla chest names, so
+     * modded logistic containers get the right form.
+     */
+    public get logisticMode(): string | undefined {
+        if (this.type !== 'logistic-container') return undefined
+        return (this.entityData as LogisticContainerPrototype).logistic_mode
+    }
+
     public get filterSlots(): number {
         if (this.type === 'splitter') return 1
         const filterCount = (this.entityData as InserterPrototype).filter_count
@@ -421,7 +432,12 @@ export class Entity extends EventEmitter<EntityEvents> {
         if (maxLogisticSlots !== undefined) {
             return maxLogisticSlots
         }
-        if (this.name === 'buffer-chest' || this.name === 'requester-chest') {
+        // Requester/buffer containers declare no `max_logistic_slots`, so fall back
+        // to a fixed grid big enough for the usual case. Keyed off `logistic_mode`
+        // rather than the vanilla names so modded requesters/buffers work too;
+        // providers fall through to 0 (they request nothing) and get no filter UI.
+        const mode = (this.entityData as LogisticContainerPrototype).logistic_mode
+        if (mode === 'buffer' || mode === 'requester') {
             return this.logisticChestFilters.reduce(
                 (max, filter) => Math.max(max, filter.index),
                 30 // TODO: find a way to fix this properly
@@ -432,6 +448,11 @@ export class Entity extends EventEmitter<EntityEvents> {
 
     /** List of all filter(s) for splitters, inserters and logistic chests */
     public get filters(): IFilter[] {
+        // Logistic chests route off *type*, so a modded logistic container gets the
+        // same requests UI as the vanilla three (the mod-safety rule in CLAUDE.md).
+        // Providers are logistic containers too but request nothing — they report
+        // `filterSlots === 0`, so this returns an empty list and no UI is built.
+        if (this.type === 'logistic-container') return this.logisticChestFilters
         switch (this.name) {
             case 'splitter':
             case 'fast-splitter':
@@ -447,10 +468,6 @@ export class Entity extends EventEmitter<EntityEvents> {
             case 'stack-inserter': {
                 return this.inserterFilters
             }
-            case 'storage-chest':
-            case 'requester-chest':
-            case 'buffer-chest':
-                return this.logisticChestFilters
             case 'infinity-chest':
                 return this.infinityChestFilters
             case 'infinity-pipe':
@@ -463,13 +480,13 @@ export class Entity extends EventEmitter<EntityEvents> {
     /**
      * Whether the `filters` setter can actually write this entity's filter slots.
      *
-     * Only splitters and inserters can — the logistic chests hit an unimplemented
-     * `logisticChestFilters` setter (2.0 request-sections were never wired up) and
-     * the infinity chest/pipe fall through the switch unhandled. The editor uses
-     * this so it doesn't advertise a clear gesture for slots that can't be
-     * written; the slots themselves stay visible and readable as before.
+     * Splitters, inserters and the logistic chests can. The infinity chest/pipe
+     * still can't — they have getters but fall through the `filters` setter's
+     * switch unhandled. The editor uses this so it doesn't advertise a clear
+     * gesture for slots that can't be written.
      */
     public get canEditFilters(): boolean {
+        if (this.type === 'logistic-container') return true
         switch (this.name) {
             case 'splitter':
             case 'fast-splitter':
@@ -490,6 +507,11 @@ export class Entity extends EventEmitter<EntityEvents> {
     public set filters(list: IFilter[]) {
         const FILTERS =
             list === undefined || list.length === 0 ? undefined : list.filter(f => !!f.name)
+        // Mirrors the getter — logistic chests by type, everything else by name.
+        if (this.type === 'logistic-container') {
+            this.logisticChestFilters = FILTERS
+            return
+        }
         switch (this.name) {
             case 'splitter':
             case 'fast-splitter':
@@ -506,11 +528,6 @@ export class Entity extends EventEmitter<EntityEvents> {
             case 'stack-inserter': {
                 this.inserterFilters = FILTERS
                 return
-            }
-            case 'storage-chest':
-            case 'requester-chest':
-            case 'buffer-chest': {
-                this.logisticChestFilters = FILTERS
             }
         }
     }
@@ -646,17 +663,67 @@ export class Entity extends EventEmitter<EntityEvents> {
         }
         return out
     }
+    /**
+     * Write the chest's requests into the 2.0 `request_filters.sections` shape.
+     *
+     * Like the getter, this maps the editor's flat slot list onto **section 0**;
+     * multi-section requests (groups, per-section multipliers) are read and
+     * written back untouched but aren't editable here.
+     *
+     * Two kinds of data have to survive a write:
+     *   - **Siblings on `request_filters`** — `request_from_buffers`,
+     *     `trash_not_requested`, and any further sections. Hence duplicate-then-
+     *     mutate rather than replacing the object wholesale.
+     *   - **Attributes the UI doesn't model** — `quality`, `comparator`,
+     *     `max_count`, `minimum_delivery_count`, `import_from`. `Filters` rebuilds
+     *     its slots as bare `{index, name, count}`, so those would be dropped on
+     *     any edit; merging each entry onto the existing raw filter of the same
+     *     index keeps an imported blueprint's fidelity through a count change.
+     */
     private set logisticChestFilters(filters: IFilter[]) {
-        throw new Error('TODO: set logisticChestFilters')
+        const next = (filters ?? []).filter(f => !!f.name)
+        const current = this.logisticChestFilters
+        // Cheap identity check first: same slots, names and counts ⇒ no history entry.
+        if (
+            current.length === next.length &&
+            current.every((f, i) => {
+                const n = next[i]
+                return f.index === n.index && f.name === n.name && f.count === n.count
+            })
+        ) {
+            return
+        }
 
-        // if (filters === undefined && this.m_rawEntity.request_filters === undefined) return
-        // if (util.areArraysEquivalent(filters, this.m_rawEntity.request_filters)) return
+        // `util.duplicate` is JSON round-tripping, which throws on undefined — and
+        // a chest that has never been configured has no `request_filters` at all.
+        const obj = this.m_rawEntity.request_filters
+            ? util.duplicate(this.m_rawEntity.request_filters)
+            : {}
+        if (Array.isArray(obj)) {
+            throw new Error('pre 2.0 format!')
+        }
+        if (!obj.sections) obj.sections = []
+        if (!obj.sections[0]) obj.sections[0] = { index: 1 }
 
-        // this.m_BP.history
-        //     .updateValue(this.m_rawEntity, 'request_filters', filters, 'Change chest filter')
-        //     .onDone(() => this.emit('logisticChestFilters'))
-        //     .onDone(() => this.emit('filters'))
-        //     .commit()
+        const existing = new Map(current.map(f => [f.index, f]))
+        obj.sections[0].filters =
+            next.length > 0
+                ? next.map(f => ({
+                      ...existing.get(f.index),
+                      index: f.index,
+                      name: f.name,
+                      // `count` is required by LogisticFilter. The UI leaves it
+                      // undefined for a storage chest (one filter, no amount), so
+                      // fall back the same way the pre-2.0 import does.
+                      count: f.count ?? existing.get(f.index)?.count ?? 1,
+                  }))
+                : undefined
+
+        this.m_BP.history
+            .updateValue(this.m_rawEntity, 'request_filters', obj, 'Change chest filter')
+            .onDone(() => this.emit('logisticChestFilters'))
+            .onDone(() => this.emit('filters'))
+            .commit()
     }
 
     private get infinityChestFilters(): IFilter[] {
@@ -677,12 +744,19 @@ export class Entity extends EventEmitter<EntityEvents> {
         ) {
             throw new Error('pre 2.0 format!')
         }
-        return this.m_rawEntity.request_filters.request_from_buffers
+        // A chest that has never been configured (freshly placed, or imported with
+        // no requests) carries no `request_filters` at all — reading through it
+        // threw a TypeError, which took the whole editor down with it.
+        return this.m_rawEntity.request_filters?.request_from_buffers ?? false
     }
     public set requestFromBufferChest(request: boolean) {
         if (this.requestFromBufferChest === request) return
 
-        const obj = util.duplicate(this.m_rawEntity.request_filters) || {}
+        // Same undefined guard as the filters setter — `util.duplicate` JSON
+        // round-trips, so `|| {}` never got a chance to run on a fresh chest.
+        const obj = this.m_rawEntity.request_filters
+            ? util.duplicate(this.m_rawEntity.request_filters)
+            : {}
         if (Array.isArray(obj)) {
             throw new Error('pre 2.0 format!')
         }

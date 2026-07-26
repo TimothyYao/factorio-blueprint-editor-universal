@@ -380,6 +380,17 @@ export class InventoryDialog extends Dialog {
     }
 
     /**
+     * On-screen centre of "✓ Confirm", or null while it's hidden. Only a selector
+     * that previews on tap (i.e. not the module one) ever shows it, so a spec has
+     * to go through here to commit a touch selection.
+     */
+    public confirmButtonPosition(): { x: number; y: number } | null {
+        if (!this.m_confirmBtn?.visible) return null
+        const r = this.m_confirmBtn.getBounds().rectangle
+        return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
+    }
+
+    /**
      * On-screen centre (CSS px) of the first item button in the active group, or
      * null if the group has none. Backs the `?test` probe so e2e can tap a real
      * item without knowing which one the active tab happens to show.

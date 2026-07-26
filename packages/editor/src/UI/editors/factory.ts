@@ -6,6 +6,7 @@ import { InserterEditor } from './InserterEditor'
 import { MachineEditor } from './MachineEditor'
 import { MiningEditor } from './MiningEditor'
 import { SplitterEditor } from './SplitterEditor'
+import { ChestEditor } from './ChestEditor'
 import { TempEditor } from './TempEditor'
 import { TrainStopEditor } from './TrainStopEditor'
 import { ArithmeticCombinatorEditor } from './ArithmeticCombinatorEditor'
@@ -26,6 +27,7 @@ export type EditorKind =
     | 'inserter'
     | 'mining'
     | 'splitter'
+    | 'chest'
     | 'temp'
     | 'trainstop'
     | 'arithmetic-combinator'
@@ -54,6 +56,13 @@ export function editorKindFor(entity: Entity): EditorKind | undefined {
         case 'offshore-pump':
         case 'transport-belt':
             return 'circuit-condition'
+        // Logistic containers: storage chests filter one item, requester/buffer
+        // chests hold a request list. Providers are the same *type* but request
+        // nothing, and report `filterSlots === 0` — gating on that keeps them
+        // opening no editor rather than a dialog with an empty slot grid. By type,
+        // so modded logistic containers are covered too.
+        case 'logistic-container':
+            return entity.filterSlots > 0 ? 'chest' : undefined
     }
     switch (entity.name) {
         case 'assembling-machine-1':
@@ -145,6 +154,8 @@ export function createEditor(entity: Entity): Editor {
             return new MiningEditor(entity)
         case 'splitter':
             return new SplitterEditor(entity)
+        case 'chest':
+            return new ChestEditor(entity)
         case 'temp':
             return new TempEditor(entity)
         case 'trainstop':
