@@ -118,18 +118,21 @@ test.describe('modpack + Space Age', () => {
 })
 
 /**
- * Pack switching through the settings UI. The "Data Pack" dropdown lives in the
- * dat.gui settings pane (open by default on desktop); selecting an option calls
- * `setDataPack(id)` which persists to localStorage (`fbe:dataPack`) and reloads
- * so the new atlas + data.json are fetched. These cover that path plus the
- * persisted-choice and `?pack=` query precedence in `resolveDataPack`.
+ * Pack switching through the settings UI. The Data Pack folder in the dat.gui
+ * settings pane (open by default on desktop) carries two selects — "Mod pack"
+ * (canonical game data) and "Graphics" (texture tier; covered by its own
+ * describe below); picking a mod pack calls `setDataPack(id)` which persists to
+ * localStorage (`fbe:dataPack`) and reloads so the new atlas + data.json are
+ * fetched. These cover that path plus the persisted-choice and `?pack=` query
+ * precedence in `resolveDataPack`.
  */
 test.describe('data pack switching (UI)', () => {
     // Each test does up to two full loads (initial + reload after a switch), and
     // the space-age atlas is large, so give them more than the default 30s.
     test.describe.configure({ timeout: 120_000 })
 
-    /** The dropdown <select> — uniquely identified by its Space Age option. */
+    /** The "Mod pack" <select> — uniquely identified by its Space Age option
+     * (the Graphics select lists tiers, never pack labels). */
     const packSelect = (page: Page) =>
         page
             .locator('select')
@@ -232,5 +235,65 @@ test.describe('data pack switching (UI)', () => {
         expect(await packSelect(page).inputValue()).toBe('vanilla-2.0')
         // …but it doesn't rewrite the persisted preference.
         expect(await dataPack(page)).toBe('space-age')
+    })
+})
+
+/**
+ * The Graphics axis of the Data Pack folder (docs/slim-graphics.md): hosted
+ * tiers switch the loaded variant (same canonical pack, different textures);
+ * the "(planned)" placeholder for the not-yet-built unlock paths explains
+ * itself and reverts instead of switching. Doubles as a live canary for the
+ * data plane's slim variants.
+ */
+test.describe('graphics tier switching (UI)', () => {
+    test.describe.configure({ timeout: 120_000 })
+
+    /** The "Graphics" <select> — uniquely identified by its planned option. */
+    const gfxSelect = (page: Page) =>
+        page.locator('select').filter({ has: page.locator('option', { hasText: '(planned)' }) })
+
+    const dataPack = (page: Page) =>
+        page.evaluate(() => window.localStorage.getItem('fbe:dataPack'))
+
+    test('switching to the hosted Slim tier loads the variant, same mod pack', async ({
+        page,
+    }, ti) => {
+        const { appErrors } = captureConsole(page)
+        await page.goto('/') // default vanilla-2.0, Full tier
+        await waitForReady(page)
+        await expect(gfxSelect(page)).toHaveValue('vanilla-2.0')
+
+        await Promise.all([
+            page.waitForResponse(r => packDataJsonFor('vanilla-2.0-slim').test(r.url()), {
+                timeout: 60_000,
+            }),
+            gfxSelect(page)
+                .selectOption({ label: 'Slim · hosted' })
+                .catch(() => undefined),
+        ])
+        await waitForReady(page)
+
+        // The VARIANT id is what's persisted/loaded; the mod pack shown is
+        // still the canonical one.
+        expect(await dataPack(page)).toBe('vanilla-2.0-slim')
+        await expect(gfxSelect(page)).toHaveValue('vanilla-2.0-slim')
+        const modSelect = page
+            .locator('select')
+            .filter({ has: page.locator('option', { hasText: 'Space Age (2.0)' }) })
+        await expect(modSelect).toHaveValue('vanilla-2.0')
+        const shot = await page.screenshot()
+        await ti.attach('vanilla-slim-tier', { body: shot, contentType: 'image/png' })
+        expect(appErrors, appErrors.join('\n')).toHaveLength(0)
+    })
+
+    test('the planned tier explains itself and reverts, switching nothing', async ({ page }) => {
+        await page.goto('/')
+        await waitForReady(page)
+        await gfxSelect(page).selectOption({ label: 'Full · own game files (planned)' })
+        // A toast explains, the select snaps back, and nothing was persisted —
+        // no reload, no pack switch.
+        await expect(page.locator('.toasts-text', { hasText: 'Not available yet' })).toBeVisible()
+        await expect(gfxSelect(page)).toHaveValue('vanilla-2.0')
+        expect(await dataPack(page)).toBeNull()
     })
 })
