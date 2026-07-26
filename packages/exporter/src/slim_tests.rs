@@ -131,16 +131,16 @@ fn every_in_crop_rect_maps_inside_the_shipped_file() {
     // producing side: for a crop the exporter emits, every original-space rect
     // inside it maps within [0, shipped size] after `(x - crop.x) * scale`.
     let crop = crop_rect(Some([100.0, 200.0, 401.0, 301.0]), 1024, 1024);
-    let (sw, sh) = scaled_size(crop[2], crop[3], SLIM_SCALE);
+    let (sw, sh) = scaled_size(crop[2], crop[3], MID_TIER.0);
     for (x, y, w, h) in [
         (100u32, 200u32, 1u32, 1u32),
         (137, 271, 63, 29),
         (crop[0] + crop[2] - 2, crop[1] + crop[3] - 2, 2, 2),
     ] {
-        let fx = (x - crop[0]) as f64 * SLIM_SCALE;
-        let fy = (y - crop[1]) as f64 * SLIM_SCALE;
-        assert!(fx + w as f64 * SLIM_SCALE <= sw as f64, "x overflow");
-        assert!(fy + h as f64 * SLIM_SCALE <= sh as f64, "y overflow");
+        let fx = (x - crop[0]) as f64 * MID_TIER.0;
+        let fy = (y - crop[1]) as f64 * MID_TIER.0;
+        assert!(fx + w as f64 * MID_TIER.0 <= sw as f64, "x overflow");
+        assert!(fy + h as f64 * MID_TIER.0 <= sh as f64, "y overflow");
     }
 }
 
