@@ -172,6 +172,63 @@ cargo run -- --pack vanilla-2.0 --browser-only
 A plain `cargo run -- --pack <id>` produces **both** the editor and browser
 artifacts.
 
+## Slim mode (graphics variants)
+
+`--slim <rect-report.json>` builds a **graphics-only variant** of an
+already-generated pack into `data/output/<id>-slim/` — the same game data with a
+much smaller texture set. See `docs/slim-graphics.md` in the repo root for the
+design; the short version:
+
+```bash
+# 1. the rect report — the editor's own sprite census, from the repo root
+npm run rect-report -- vanilla-2.0 packages/exporter/data/rect-report-vanilla-2.0.json
+
+# 2. the variant — from packages/exporter/
+cargo run --release -- --pack vanilla-2.0 --slim ./data/rect-report-vanilla-2.0.json
+```
+
+The variant directory is a full editor tier:
+
+```
+data/output/vanilla-2.0-slim/
+  data.json      byte-identical to the base pack's (same prototypes ⇒ blueprints
+                 and the in-app library are portable between variants)
+  textures.json  path → { crop: [x, y, w, h], scale } — how each shipped file maps
+                 back to the ORIGINAL image, applied by the editor's getTexture.
+                 Keys are the `.png` paths exactly as data.json spells them; an
+                 absent entry is the identity, which is why full packs need none.
+  __base__/…     the .basis set, cropped + downscaled
+```
+
+Per texture: crop to the rect report's union bounding box (the region the editor
+can actually sample — trailing animation frames and unused layers fall away),
+downscale **0.5×** (Lanczos3; Factorio ships ~2× HR art, so this is roughly native
+resolution), pad to a power of two, then the same `basisu` invocation as the
+editor tier. Crop rectangles are snapped outward to even coordinates so the
+downscaled texel grid stays aligned with the original's.
+
+Notes:
+
+- **Nothing is dropped.** A file referenced by `data.json` but *absent* from the
+  rect report (never sampled by the census — UI-only art, unreferenced layers) is
+  still shipped, downscaled but uncropped. The census covers what the editor
+  *draws*; a dropped file that some code path does reach would be a visible hole,
+  while keeping it costs only the 4× the downscale gives anyway. The run log
+  counts both buckets.
+- **No Factorio launch, no credentials, no download.** Slim mode reads the base
+  pack's `data.json` and the source PNGs straight out of the install (the same
+  `mod_root` lookup the editor tier uses), so it can't be combined with
+  `--browser-only` / `--skip-browser` (a variant carries no browser tier).
+- Incremental: `metadata.json` stamps `(len, mtime, crop, scale)` per source, so
+  an updated rect report rebuilds exactly the textures whose crop moved. Stale
+  `.basis` files are pruned, as in the editor tier.
+- The local `packs.json` gains the variant entry additively
+  (`variantOf`, `graphics: "slim"`, `artifacts: ["editor"]`) so the dev server can
+  select it; the entry of record belongs in the data repo.
+- Verify with `npm test` — `slimPackCensus.test.ts` replays the whole sprite
+  census against the generated `textures.json` and asserts every rect resolves
+  inside the shipped textures. It self-skips when the variant hasn't been built.
+
 ## Adding a new pack
 
 1. Add an entry to `packs.json` with a new `id` and its `mods` (load order). The

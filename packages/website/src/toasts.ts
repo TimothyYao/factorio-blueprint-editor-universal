@@ -1,4 +1,4 @@
-interface IToastsOptions {
+export interface IToastsOptions {
     text: string
     type?: 'success' | 'info' | 'warning' | 'error'
     timeout?: number

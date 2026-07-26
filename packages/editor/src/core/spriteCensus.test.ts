@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import FD, { loadData } from './factorioData'
+import { loadData } from './factorioData'
 import { havePackData, readPackData } from './packDataFiles'
-import { getSpriteData, clearSpriteDataCache, SPRITE_GENERATION_FAILED } from './spriteDataBuilder'
+import { clearSpriteDataCache } from './spriteDataBuilder'
+import { censusEntities } from './spriteCensus'
 
 /**
  * Sprite-generation census + ratchet (issue #28).
@@ -20,6 +21,10 @@ import { getSpriteData, clearSpriteDataCache, SPRITE_GENERATION_FAILED } from '.
  * (the test fails on improvement too, so the baseline can't go stale); a
  * regression can never land silently. The failing assertion message lists the
  * offending entity names — that listing is the live to-do list for #28.
+ *
+ * The walk itself lives in `spriteCensus.ts`, shared with the rect report that
+ * drives slim-graphics cropping (docs/slim-graphics.md) — same enumeration, so a
+ * pack can't be cropped to less than what this test says the editor draws.
  */
 const BASELINES: Record<string, { partial: number; failed: number }> = {
     // Remaining failures are graphics-less internal entities (dummy rails,
@@ -42,37 +47,7 @@ describe.each(Object.keys(BASELINES))('sprite census: %s', pack => {
         // import.meta.url, so a plain relative path is the portable option.
         loadData(readPackData(pack))
 
-        const failed: string[] = []
-        const partial: string[] = []
-        for (const name of Object.keys(FD.entities)) {
-            let res: ReturnType<typeof getSpriteData> | typeof SPRITE_GENERATION_FAILED
-            try {
-                res = getSpriteData({
-                    dir: 0,
-                    name,
-                    position: { x: 0, y: 0 },
-                    generateConnector: false,
-                } as Parameters<typeof getSpriteData>[0])
-            } catch {
-                res = SPRITE_GENERATION_FAILED
-            }
-            if (res === SPRITE_GENERATION_FAILED || (Array.isArray(res) && res.length === 0)) {
-                failed.push(name)
-            } else if (
-                (res as readonly { draw_as_shadow?: boolean; filename?: string }[]).some(d => {
-                    // Mirror EntitySprite's resolution: a part is dropped only if
-                    // it resolves to no texture — no filename, no `filenames`
-                    // (direction-indexed), and no `stripes` (multi-file frames).
-                    const p = d as {
-                        filenames?: unknown[]
-                        stripes?: unknown[]
-                    }
-                    return d && !d.draw_as_shadow && !d.filename && !p.filenames && !p.stripes
-                })
-            ) {
-                partial.push(name)
-            }
-        }
+        const { failed, partial } = censusEntities()
 
         const baseline = BASELINES[pack]
         expect(failed.length, `failed entities: ${failed.join(', ')}`).toBe(baseline.failed)

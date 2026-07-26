@@ -14,9 +14,12 @@ import EDITOR, {
     getBlueprintOrBookFromSource,
     installTestHook,
     DATA_PACK,
-    DATA_ROOT,
     setDataPack,
+    loadPackManifest,
+    getCanonicalDataPack,
+    canonicalPacks,
 } from '@fbe/editor'
+import type { PackManifestEntry } from '@fbe/editor'
 import { initToasts } from './toasts'
 import { initSettingsPane } from './settingsPane'
 import { initActionToolbar } from './actionToolbar'
@@ -77,7 +80,14 @@ const syncService = new SyncService({
     },
 })
 const syncedStore = new SyncedLibraryStore(localStore, syncService)
-const library = new LibraryController(syncedStore, DATA_PACK, undefined, undefined, writerId)
+// Scoped to the CANONICAL pack id (`variantOf ?? id`), not the loaded pack id: a
+// graphics variant (docs/slim-graphics.md) is the same game data with smaller
+// textures, so switching `vanilla-2.0` ↔ `vanilla-2.0-slim` must keep the same
+// library subtree, scratchpad and active leaf. That id is only known once
+// packs.json has been fetched, so the controller is built during boot (below),
+// before anything can touch it — every use site is inside a callback that runs
+// after `loadInitialBlueprint`.
+let library: LibraryController
 let libraryPanel: LibraryPanel
 let activeProjectEl: HTMLElement | null
 // "Book view" (Phase 5b): opening a folder loads it as a navigable Book onto the
@@ -86,10 +96,10 @@ let activeProjectEl: HTMLElement | null
 // write the whole book back into a leaf. Opening a leaf / New project exits it.
 let viewingBook = false
 let viewingBookLabel = ''
-// The data-pack manifest (id + label), for the library panel's pack drop-down.
-// Loaded once at init from packs.json (same source as the settings pane); the
-// active pack is always present even if the manifest fetch fails.
-let packManifest: { id: string; label: string }[] = [{ id: DATA_PACK, label: DATA_PACK }]
+// The data-pack manifest, for the library panel's pack drop-down. Loaded once at
+// init from packs.json (shared, cached fetch — the settings pane reads the same
+// one); the active pack is always present even if the manifest fetch fails.
+let packManifest: PackManifestEntry[] = [{ id: DATA_PACK, label: DATA_PACK }]
 
 const loadingScreen = {
     el: document.getElementById('loadingScreen'),
@@ -188,21 +198,28 @@ editor
             bp = book.selectBlueprint(index)
             await editor.loadBlueprint(bp)
         }
-        changeBookForIndexSelector = initSettingsPane(editor, changeBookIndex).changeBook
+        changeBookForIndexSelector = initSettingsPane(
+            editor,
+            changeBookIndex,
+            createToast
+        ).changeBook
 
+        // The pack manifest comes first: it resolves the active pack's canonical
+        // id, which is what the library is scoped by. Best effort — an
+        // unreachable manifest leaves the active pack as its own canonical id,
+        // exactly the pre-variant behaviour.
+        const manifest = await loadPackManifest()
+        if (manifest.length > 0) packManifest = manifest
         // Bring up the library before deciding what to load: it resolves the
         // active project for this pack and owns the autosave from here on.
+        library = new LibraryController(
+            syncedStore,
+            getCanonicalDataPack(),
+            undefined,
+            undefined,
+            writerId
+        )
         await library.init()
-        // Load the pack manifest for the library panel's pack drop-down (best
-        // effort — the active pack alone is a fine fallback if it's missing).
-        await fetch(`${DATA_ROOT}/packs.json`)
-            .then(r => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-            .then((packs: { id: string; label?: string }[]) => {
-                packManifest = packs.map(p => ({ id: p.id, label: p.label ?? p.id }))
-            })
-            .catch(() => {
-                /* keep the default single-pack manifest */
-            })
         // One-time migration: fold the legacy single-slot autosave into this
         // pack's scratchpad (only if the scratchpad is still empty) so existing
         // users don't lose their last blueprint when the library takes over.
@@ -538,13 +555,19 @@ const libraryCallbacks: LibraryPanelCallbacks = {
     // Packs the panel can browse: the manifest (so you can copy into a pack you've
     // never used) unioned with whatever the library already holds.
     packList: () => {
-        const labels = new Map(packManifest.map(p => [p.id, p.label]))
-        const ids = new Set<string>([...packManifest.map(p => p.id), ...library.getPacks()])
+        // Canonical ids only: the library's top tier is keyed by them, so a
+        // graphics variant must not show up as a separate browsable pack (its
+        // blueprints live in the base pack's subtree).
+        const packs = canonicalPacks(packManifest)
+        const labels = new Map(packs.map(p => [p.id, p.label]))
+        const ids = new Set<string>([...packs.map(p => p.id), ...library.getPacks()])
         return [...ids].map(id => ({ id, label: labels.get(id) ?? id }))
     },
     // Switching the rendered pack swaps the whole data set + atlas, so it goes
     // through setDataPack (which persists the choice and reloads). The panel has
     // already persisted the target pack's activeId, so the reload reopens it.
+    // The panel deals in canonical ids, so this loads the base (full-graphics)
+    // pack; picking a graphics variant of it is the settings pane's job.
     requestPackSwitch: (pack: string) => setDataPack(pack),
     // Cloud sync surface (Phase 6). `isConfigured` gates all sync chrome, so an
     // unconfigured build renders the panel exactly as before.

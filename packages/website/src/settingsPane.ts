@@ -6,11 +6,15 @@ import EDITOR, {
     Editor,
     FD,
     inputMode,
-    DATA_ROOT,
     DATA_PACK,
     setDataPack,
+    loadPackManifest,
+    canonicalPackId,
+    canonicalPacks,
+    graphicsOptions,
 } from '@fbe/editor'
 import type { InputMode } from '@fbe/editor'
+import type { IToastsOptions } from './toasts'
 
 GUI.TEXT_CLOSED = 'Close Settings'
 GUI.TEXT_OPEN = 'Open Settings'
@@ -21,7 +25,8 @@ const isDarkColor = (color: number): boolean => color === COLOR_DARK
 
 export function initSettingsPane(
     editor: Editor,
-    changeBookIndex: (index: number) => void
+    changeBookIndex: (index: number) => void,
+    createToast: (options: IToastsOptions) => void
 ): {
     changeBook: (bpOrBook: Book | Blueprint) => void
 } {
@@ -134,30 +139,78 @@ export function initSettingsPane(
     }
     gui.add(inputModeProxy, 'mode', ['desktop', 'mobile']).name('Input Mode').listen()
 
-    // Data pack (modpack support): which game-data dump the editor renders —
-    // vanilla 2.0, 2.0 + Space Age, etc. Options come from the `packs.json`
-    // manifest next to the data dirs; the controller is created synchronously
-    // here (so it sits right under Input Mode) and populated once the manifest
-    // loads. Switching a pack reloads the app to re-fetch its atlas + data.json.
+    // Data pack, two axes (docs/slim-graphics.md):
+    //
+    //   **Mod pack** — WHICH GAME DATA the editor renders (vanilla 2.0, 2.0 +
+    //   Space Age, …). Canonical packs only; this is the axis blueprints and the
+    //   library care about. Switching carries the graphics tier over when the
+    //   target publishes the same one, else falls back to its first tier.
+    //
+    //   **Graphics** — WHICH TEXTURE SET draws it, orthogonal to the data (a
+    //   variant is the same game, so nothing else changes). The selectable
+    //   entries are the manifest's publicly hosted tiers, marked "hosted"; the
+    //   unlock paths that aren't built yet — full quality from a private URL or
+    //   from the user's own Factorio install — are listed as a "(planned)"
+    //   placeholder, so it's visible in the UI which tiers exist publicly and
+    //   which have to be brought/introduced.
+    //
+    // Both selects reload the app via setDataPack, so neither ever needs its
+    // options rebuilt in place (dat.gui can't do that anyway). Controllers are
+    // created once the manifest loads; loadPackManifest never rejects — a
+    // missing manifest (e.g. an old single-dump deploy) resolves to [], and we
+    // leave the folder empty rather than surfacing an error; the default pack
+    // still loads.
     const dataPackFolder = gui.addFolder('Data Pack')
-    const dataPackProxy = { pack: DATA_PACK }
-    fetch(`${DATA_ROOT}/packs.json`)
-        .then(r => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-        .then((packs: { id: string; label?: string }[]) => {
-            const options: Record<string, string> = {}
-            for (const p of packs) options[p.label ?? p.id] = p.id
-            dataPackFolder
-                .add(dataPackProxy, 'pack', options)
-                .name('Active pack')
-                .onChange((id: string) => {
-                    if (id !== DATA_PACK) setDataPack(id)
-                })
-            dataPackFolder.open()
-        })
-        .catch(() => {
-            // No manifest (e.g. an old single-dump deploy) — leave the folder
-            // empty rather than surfacing an error; the default pack still loads.
-        })
+    loadPackManifest().then(packs => {
+        if (packs.length === 0) return
+        const canonical = canonicalPackId(packs, DATA_PACK)
+        let graphics = graphicsOptions(packs, canonical)
+        // A persisted/queried id the manifest doesn't list still gets a sane
+        // pane: itself as the only ("Full") tier.
+        if (graphics.length === 0) graphics = [{ id: DATA_PACK, label: 'Full' }]
+        const activeTier = graphics.find(g => g.id === DATA_PACK)?.label ?? 'Full'
+
+        const modOptions: Record<string, string> = {}
+        for (const p of canonicalPacks(packs)) modOptions[p.label] = p.id
+        const proxy = { modPack: canonical, graphics: DATA_PACK }
+        dataPackFolder
+            .add(proxy, 'modPack', modOptions)
+            .name('Mod pack')
+            .onChange((id: string) => {
+                if (id === canonical) return
+                const target = graphicsOptions(packs, id)
+                const match = target.find(g => g.label === activeTier) ?? target[0]
+                setDataPack(match?.id ?? id)
+            })
+
+        // Sentinel for tiers that don't exist yet — selecting it explains and
+        // reverts instead of switching anything.
+        const PLANNED = '__planned__'
+        const gfxOptions: Record<string, string> = {}
+        for (const g of graphics) gfxOptions[`${g.label} · hosted`] = g.id
+        gfxOptions['Full · own game files (planned)'] = PLANNED
+        const gfxController = dataPackFolder
+            .add(proxy, 'graphics', gfxOptions)
+            .name('Graphics')
+            .onChange((id: string) => {
+                if (id === PLANNED) {
+                    proxy.graphics = DATA_PACK
+                    gfxController.updateDisplay()
+                    createToast({
+                        text:
+                            'Not available yet — full-quality graphics from your own ' +
+                            'Factorio install (or a privately hosted URL) are planned. ' +
+                            'The tiers marked "hosted" are what the public data plane ' +
+                            'serves today.',
+                        type: 'info',
+                        timeout: 8000,
+                    })
+                    return
+                }
+                if (id !== DATA_PACK) setDataPack(id)
+            })
+        dataPackFolder.open()
+    })
 
     if (localStorage.getItem('debug')) {
         const debug = Boolean(localStorage.getItem('debug'))

@@ -3,6 +3,8 @@ import { Blueprint } from '../core/Blueprint'
 import { UIContainer } from '../UI/UIContainer'
 import { BlueprintContainer } from '../containers/BlueprintContainer'
 import { ActionRegistry } from '../actions'
+import { TextureTransforms, mapRectToFrame } from '../core/textureTransform'
+import { PackManifestEntry, canonicalPackId } from '../core/packManifest'
 
 const debug = false
 
@@ -85,6 +87,64 @@ export function setDataPack(id: string): void {
         // URL parsing unavailable — fall through to a plain reload
     }
     globalThis.location?.reload()
+}
+
+let manifestPromise: Promise<PackManifestEntry[]> | null = null
+let canonicalDataPack = DATA_PACK
+
+/**
+ * Fetch (once, then cached) the `packs.json` manifest and resolve the active
+ * pack's canonical id from it. Every consumer — the settings pane's pack
+ * selector, the library panel's pack list, the library controller's scoping —
+ * shares this one fetch. A missing/unreadable manifest yields an empty list, in
+ * which case the active pack is its own canonical id (the pre-variant behaviour).
+ */
+export function loadPackManifest(): Promise<PackManifestEntry[]> {
+    manifestPromise ??= fetch(`${DATA_ROOT}/packs.json`)
+        .then(res => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
+        .then((packs: PackManifestEntry[]) => {
+            canonicalDataPack = canonicalPackId(packs, DATA_PACK)
+            return packs
+        })
+        .catch(() => [] as PackManifestEntry[])
+    return manifestPromise
+}
+
+/**
+ * The active pack's canonical id — `DATA_PACK` until `loadPackManifest()` has
+ * resolved (and forever, for a base pack or a manifest-less deploy). Call it
+ * after awaiting the manifest before using it to scope user state.
+ */
+export function getCanonicalDataPack(): string {
+    return canonicalDataPack
+}
+
+/**
+ * Texture transforms for the active pack (`textures.json`), or `undefined` when
+ * the pack ships none — a full pack, which is the identity transform everywhere.
+ */
+let textureTransforms: TextureTransforms | undefined
+
+/**
+ * Fetch the active pack's `textures.json` sidecar, if it has one. A 404 (or any
+ * failure) leaves the transforms undefined, i.e. identity: full packs and older
+ * deploys are completely unaffected by variant support. Awaited alongside
+ * `data.json` at editor init, so it's in place before the first `getTexture`.
+ */
+export function loadTextureTransforms(): Promise<void> {
+    return fetch(`${DATA_URL}/textures.json`)
+        .then(res => (res.ok ? res.json() : undefined))
+        .then((transforms?: TextureTransforms) => {
+            if (!transforms) return
+            textureTransforms = transforms
+            console.log(
+                `textures.json: ${Object.keys(transforms).length} transformed texture file(s)`
+            )
+        })
+        .catch(() => {
+            // Absent or malformed — identity. Not an error condition: only variant
+            // packs ship this file.
+        })
 }
 
 export interface ILogMessage {
@@ -192,11 +252,49 @@ function getLoadingTextureSource(): Texture['source'] {
     return loadingTextureSource
 }
 
+/**
+ * Paths already reported as requesting a rect outside their crop. A variant pack
+ * whose crop missed a code path would otherwise log once per sprite instance —
+ * thousands of identical lines. One line per file, naming the first offending
+ * rect, is the diagnosable signal.
+ */
+const warnedOutsideCrop = new Set<string>()
+
 function getTexture(path: string, x = 0, y = 0, w = 0, h = 0): Texture {
     const key = `${DATA_URL}/${path.replace('.png', '.basis')}`
     const KK = `${key}-${x}-${y}-${w}-${h}`
     let t = textureCache.get(KK)
     if (t) return t
+
+    // Graphics-variant packs ship the base pack's data.json (rects in the
+    // ORIGINAL image's pixel space) plus a textures.json describing how each
+    // shipped file was cropped + downscaled. Undefined transform = identity, so a
+    // full pack takes exactly the old path.
+    const transform = textureTransforms?.[path]
+    const frame = mapRectToFrame(transform, { x, y, w, h })
+    if (!frame) {
+        // The census (which drives the crops) missed this rect, or a newer editor
+        // draws something the variant wasn't built for. Fail soft to the loud
+        // checkerboard rather than sampling a wrong region, and say so once.
+        if (!warnedOutsideCrop.has(path)) {
+            warnedOutsideCrop.add(path)
+            console.warn(
+                `getTexture: rect (${x}, ${y}, ${w}, ${h}) of '${path}' falls outside this ` +
+                    `pack's shipped crop [${transform?.crop.join(', ')}] — showing the ` +
+                    'missing-texture placeholder. (Further rects of this file are not reported.)'
+            )
+        }
+        t = new Texture({ source: getFailedTextureSource(), dynamic: false })
+        t.noFrame = false
+        t.frame.x = 0
+        t.frame.y = 0
+        t.frame.width = w || 32
+        t.frame.height = h || 32
+        t.update()
+        textureCache.set(KK, t)
+        return t
+    }
+
     t = new Texture({ source: getLoadingTextureSource(), dynamic: true })
     t.noFrame = false
     // Size the loading placeholder to the frame the real texture will fill, so
@@ -215,11 +313,29 @@ function getTexture(path: string, x = 0, y = 0, w = 0, h = 0): Texture {
     }
     prom.then(
         bt => {
+            // THE TRANSFORM'S SCALE IS APPLIED VIA `TextureSource.resolution`, not
+            // by scaling frames or sprites. PixiJS treats a source's logical size
+            // as `pixelWidth / resolution`, so resolution = 0.5 makes a half-size
+            // file measure exactly like the original: frames stay in original
+            // units (only shifted by the crop origin), `texture.width/height`
+            // — which EntitySprite's anchors/`squishY`, TileContainer's tiling and
+            // the UI icon sizing all read — keep reporting original dimensions,
+            // and `updateUvs` divides by the same resolution-adjusted size so the
+            // UVs land on the right texels. That makes this a ONE-LINE change at
+            // the single seam: the alternative (frames in file space + a 1/scale
+            // sprite scale) would have to be compensated at every consumer, and
+            // would fight `data.scale`, `squishY` and `sprite.width` arithmetic in
+            // EntitySprite. Set per shared source, idempotent, and a no-op at
+            // scale 1.
+            if (transform) bt.source.resolution = transform.scale
             t.source = bt.source
-            t.frame.x = x
-            t.frame.y = y
-            t.frame.width = w || bt.width
-            t.frame.height = h || bt.height
+            t.frame.x = frame.x
+            t.frame.y = frame.y
+            // `source.width/height` (not `bt.width/height`): the source's logical
+            // size is recomputed the moment resolution changes, whereas the
+            // loader's own Texture keeps the frame it was built with.
+            t.frame.width = frame.w || bt.source.width
+            t.frame.height = frame.h || bt.source.height
             t.update()
             t.dynamic = false
         },

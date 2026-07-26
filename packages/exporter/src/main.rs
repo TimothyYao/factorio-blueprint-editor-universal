@@ -7,6 +7,7 @@ use tokio::net::TcpListener;
 
 mod browser;
 mod setup;
+mod slim;
 
 #[macro_use]
 extern crate lazy_static;
@@ -38,6 +39,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if browser_only && skip_browser {
         return Err("--browser-only and --skip-browser are mutually exclusive".into());
     }
+    // `--slim <rect-report.json>` builds a graphics-only VARIANT of the selected
+    // pack into data/output/<pack>-slim/ (see slim.rs and docs/slim-graphics.md).
+    // It is a wholly separate pipeline: it reads the already-generated pack's
+    // data.json plus the source PNGs from the Factorio install, so it never
+    // downloads, never launches Factorio, and needs no credentials.
+    let slim_report = parse_value_arg("--slim");
+    if slim_report.is_some() && (browser_only || skip_browser) {
+        return Err("--slim cannot be combined with --browser-only / --skip-browser".into());
+    }
+    // `--download-only` ensures the Factorio install (+ portal mods) and exits —
+    // CI's slim build needs the source PNGs on disk without running any pipeline.
+    // `--exit` skips the :8081 serve loop at the end of any run, so CI invocations
+    // complete instead of serving forever (the interactive default is unchanged).
+    let download_only = has_flag("--download-only");
+    let exit_after = has_flag("--exit");
+    if download_only && (browser_only || skip_browser || slim_report.is_some()) {
+        return Err("--download-only cannot be combined with other modes".into());
+    }
     let packs_path = DATA_DIR.join("output").join("packs.json");
     let packs = setup::read_packs(&packs_path).await?;
     let pack = setup::select_pack(&packs, pack_arg.as_deref())?;
@@ -56,27 +75,48 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let output_dir = DATA_DIR.join("output").join(&pack.id);
     let base_factorio_dir = DATA_DIR.join(factorio_dir_name);
 
-    setup::download_factorio(&DATA_DIR, &base_factorio_dir, FACTORIO_VERSION, pack).await?;
-    // After the game download — a build re-download wipes the install (and the
-    // mods/ dir with it); portal mods then reinstall from the zip cache.
-    setup::download_portal_mods(&DATA_DIR, &base_factorio_dir, pack).await?;
-    if browser_only {
-        // Skip the editor atlas build, but still put the export-data mod +
-        // mod-list.json in place so the dump runs load exactly this pack's mods.
-        setup::prepare_export_data_mod(&base_factorio_dir, pack, &all_mods).await?;
-    } else {
-        setup::extract(&output_dir, &base_factorio_dir, pack, &all_mods).await?;
+    if download_only {
+        setup::download_factorio(&DATA_DIR, &base_factorio_dir, FACTORIO_VERSION, pack).await?;
+        setup::download_portal_mods(&DATA_DIR, &base_factorio_dir, pack).await?;
+        println!("Download complete.");
+        return Ok(());
     }
-    // The browser artifact (catalog.json + icons) is produced unless skipped.
-    if !skip_browser {
-        browser::run_browser(
-            &output_dir,
+    if let Some(report) = &slim_report {
+        slim::run_slim(
+            &DATA_DIR,
             &base_factorio_dir,
             pack,
-            &all_mods,
+            Path::new(report),
             &packs_path,
         )
         .await?;
+    } else {
+        setup::download_factorio(&DATA_DIR, &base_factorio_dir, FACTORIO_VERSION, pack).await?;
+        // After the game download — a build re-download wipes the install (and the
+        // mods/ dir with it); portal mods then reinstall from the zip cache.
+        setup::download_portal_mods(&DATA_DIR, &base_factorio_dir, pack).await?;
+        if browser_only {
+            // Skip the editor atlas build, but still put the export-data mod +
+            // mod-list.json in place so the dump runs load exactly this pack's mods.
+            setup::prepare_export_data_mod(&base_factorio_dir, pack, &all_mods).await?;
+        } else {
+            setup::extract(&output_dir, &base_factorio_dir, pack, &all_mods).await?;
+        }
+        // The browser artifact (catalog.json + icons) is produced unless skipped.
+        if !skip_browser {
+            browser::run_browser(
+                &output_dir,
+                &base_factorio_dir,
+                pack,
+                &all_mods,
+                &packs_path,
+            )
+            .await?;
+        }
+    }
+
+    if exit_after {
+        return Ok(());
     }
 
     let static_ = Static::new(Path::new("data/output/"));
@@ -106,12 +146,17 @@ fn has_flag(flag: &str) -> bool {
 
 /// Parse `--pack <id>` / `--pack=<id>` from argv; returns `None` when absent.
 fn parse_pack_arg() -> Option<String> {
+    parse_value_arg("--pack")
+}
+
+/// Parse `<flag> <value>` / `<flag>=<value>` from argv; `None` when absent.
+fn parse_value_arg(flag: &str) -> Option<String> {
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
-        if arg == "--pack" {
+        if arg == flag {
             return args.next();
         }
-        if let Some(value) = arg.strip_prefix("--pack=") {
+        if let Some(value) = arg.strip_prefix(&format!("{flag}=")) {
             return Some(value.to_string());
         }
     }
