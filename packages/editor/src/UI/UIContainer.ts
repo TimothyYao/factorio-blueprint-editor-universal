@@ -7,6 +7,7 @@ import { InventoryDialog, SlotClear } from './InventoryDialog'
 import { SignalPicker, SignalChoice } from './SignalPicker'
 import { NumericKeypad } from './NumericKeypad'
 import { WiresPanel } from './WiresPanel'
+import { RatesPanel } from './RatesPanel'
 import { Editor } from './editors/Editor'
 import { createEditor } from './editors/factory'
 
@@ -15,6 +16,7 @@ export class UIContainer extends Container {
     public quickbarPanel: QuickbarPanel
     public wiresPanel: WiresPanel
     private entityInfoPanel: EntityInfoPanel
+    private ratesPanel: RatesPanel
     private dialogsContainer: Container
     private paintIconContainer: Container
 
@@ -25,6 +27,7 @@ export class UIContainer extends Container {
         this.quickbarPanel = new QuickbarPanel(2)
         this.wiresPanel = new WiresPanel()
         this.entityInfoPanel = new EntityInfoPanel()
+        this.ratesPanel = new RatesPanel()
         this.dialogsContainer = new Container()
         this.paintIconContainer = new Container()
 
@@ -33,6 +36,7 @@ export class UIContainer extends Container {
             this.quickbarPanel,
             this.wiresPanel,
             this.entityInfoPanel,
+            this.ratesPanel,
             this.dialogsContainer,
             this.paintIconContainer
         )
@@ -45,6 +49,26 @@ export class UIContainer extends Container {
     /** Whether the top-right entity info panel is currently shown (for e2e). */
     public get entityInfoPanelVisible(): boolean {
         return this.entityInfoPanel.visible
+    }
+
+    /** Toggle the blueprint-wide production rates panel (`showRates` action). */
+    public toggleRatesPanel(): void {
+        this.ratesPanel.toggle()
+    }
+
+    /** Whether the rates panel is currently shown (for e2e). */
+    public get ratesPanelVisible(): boolean {
+        return this.ratesPanel.visible
+    }
+
+    /** The rates panel's rendered text lines, top to bottom (for e2e). */
+    public ratesPanelLines(): string[] {
+        return this.ratesPanel.textLines
+    }
+
+    /** Let panels tracking `G.bp` re-attach after `loadBlueprint` swaps it. */
+    public onBlueprintSwapped(): void {
+        this.ratesPanel.onBlueprintSwapped()
     }
 
     public addPaintIcon(icon: Container): void {

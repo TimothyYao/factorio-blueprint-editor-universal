@@ -289,6 +289,9 @@ export class Editor {
         this.bindBPCMode()
         G.BPC.initBP()
         Dialog.closeAll()
+        // An open rates panel is subscribed to the old blueprint's events —
+        // point it at the new one (no-op while hidden).
+        G.UI?.onBlueprintSwapped()
         G.app.stage.addChildAt(G.BPC, i)
         if (last.parent) {
             last.destroy()
@@ -435,6 +438,17 @@ export class Editor {
                 callbacks: {
                     onPress: () => {
                         G.BPC.overlayContainer.toggleEntityInfoVisibility()
+                        return true
+                    },
+                },
+            },
+            showRates: {
+                trigger: {
+                    code: 'KeyT',
+                },
+                callbacks: {
+                    onPress: () => {
+                        G.UI.toggleRatesPanel()
                         return true
                     },
                 },

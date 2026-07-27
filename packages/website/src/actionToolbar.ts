@@ -52,6 +52,9 @@ const BUTTONS: ToolbarButton[] = [
     { action: 'undo', glyph: '↶', label: 'Undo' },
     { action: 'redo', glyph: '↷', label: 'Redo' },
     { action: 'focus', glyph: '⌖', label: 'Center' },
+    // Blueprint-wide production/consumption readout (keyboard: T). Global —
+    // the panel is a passive overlay, useful while inspecting or editing.
+    { action: 'showRates', glyph: '⚖', label: 'Rates' },
     // Touch marquee (#21): arm a box-select. Only when idle/inspecting and there's
     // something to select; the drag + held-selection controls live in SELECT_*.
     {
