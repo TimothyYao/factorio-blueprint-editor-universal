@@ -51,6 +51,18 @@ export class UIContainer extends Container {
         return this.entityInfoPanel.visible
     }
 
+    /**
+     * Screen-space bounds of the entity info panel (CSS px, canvas-relative),
+     * or null while hidden — backs the top-band e2e ratchet (#89): the panel
+     * anchors to the canvas top, so with the top inset reserved its viewport
+     * position must clear the DOM chrome above the canvas.
+     */
+    public entityInfoPanelBounds(): { x: number; y: number; width: number; height: number } | null {
+        if (!this.entityInfoPanel.visible) return null
+        const r = this.entityInfoPanel.getBounds().rectangle
+        return { x: r.x, y: r.y, width: r.width, height: r.height }
+    }
+
     /** Toggle the blueprint-wide production rates panel (`showRates` action). */
     public toggleRatesPanel(): void {
         this.ratesPanel.toggle()

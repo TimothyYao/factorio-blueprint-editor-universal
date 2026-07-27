@@ -232,6 +232,13 @@ export interface FbeTestHook {
      * dialog reacts to a live input-mode switch.
      */
     openEditorClearHint: () => string | null
+    /**
+     * Bounds of the entity info panel (CSS px, canvas-relative), null while
+     * hidden — the top-band disjointness ratchet (#89) converts these to
+     * viewport coords via the canvas element's offset and asserts they clear
+     * the DOM chrome (the active-project pill).
+     */
+    infoPanelBounds: () => { x: number; y: number; width: number; height: number } | null
     /** Toggle the blueprint-wide production rates panel (as the T keybind does). */
     toggleRatesPanel: () => void
     /**
@@ -411,6 +418,7 @@ export function installTestHook(win: Window = window): void {
             Dialog.closeAll()
             return G.UI.createEditor(e)?.clearHintText ?? null
         },
+        infoPanelBounds: () => G.UI.entityInfoPanelBounds(),
         toggleRatesPanel: () => G.UI.toggleRatesPanel(),
         ratesPanelLines: () => G.UI.ratesPanelLines(),
         ratesPanelClosePos: () => G.UI.ratesPanelClosePos(),

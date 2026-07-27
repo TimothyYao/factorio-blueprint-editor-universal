@@ -218,3 +218,66 @@ test.describe('wires panel', () => {
         expect(b.y + b.height).toBeLessThanOrEqual(viewport.height + 1)
     })
 })
+
+// A self-contained vanilla-2.0 blueprint (a single wooden chest) so the
+// top-band spec has an entity whose info panel it can open.
+const CHEST_BP =
+    '0eJxtjs0OgjAQhN9lztUgoRD6KsYYfjbapGwJLSohfXcX9ODBy2x2M9/MrmjdTONkOcKssJEGmJ+bwoOmYD3D6DKvi7rWRZ5VVVEquKYlJ+5xc4R4iCTS3UUFs53nAHOWTO7pBXNSCPbGjdt6uBlIyKf3PfGXSemiQBxttPQh92W58jy0NO0J/ziF0QeBth9XSFN21ArLPiUzpTfn9ku6'
+
+test.describe('top band (#89 Phase 1)', () => {
+    test('mobile: canvas + top-anchored panels start below the fixed top chrome', async ({
+        page,
+    }) => {
+        await page.goto(`/?test&source=${encodeURIComponent(CHEST_BP)}`)
+        await waitForAppReady(page)
+
+        const pill = await page.locator('#active-project').boundingBox()
+        const logo = await page.locator('#corner-panel').boundingBox()
+        const canvas = await page.locator('#editor').boundingBox()
+        expect(pill).not.toBeNull()
+        expect(logo).not.toBeNull()
+        expect(canvas).not.toBeNull()
+
+        if (!isMobileProject()) {
+            // Desktop keeps the historical full-bleed canvas — the chrome and
+            // the top-right panels don't meet at normal window widths.
+            expect(canvas!.y).toBe(0)
+            return
+        }
+
+        // The canvas is inset below every piece of fixed top chrome, so the
+        // active-project pill can no longer cover the Pixi entity-info panel
+        // (DOM always renders above the canvas — reserving the band is the
+        // only way a canvas panel can win).
+        expect(canvas!.y).toBeGreaterThanOrEqual(pill!.y + pill!.height)
+        expect(canvas!.y).toBeGreaterThanOrEqual(logo!.y + logo!.height)
+
+        // The ?source blueprint imports asynchronously after boot — wait for
+        // the chest to actually be in the blueprint before selecting it.
+        await expect
+            .poll(async () => (await readTestState(page)).blueprint.entityCount, {
+                timeout: 30_000,
+            })
+            .toBeGreaterThan(0)
+
+        // Disjointness ratchet: open the info panel for real and assert its
+        // viewport-space top clears the pill.
+        const bounds = await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__?: {
+                    showEntityInfo: (name: string) => boolean
+                    infoPanelBounds: () => {
+                        x: number
+                        y: number
+                        width: number
+                        height: number
+                    } | null
+                }
+            }
+            if (!w.__FBE_TEST__.showEntityInfo('wooden-chest')) return null
+            return w.__FBE_TEST__.infoPanelBounds()
+        })
+        expect(bounds).not.toBeNull()
+        expect(canvas!.y + bounds!.y).toBeGreaterThanOrEqual(pill!.y + pill!.height)
+    })
+})

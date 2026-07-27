@@ -23,6 +23,7 @@ import type { PackManifestEntry } from '@fbe/editor'
 import { initToasts } from './toasts'
 import { initSettingsPane } from './settingsPane'
 import { initActionToolbar } from './actionToolbar'
+import { initViewportRegions } from './viewportRegions'
 import { loadSavedBlueprint, clearSavedBlueprint } from './blueprintStorage'
 import { LibraryController } from './library/controller'
 import { createLibraryStore } from './library/store'
@@ -188,6 +189,7 @@ editor
             copyBlueprint: copyBlueprintToClipboard,
             clear: confirmClearBlueprint,
         })
+        initViewportRegions(editor)
 
         // Opt-in e2e probe for on-canvas state that the DOM can't expose.
         if (new URLSearchParams(window.location.search).has('test')) {
