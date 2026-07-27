@@ -233,6 +233,10 @@ describe('aggregateRates', () => {
         expect(cable.consumption).toBeCloseTo(4.5)
         expect(cable.producers).toBe(2)
         expect(cable.consumers).toBe(1)
+        // Machine identities behind the counts (the UI labels ×N with the
+        // dominant machine's icon).
+        expect(cable.producerMachines.get('assembling-machine-2')).toBe(2)
+        expect(cable.consumerMachines.get('assembling-machine-2')).toBe(1)
 
         // Pure ingredient / pure product classify by one side being zero.
         expect(rates.get('copper-plate').production).toBe(0)

@@ -10,9 +10,13 @@ consumed per second, so ratio problems ("do 3 cable assemblers feed 2 circuit
 assemblers?") are visible at a glance without launching the game.
 
 **Toggle:** the `showRates` action — `T` on desktop, the **Rates** button on
-the mobile action rail. The panel pins to the top-left (mirroring the entity
-info panel's top-right anchor) and updates live while open: entity add/remove,
-recipe changes, module changes, undo/redo, and blueprint loads all recompute.
+the mobile action rail — or the panel's own ✕ to dismiss (so it can't get
+stranded over the blueprint when the toggle is buried in the rail's ⋯
+overflow). The panel pins to the right edge _below_ the entity info panel's
+anchor — the top-left belongs to the website's logo/settings DOM overlay,
+which a canvas panel would sit underneath — and updates live while open:
+entity add/remove, recipe changes, module changes, undo/redo, and blueprint
+loads all recompute.
 
 ## How it works
 
@@ -33,8 +37,9 @@ editor reconstructs those bonuses from prototype data:
 - **`UI/RatesPanel.ts`** — the PixiJS panel. Materials are bucketed the way
   the mod presents them: **products** (only produced), **intermediates**
   (produced _and_ consumed — shown as a colored net rate with its breakdown),
-  **ingredients** (only consumed). A footer counts rated machines and calls
-  out machines skipped for lack of a recipe.
+  **ingredients** (only consumed, with the dominant machine's icon + ×N so the
+  count can't read as a rate multiplier). A footer counts rated machines and
+  calls out machines skipped for lack of a recipe.
 - `UI/EntityInfoPanel.ts` consumes the same core functions for its single
   machine readout, so the two views can never disagree.
 

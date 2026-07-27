@@ -240,6 +240,12 @@ export interface FbeTestHook {
      * can't see them; e2e asserts on these instead of pixels.
      */
     ratesPanelLines: () => string[]
+    /**
+     * On-screen centre of the rates panel's ✕ close button (canvas-relative CSS
+     * px), or null while the panel is hidden — so the spec can dismiss it with
+     * a real click/tap instead of the toggle action.
+     */
+    ratesPanelClosePos: () => { x: number; y: number } | null
     /** Quickbar slot contents, `null` for an unassigned slot. */
     quickbarItems: () => (string | null)[]
     /** On-screen centre of quickbar slot `index`, or null if it isn't rendered. */
@@ -407,6 +413,7 @@ export function installTestHook(win: Window = window): void {
         },
         toggleRatesPanel: () => G.UI.toggleRatesPanel(),
         ratesPanelLines: () => G.UI.ratesPanelLines(),
+        ratesPanelClosePos: () => G.UI.ratesPanelClosePos(),
         quickbarItems: () =>
             G.UI.quickbarPanel.serialize().map(itemName => itemName ?? null) as (string | null)[],
         quickbarSlotPos: index => {

@@ -36,6 +36,7 @@ async function waitForAppReady(page: Page): Promise<void> {
 interface RatesHook {
     toggleRatesPanel: () => void
     ratesPanelLines: () => string[]
+    ratesPanelClosePos: () => { x: number; y: number } | null
 }
 
 test.describe('rates panel', () => {
@@ -68,14 +69,25 @@ test.describe('rates panel', () => {
         expect(lines.some(l => l.includes('1 machine counted'))).toBe(true)
         expect(lines.some(l => l === 'Ingredients')).toBe(true)
         expect(lines.some(l => /\/s/.test(l))).toBe(true)
+        // Machine counts render as a bare ×N next to the (dominant) machine's
+        // icon — "× 1" glued to the rate read as a rate multiplier.
+        expect(lines.some(l => /^×\d+$/.test(l))).toBe(true)
 
-        // Toggle off again.
+        // Dismiss with the panel's own ✕ (the only route that needs neither a
+        // keyboard nor re-finding the toggle in the rail's ⋯ overflow). Also
+        // pins the anchor: right half of the screen, clear of the top-left
+        // logo/settings DOM stack.
+        const closePos = await page.evaluate(() =>
+            (window as unknown as { __FBE_TEST__: RatesHook }).__FBE_TEST__.ratesPanelClosePos()
+        )
+        expect(closePos).not.toBeNull()
+        const viewport = page.viewportSize()
+        expect(closePos.x).toBeGreaterThan(viewport.width / 2)
+        expect(closePos.y).toBeGreaterThan(100)
         if (isMobileProject()) {
-            await page.evaluate(() =>
-                (window as unknown as { __FBE_TEST__: RatesHook }).__FBE_TEST__.toggleRatesPanel()
-            )
+            await page.touchscreen.tap(closePos.x, closePos.y)
         } else {
-            await page.keyboard.press('t')
+            await page.mouse.click(closePos.x, closePos.y)
         }
         await expect.poll(async () => (await readTestState(page)).ratesPanelVisible).toBe(false)
     })

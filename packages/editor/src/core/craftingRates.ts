@@ -180,6 +180,13 @@ export interface ItemRateTotals {
     /** How many machines produce / consume it (for "add N more" reasoning). */
     producers: number
     consumers: number
+    /**
+     * The producing / consuming machines by prototype name (e.g.
+     * `assembling-machine-2` → 3), so the UI can label a count with the actual
+     * machine's icon — a bare "×80" reads as a rate multiplier.
+     */
+    producerMachines: Map<string, number>
+    consumerMachines: Map<string, number>
 }
 
 export interface BlueprintRates {
@@ -222,10 +229,16 @@ export function aggregateRates(
                 consumption: 0,
                 producers: 0,
                 consumers: 0,
+                producerMachines: new Map(),
+                consumerMachines: new Map(),
             }
             rates.set(c.name, t)
         }
         return t
+    }
+
+    const countMachine = (machines: Map<string, number>, name: string): void => {
+        machines.set(name, (machines.get(name) ?? 0) + 1)
     }
 
     for (const machine of machines) {
@@ -246,11 +259,13 @@ export function aggregateRates(
             const t = totalsFor(i)
             t.consumption += i.rate
             t.consumers += 1
+            countMachine(t.consumerMachines, machine.prototype.name)
         }
         for (const p of products) {
             const t = totalsFor(p)
             t.production += p.rate
             t.producers += 1
+            countMachine(t.producerMachines, machine.prototype.name)
         }
 
         countedMachines += 1

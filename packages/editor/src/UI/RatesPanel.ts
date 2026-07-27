@@ -1,4 +1,4 @@
-import { Container, Text, TextStyle } from 'pixi.js'
+import { Container, Rectangle, Text, TextStyle } from 'pixi.js'
 import G from '../common/globals'
 import FD from '../core/factorioData'
 import { Blueprint } from '../core/Blueprint'
@@ -13,8 +13,10 @@ import { colors, styles } from './style'
  * Blueprint-wide production/consumption overview (a RateCalculator-style
  * readout, computed offline — see core/craftingRates.ts for the maths and
  * docs/rate-calculator.md for scope/backlog). Toggled by the `showRates`
- * action; pinned to the top-left, mirroring the entity info panel's top-right
- * anchor so the two can be open at once.
+ * action or its own ✕; pinned to the right edge *below* the entity info
+ * panel's anchor, so hover-info and rates can be open at once and neither
+ * fights the website's top-left logo/settings stack (a DOM overlay the canvas
+ * can't see).
  *
  * Materials are bucketed the way the mod presents them:
  *   - products — only produced here (what the blueprint exports),
@@ -31,6 +33,11 @@ import { colors, styles } from './style'
 const ROW_H = 28
 const ICON = 24
 const PAD = 10
+/**
+ * Vertical clearance for the entity info panel (270 high) that shares the
+ * right edge: rates sit below it so both can be open at once.
+ */
+const INFO_PANEL_CLEARANCE = 276
 
 /** Section-header style — the title colour at label size, so it reads as a
  * grouping rather than a value. */
@@ -69,6 +76,7 @@ const formatRate = (n: number): string => {
 
 export class RatesPanel extends Panel {
     private readonly title: Text
+    private readonly m_CloseButton: Text
     private readonly m_Rows: Container
     /** Blueprint currently subscribed for add/remove events (tracked so a
      * blueprint swap on load can re-attach cleanly). */
@@ -80,13 +88,29 @@ export class RatesPanel extends Panel {
     public constructor() {
         super(270, 400)
 
-        this.eventMode = 'none'
+        // 'passive': the panel itself never swallows canvas interactions (it's
+        // a read-only overlay), but its ✕ button still receives taps.
+        this.eventMode = 'passive'
+        this.interactiveChildren = true
         this.visible = false
 
         this.title = new Text({ text: 'Production rates', style: styles.dialog.title })
         this.title.anchor.set(0.5, 0)
         this.title.position.set(super.width / 2, 2)
         this.addChild(this.title)
+
+        // A dismiss affordance of its own: without it the only way out is
+        // re-triggering the action, which touch users may have buried in the
+        // rail's ⋯ overflow — easy to strand the panel over the blueprint,
+        // especially in portrait. The hit area is padded well past the glyph
+        // for a finger-sized target.
+        this.m_CloseButton = new Text({ text: '✕', style: styles.dialog.label })
+        this.m_CloseButton.position.set(super.width - 22, 4)
+        this.m_CloseButton.eventMode = 'static'
+        this.m_CloseButton.cursor = 'pointer'
+        this.m_CloseButton.hitArea = new Rectangle(-12, -4, 36, 36)
+        this.m_CloseButton.on('pointertap', () => this.hide())
+        this.addChild(this.m_CloseButton)
 
         this.m_Rows = new Container()
         this.addChild(this.m_Rows)
@@ -272,13 +296,32 @@ export class RatesPanel extends Panel {
         main.position.set(PAD + ICON + 8, y + 3)
         this.m_Rows.addChild(main)
 
-        // The net's breakdown (production vs consumption) for intermediates,
-        // dimmed; producer/consumer machine counts otherwise.
-        const detailText = isIntermediate
-            ? `= ${formatRate(row.production)} − ${formatRate(row.consumption)}`
-            : `× ${row.production > 0 ? row.producers : row.consumers}`
-        const detail = new Text({ text: detailText, style: styles.dialog.hint })
-        detail.position.set(main.position.x + main.width + 8, y + 5)
+        if (isIntermediate) {
+            // The net's breakdown (production vs consumption), dimmed.
+            const detail = new Text({
+                text: `= ${formatRate(row.production)} − ${formatRate(row.consumption)}`,
+                style: styles.dialog.hint,
+            })
+            detail.position.set(main.position.x + main.width + 8, y + 5)
+            this.m_Rows.addChild(detail)
+            return
+        }
+
+        // Producer/consumer machine count, labelled with the (dominant)
+        // machine's icon: a bare "× 80" next to a rate read as a rate
+        // multiplier, not a machine count.
+        const machines = row.production > 0 ? row.producerMachines : row.consumerMachines
+        const count = row.production > 0 ? row.producers : row.consumers
+        const dominant = [...machines.entries()].sort((a, b) => b[1] - a[1])[0]?.[0]
+        let x = main.position.x + main.width + 10
+        if (dominant && FD.items[dominant]) {
+            const machineIcon = F.CreateIcon(dominant, 16, false)
+            machineIcon.position.set(x, y + 4)
+            this.m_Rows.addChild(machineIcon)
+            x += 18
+        }
+        const detail = new Text({ text: `×${count}`, style: styles.dialog.hint })
+        detail.position.set(x, y + 5)
         this.m_Rows.addChild(detail)
     }
 
@@ -293,11 +336,20 @@ export class RatesPanel extends Panel {
             .map(t => t.text)
     }
 
+    /** Screen-space center of the ✕ button (for the e2e probe). */
+    public closeButtonPosition(): { x: number; y: number } | null {
+        if (!this.visible) return null
+        const r = this.m_CloseButton.getBounds().rectangle
+        return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
+    }
+
     protected override setPosition(): void {
-        // Top-left, mirroring the entity info panel's top-right anchor; scale
-        // down on a viewport narrower than the panel and clamp on-screen.
+        // Right edge, below the entity info panel's anchor — the top-left is
+        // owned by the website's logo/settings DOM overlay (and the mobile
+        // rail), which a canvas panel would sit underneath. Scale down on a
+        // viewport narrower than the panel; clamp handles short viewports.
         const scale = fitToWidthScale(G.app.screen.width, this.width)
         this.scale.set(scale)
-        this.clampToScreen(0, 0)
+        this.clampToScreen(G.app.screen.width - this.width * scale, INFO_PANEL_CLEARANCE * scale)
     }
 }

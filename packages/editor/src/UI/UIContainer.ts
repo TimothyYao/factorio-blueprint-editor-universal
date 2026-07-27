@@ -66,6 +66,11 @@ export class UIContainer extends Container {
         return this.ratesPanel.textLines
     }
 
+    /** Screen-space center of the rates panel's ✕ (null while hidden; for e2e). */
+    public ratesPanelClosePos(): { x: number; y: number } | null {
+        return this.ratesPanel.closeButtonPosition()
+    }
+
     /** Let panels tracking `G.bp` re-attach after `loadBlueprint` swaps it. */
     public onBlueprintSwapped(): void {
         this.ratesPanel.onBlueprintSwapped()
