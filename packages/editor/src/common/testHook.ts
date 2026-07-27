@@ -70,6 +70,8 @@ export interface EditorTestState {
     }
     /** Whether the top-right entity info panel is showing (hover/tap-select). */
     infoPanelVisible: boolean
+    /** Whether the top-left blueprint-wide production rates panel is showing. */
+    ratesPanelVisible: boolean
 }
 
 export function getEditorTestState(): EditorTestState {
@@ -114,6 +116,7 @@ export function getEditorTestState(): EditorTestState {
             direction: G.BPC.marqueeDirection ?? null,
         },
         infoPanelVisible: G.UI.entityInfoPanelVisible,
+        ratesPanelVisible: G.UI.ratesPanelVisible,
     }
 }
 
@@ -229,6 +232,20 @@ export interface FbeTestHook {
      * dialog reacts to a live input-mode switch.
      */
     openEditorClearHint: () => string | null
+    /** Toggle the blueprint-wide production rates panel (as the T keybind does). */
+    toggleRatesPanel: () => void
+    /**
+     * The rates panel's rendered text lines, top to bottom — section headers,
+     * per-material rates, the machines-counted footer. Canvas-drawn, so the DOM
+     * can't see them; e2e asserts on these instead of pixels.
+     */
+    ratesPanelLines: () => string[]
+    /**
+     * On-screen centre of the rates panel's ✕ close button (canvas-relative CSS
+     * px), or null while the panel is hidden — so the spec can dismiss it with
+     * a real click/tap instead of the toggle action.
+     */
+    ratesPanelClosePos: () => { x: number; y: number } | null
     /** Quickbar slot contents, `null` for an unassigned slot. */
     quickbarItems: () => (string | null)[]
     /** On-screen centre of quickbar slot `index`, or null if it isn't rendered. */
@@ -394,6 +411,9 @@ export function installTestHook(win: Window = window): void {
             Dialog.closeAll()
             return G.UI.createEditor(e)?.clearHintText ?? null
         },
+        toggleRatesPanel: () => G.UI.toggleRatesPanel(),
+        ratesPanelLines: () => G.UI.ratesPanelLines(),
+        ratesPanelClosePos: () => G.UI.ratesPanelClosePos(),
         quickbarItems: () =>
             G.UI.quickbarPanel.serialize().map(itemName => itemName ?? null) as (string | null)[],
         quickbarSlotPos: index => {

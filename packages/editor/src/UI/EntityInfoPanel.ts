@@ -1,5 +1,5 @@
-import { Container, Rectangle, Text } from 'pixi.js'
-import FD, { getModule } from '../core/factorioData'
+import { Container, Text } from 'pixi.js'
+import FD from '../core/factorioData'
 import {
     BeaconPrototype,
     CraftingMachinePrototype,
@@ -9,7 +9,12 @@ import {
 import G from '../common/globals'
 import util from '../common/util'
 import { ISignal } from '../types'
-import { beaconEffectMultiplier } from '../core/beaconEffects'
+import {
+    BeaconSource,
+    beaconReaches,
+    computeMachineEffects,
+    resolveModuleNames,
+} from '../core/craftingRates'
 import { getIngredientAmount, getProductAmountWithProductivity } from '../core/recipeAmounts'
 import { Entity } from '../core/Entity'
 import { createCircuitNetworkBadges } from './circuitNetworkBadges'
@@ -122,61 +127,14 @@ export class EntityInfoPanel extends Panel {
         nextY = this.m_EntityName.position.y + this.m_EntityName.height + 10
 
         if (entity.entityData.type === 'assembling-machine') {
-            // Details for assembling machines with or without recipe
-            let productivity = 0
-            let consumption = 0
-            // let pollution = 0
-            let speed = 0
-
-            for (const module of entity.modules) {
-                if (!module) continue
-
-                const moduleData = getModule(module)
-                if (moduleData.effect.productivity) {
-                    productivity += moduleData.effect.productivity
-                }
-                if (moduleData.effect.consumption) {
-                    consumption += moduleData.effect.consumption
-                }
-                // if (moduleData.effect.pollution) {
-                //     pollution += moduleData.effect.pollution
-                // }
-                if (moduleData.effect.speed) {
-                    speed += moduleData.effect.speed
-                }
-            }
-
-            const beacons = this.findNearbyBeacons(entity)
-            for (const beacon of beacons) {
-                // Not just distribution_effectivity: since 2.0 the transmitted
-                // effect also falls off with the number of beacons reaching
-                // this machine (vanilla: 1/sqrt(N); SE: overload to 0) — see
-                // beaconEffectMultiplier.
-                const multiplier = beaconEffectMultiplier(
-                    beacon.entityData as BeaconPrototype,
-                    beacons.filter(b => b.name === beacon.name).length,
-                    beacons.length
-                )
-                for (const module of beacon.modules) {
-                    if (!module) continue
-
-                    const moduleData = getModule(module)
-                    if (moduleData.effect.productivity) {
-                        productivity += moduleData.effect.productivity * multiplier
-                    }
-                    if (moduleData.effect.consumption) {
-                        consumption += moduleData.effect.consumption * multiplier
-                    }
-                    // if (moduleData.effect.pollution) {
-                    //     pollution += moduleData.effect.pollution * multiplier
-                    // }
-                    if (moduleData.effect.speed) {
-                        speed += moduleData.effect.speed * multiplier
-                    }
-                }
-            }
-
-            consumption = consumption < -0.8 ? -0.8 : consumption
+            // Details for assembling machines with or without recipe. The
+            // module/beacon effect summing (incl. the 2.0 per-beacon profile
+            // falloff and the engine's -80% clamps) lives in core/craftingRates
+            // so the blueprint-wide rates panel computes the exact same numbers.
+            const { speed, productivity, consumption } = computeMachineEffects(
+                resolveModuleNames(entity.modules),
+                findBeaconsReaching(entity)
+            )
             const machineData = entity.entityData as CraftingMachinePrototype
             const newCraftingSpeed = machineData.crafting_speed * (1 + speed)
             const newEnergyUsage =
@@ -504,29 +462,25 @@ export class EntityInfoPanel extends Panel {
         this.scale.set(scale)
         this.clampToScreen(G.app.screen.width - this.width * scale + 1, 0)
     }
+}
 
-    private findNearbyBeacons(entity: Entity): Entity[] {
-        const entityRect = new Rectangle(entity.position.x, entity.position.y)
-        entityRect.pad(entity.size.x / 2, entity.size.y / 2)
-
-        return entity.Blueprint.entities.filter((beacon: Entity): boolean => {
-            if (beacon.type !== 'beacon') {
-                return false
-            }
-
-            // The supply area is the beacon's own footprint grown by its
-            // supply_area_distance on every side. Beacons differ wildly here
-            // (SE alone spans 2x2/range-2 compact to 5x5/range-14 wide), so
-            // both must come from the actual beacon, not the vanilla
-            // `FD.entities.beacon` prototype.
-            const beaconAura = new Rectangle(beacon.position.x, beacon.position.y)
-            beaconAura.pad(beacon.size.x / 2, beacon.size.y / 2)
-            beaconAura.pad((beacon.entityData as BeaconPrototype).supply_area_distance)
-
-            // Rectangle.intersects treats a shared edge as a miss, matching
-            // the game: collision boxes sit strictly inside the tile grid, so
-            // an edge-adjacent machine is out of range.
-            return beaconAura.intersects(entityRect)
-        })
-    }
+/**
+ * Every beacon in the entity's blueprint whose supply area reaches it, resolved
+ * to the shape the core rate maths consumes. The supply area is the beacon's
+ * own footprint grown by its supply_area_distance on every side — beacons
+ * differ wildly here (SE alone spans 2x2/range-2 compact to 5x5/range-14
+ * wide), so both come from the actual beacon, not the vanilla
+ * `FD.entities.beacon` prototype. Range semantics (shared edge = miss) live in
+ * `beaconReaches`.
+ */
+function findBeaconsReaching(entity: Entity): BeaconSource[] {
+    const machine = { position: entity.position, size: entity.size }
+    return entity.Blueprint.entities
+        .filter(e => e.type === 'beacon')
+        .map(beacon => ({
+            prototype: beacon.entityData as BeaconPrototype,
+            modules: resolveModuleNames(beacon.modules),
+            footprint: { position: beacon.position, size: beacon.size },
+        }))
+        .filter(beacon => beaconReaches(beacon, machine))
 }
