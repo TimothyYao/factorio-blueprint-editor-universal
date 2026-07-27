@@ -268,7 +268,7 @@ test.describe('graphics tier switching (UI)', () => {
                 timeout: 60_000,
             }),
             gfxSelect(page)
-                .selectOption({ label: 'Slim · hosted' })
+                .selectOption({ label: 'Low quality · hosted' })
                 .catch(() => undefined),
         ])
         await waitForReady(page)

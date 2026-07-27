@@ -78,8 +78,15 @@ export function graphicsOptions(
     manifest: PackManifestEntry[],
     canonicalId: string
 ): { id: string; label: string }[] {
-    const tierLabel = (g?: string): string =>
-        g ? g.charAt(0).toUpperCase() + g.slice(1) : 'Variant'
+    const tierLabel = (g?: string): string => {
+        if (!g) return 'Variant'
+        // Product naming: the tier is "slim" everywhere machine-facing (pack
+        // ids, the manifest's `graphics` field, the docs) but reads
+        // "Low quality" in the UI — it names what the user trades, not how the
+        // pack was built. Unknown future tiers just get capitalized.
+        if (g === 'slim') return 'Low quality'
+        return g.charAt(0).toUpperCase() + g.slice(1)
+    }
     const out: { id: string; label: string }[] = []
     // Base first — an orphan variant (base not in the manifest) still lists.
     if (manifest.some(p => p.id === canonicalId && !p.variantOf)) {
