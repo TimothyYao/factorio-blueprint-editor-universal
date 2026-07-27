@@ -84,10 +84,16 @@ test.describe('rates panel', () => {
         const viewport = page.viewportSize()
         expect(closePos.x).toBeGreaterThan(viewport.width / 2)
         expect(closePos.y).toBeGreaterThan(100)
+        // The hook reports canvas-relative CSS px; on mobile the action rail
+        // insets the canvas, so add the #editor box offset (0 on desktop) to
+        // get page coordinates — same convention as touchGestures.ts.
+        const box = await page.locator('#editor').boundingBox()
+        const x = (box?.x ?? 0) + closePos.x
+        const y = (box?.y ?? 0) + closePos.y
         if (isMobileProject()) {
-            await page.touchscreen.tap(closePos.x, closePos.y)
+            await page.touchscreen.tap(x, y)
         } else {
-            await page.mouse.click(closePos.x, closePos.y)
+            await page.mouse.click(x, y)
         }
         await expect.poll(async () => (await readTestState(page)).ratesPanelVisible).toBe(false)
     })
