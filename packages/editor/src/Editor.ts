@@ -139,6 +139,20 @@ export class Editor {
         return G.BPC.mode === EditorMode.PAINT && !!G.BPC.paintContainer?.canFlipOrRotateByCopying()
     }
 
+    /**
+     * Put `itemName` on the cursor as a paint ghost, or drop it if it's already
+     * held — the same toggle the (desktop-only) wires panel's slots implement.
+     * Backs the action rail's wire buttons (#89): wires aren't inventory items,
+     * so the rail can't reach them through the Items dialog.
+     */
+    public togglePaintItem(itemName: string): void {
+        if (G.BPC.mode === EditorMode.PAINT && G.BPC.paintContainer?.getItemName() === itemName) {
+            G.BPC.paintContainer.destroy()
+        } else {
+            G.BPC.spawnPaintContainer(itemName)
+        }
+    }
+
     // --- Touch marquee (#21) — thin delegators for the website's Select button
     // and the Copy/Cut/Delete bar (the gesture itself lives in BlueprintContainer).
     /** Arm the marquee: the next one-finger drag draws a selection box (mobile). */

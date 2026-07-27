@@ -100,6 +100,13 @@ const BUTTONS: ToolbarButton[] = [
         className: 'cancel',
         modes: [EM.PAINT, EM.COPY, EM.DELETE, EM.SELECT],
     },
+    // Wires (#89): paint items, but not inventory items — the Items dialog can't
+    // reach them, so they get rail buttons (which also retires the bottom-band
+    // wires panel on mobile). Tapping toggles: spawn the wire, or drop it if
+    // it's already held. Colored via their class (see index.styl).
+    { action: 'copper-wire', glyph: '∿', label: 'Copper', className: 'wire-copper' },
+    { action: 'red-wire', glyph: '∿', label: 'Red wire', className: 'wire-red' },
+    { action: 'green-wire', glyph: '∿', label: 'Green wire', className: 'wire-green' },
     // Blueprint-level / management actions — global; keyboard-only otherwise, so
     // unreachable on touch (see issue #26). Low priority → live in the ⋯ overflow.
     { action: 'copyBlueprint', glyph: '📋', label: 'Copy BP' },
@@ -178,6 +185,9 @@ export function initActionToolbar(editor: Editor, handlers: Record<string, () =>
     // Built-in handlers for buttons backed by Editor methods rather than the
     // keybind registry. Caller overrides win.
     handlers = {
+        'copper-wire': () => editor.togglePaintItem('copper-wire'),
+        'red-wire': () => editor.togglePaintItem('red-wire'),
+        'green-wire': () => editor.togglePaintItem('green-wire'),
         marquee: () => editor.armMarquee(),
         copyMarquee: () => editor.copyMarquee(),
         cutMarquee: () => editor.cutMarquee(),

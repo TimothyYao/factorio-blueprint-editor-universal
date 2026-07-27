@@ -216,9 +216,27 @@ pipelines at once made touch taps double-act via the browser's synthetic
 
 ## Not done / next
 
-- ⬜ **On-screen action toolbar — remaining polish**: real game-sprite icons
-  (currently unicode glyphs — blocked on `.basis`→DOM delivery); touch box-select
-  (issue #21).
+- 🚧 **Mobile panel layout v2** (issue #89, the phased plan; screen-space map in
+  `mobile-layout-inventory.md`) — finish the layout authority #19 started. Live
+  collisions: the top-center active-project pill (#50) covers the Pixi
+  entity-info panel; the always-visible wires panel squats the bottom band. All
+  variants first-class (desktop / portrait touch / landscape touch; resolution
+  responsive, not a hard constraint).
+    - ✅ **Phase 0 — instrument + docs**: storyboard states added (rates panel,
+      library panel, PAINT ghost + d-pad, held marquee), inventory doc
+      refreshed with the post-#19 arrivals + re-opened top band.
+    - ✅ **Wires → rail**: three colour-coded rail buttons (toggle semantics via
+      `Editor.togglePaintItem` — tap to hold the wire, tap again to drop it);
+      `WiresPanel` retired on mobile like the quickbar, freeing the bottom band
+      for the PAINT/SELECT clusters. Desktop unchanged. e2e in
+      `actionToolbar.spec.ts` (toggle + panel absence) and `panels.spec.ts`.
+    - ⬜ **Phase 1 — reserved bands** via `setViewportInsets` (all four edges)
+    - ⬜ **Phase 2 — status readouts → DOM** (portrait bottom sheet / landscape
+      drawer)
+    - ⬜ **Phase 3 — DOM icon seam** off the data plane's `browser/icons.webp` —
+      this also unblocks the rail's **real game-sprite icons** (previously
+      "blocked on `.basis`→DOM delivery"; unicode glyphs meanwhile)
+    - ⬜ **Phase 4 — e2e bounds-disjointness ratchets**
 - 🚧 **Touch placement: preview + confirm (Slice 1 done)** — desktop previews a
   placement by hovering (ghost shows orientation/validity before you click);
   touch had no such step — a tap committed blindly. Now, in `mobile` paint mode a

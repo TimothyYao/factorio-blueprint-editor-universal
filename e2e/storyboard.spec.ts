@@ -1,6 +1,7 @@
 import { test, devices, type Browser, type Page } from '@playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
+import { dragOneFinger } from './touchGestures'
 
 /**
  * Layout storyboard sandbox. NOT an assertion test — it's a visual-inspection
@@ -79,6 +80,8 @@ type Hook = {
     previewInventoryItem: (name: string) => void
     closeDialogs: () => void
     centerView: () => void
+    toggleRatesPanel: () => void
+    spawnPasteGhost: () => boolean
 }
 type WinWithHook = Window & { __FBE_TEST__?: Hook }
 
@@ -97,11 +100,14 @@ async function waitReady(page: Page): Promise<void> {
     await page.waitForTimeout(1200)
 }
 
-async function capture(page: Page): Promise<Shot[]> {
+async function capture(page: Page, hasTouch: boolean): Promise<Shot[]> {
     const shots: Shot[] = []
     const shot = async (label: string): Promise<void> => {
         await page.waitForTimeout(350)
-        shots.push({ label, buf: await page.screenshot() })
+        // scale:'device' keeps the emulated devicePixelRatio (2.625 on Pixel 7)
+        // — the default 'css' downsamples to 1×, which made the strips visibly
+        // blurrier than the same screens on real hardware.
+        shots.push({ label, buf: await page.screenshot({ scale: 'device' }) })
     }
 
     // 1) base — clear view, blueprint on the canvas, nothing open
@@ -150,6 +156,39 @@ async function capture(page: Page): Promise<Shot[]> {
         h.showEntityInfo(null)
     })
 
+    // 7) the production-rates panel (T / rail "Rates") — pinned top-right below
+    //    the entity-info panel's anchor, another fixed Pixi surface to place.
+    await page.evaluate(() => (window as WinWithHook).__FBE_TEST__!.toggleRatesPanel())
+    await shot('rates panel')
+    await page.evaluate(() => (window as WinWithHook).__FBE_TEST__!.toggleRatesPanel())
+
+    // 8) the blueprint-library overlay (#50) — the DOM panel + its permanent
+    //    chrome (the top-center active-project pill, the library button).
+    await page.locator('#library-button').click()
+    await shot('library panel')
+    await page.locator('.library-close').click()
+
+    // 9) PAINT with a held paste ghost — on touch this shows the bottom-center
+    //    d-pad in the band the wires panel also occupies (the live collision).
+    await page.evaluate(() => (window as WinWithHook).__FBE_TEST__!.spawnPasteGhost())
+    await shot('paint ghost')
+    await page.keyboard.press('Escape') // closeWindow → clearCursor
+
+    // 10) a held marquee selection (touch only: rail Select → drag → SELECT
+    //     controls) — the select d-pad + Copy/Cut/Delete/Cancel row, the other
+    //     tenants of the bottom band.
+    if (hasTouch) {
+        await page.locator('#action-toolbar button[title="Select"]').click()
+        const vp = page.viewportSize()!
+        await dragOneFinger(
+            page,
+            { x: vp.width * 0.35, y: vp.height * 0.35 },
+            { x: vp.width * 0.85, y: vp.height * 0.7 }
+        )
+        await shot('marquee held')
+        await page.locator('#select-actions button[title="Cancel"]').click()
+    }
+
     return shots
 }
 
@@ -160,24 +199,35 @@ async function composite(
     shots: Shot[],
     outFile: string
 ): Promise<void> {
+    const dpr = platform.contextOptions?.deviceScaleFactor ?? 1
     const figures = shots
         .map(
             s => `<figure style="margin:0">
                 <img src="data:image/png;base64,${s.buf.toString('base64')}"
-                     style="display:block;border:1px solid #555;max-width:320px;max-height:700px;width:auto;height:auto"/>
-                <figcaption style="color:#ddd;font:13px sans-serif;text-align:center;margin-top:6px">${s.label}</figcaption>
+                     style="display:block;border:1px solid #555"/>
+                <figcaption style="color:#ddd;font:22px sans-serif;text-align:center;margin-top:8px">${s.label}</figcaption>
             </figure>`
         )
         .join('')
     const html = `<!doctype html><meta charset="utf-8"><body style="margin:0;background:#181818">
-        <div class="board" style="display:inline-block;padding:20px">
-            <div style="color:#fff;font:600 18px sans-serif;margin-bottom:14px">${platform.label} — ${size.width}×${size.height}px</div>
-            <div style="display:flex;gap:14px;align-items:flex-start">${figures}</div>
+        <div class="board" style="display:inline-block;padding:24px">
+            <div style="color:#fff;font:600 30px sans-serif;margin-bottom:16px">${platform.label} — ${size.width}×${size.height}px @ ${dpr}× (Chromium emulation, 1:1 device pixels)</div>
+            <div style="display:flex;gap:18px;align-items:flex-start">${figures}</div>
         </div></body>`
 
-    const page = await browser.newPage()
+    // Preserve the captured device pixels 1:1 through compositing: the board
+    // renders at 2×, and each shot is displayed at naturalWidth/2 CSS px — so
+    // one captured pixel lands on exactly one strip pixel. (The old max-width/
+    // max-height caps downscaled the Pixel 7 shots to ~60% of native, which is
+    // why the strips looked blurrier than the same screens on real hardware.)
+    const page = await browser.newPage({ deviceScaleFactor: 2 })
     await page.setContent(html)
-    await page.locator('.board').screenshot({ path: outFile })
+    await page.evaluate(async () => {
+        const imgs = Array.from(document.images)
+        await Promise.all(imgs.map(i => i.decode()))
+        for (const i of imgs) i.style.width = `${i.naturalWidth / 2}px`
+    })
+    await page.locator('.board').screenshot({ path: outFile, scale: 'device' })
     await page.close()
 }
 
@@ -220,7 +270,7 @@ test.describe('layout storyboard (visual sandbox)', () => {
             await page.addStyleTag({ content: '.toasts-container{display:none !important}' })
 
             const size = page.viewportSize()!
-            const shots = await capture(page)
+            const shots = await capture(page, !!platform.contextOptions?.hasTouch)
 
             const outFile = path.join(OUT_DIR, `${platform.id}.png`)
             await composite(browser, platform, size, shots, outFile)
