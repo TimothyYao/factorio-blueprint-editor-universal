@@ -1,6 +1,7 @@
 import { test, devices, type Browser, type Page } from '@playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
+import { dragOneFinger } from './touchGestures'
 
 /**
  * Layout storyboard sandbox. NOT an assertion test — it's a visual-inspection
@@ -79,6 +80,8 @@ type Hook = {
     previewInventoryItem: (name: string) => void
     closeDialogs: () => void
     centerView: () => void
+    toggleRatesPanel: () => void
+    spawnPasteGhost: () => boolean
 }
 type WinWithHook = Window & { __FBE_TEST__?: Hook }
 
@@ -97,7 +100,7 @@ async function waitReady(page: Page): Promise<void> {
     await page.waitForTimeout(1200)
 }
 
-async function capture(page: Page): Promise<Shot[]> {
+async function capture(page: Page, hasTouch: boolean): Promise<Shot[]> {
     const shots: Shot[] = []
     const shot = async (label: string): Promise<void> => {
         await page.waitForTimeout(350)
@@ -149,6 +152,39 @@ async function capture(page: Page): Promise<Shot[]> {
         h.closeDialogs()
         h.showEntityInfo(null)
     })
+
+    // 7) the production-rates panel (T / rail "Rates") — pinned top-right below
+    //    the entity-info panel's anchor, another fixed Pixi surface to place.
+    await page.evaluate(() => (window as WinWithHook).__FBE_TEST__!.toggleRatesPanel())
+    await shot('rates panel')
+    await page.evaluate(() => (window as WinWithHook).__FBE_TEST__!.toggleRatesPanel())
+
+    // 8) the blueprint-library overlay (#50) — the DOM panel + its permanent
+    //    chrome (the top-center active-project pill, the library button).
+    await page.locator('#library-button').click()
+    await shot('library panel')
+    await page.locator('.library-close').click()
+
+    // 9) PAINT with a held paste ghost — on touch this shows the bottom-center
+    //    d-pad in the band the wires panel also occupies (the live collision).
+    await page.evaluate(() => (window as WinWithHook).__FBE_TEST__!.spawnPasteGhost())
+    await shot('paint ghost')
+    await page.keyboard.press('Escape') // closeWindow → clearCursor
+
+    // 10) a held marquee selection (touch only: rail Select → drag → SELECT
+    //     controls) — the select d-pad + Copy/Cut/Delete/Cancel row, the other
+    //     tenants of the bottom band.
+    if (hasTouch) {
+        await page.locator('#action-toolbar button[title="Select"]').click()
+        const vp = page.viewportSize()!
+        await dragOneFinger(
+            page,
+            { x: vp.width * 0.35, y: vp.height * 0.35 },
+            { x: vp.width * 0.85, y: vp.height * 0.7 }
+        )
+        await shot('marquee held')
+        await page.locator('#select-actions button[title="Cancel"]').click()
+    }
 
     return shots
 }
@@ -220,7 +256,7 @@ test.describe('layout storyboard (visual sandbox)', () => {
             await page.addStyleTag({ content: '.toasts-container{display:none !important}' })
 
             const size = page.viewportSize()!
-            const shots = await capture(page)
+            const shots = await capture(page, !!platform.contextOptions?.hasTouch)
 
             const outFile = path.join(OUT_DIR, `${platform.id}.png`)
             await composite(browser, platform, size, shots, outFile)
