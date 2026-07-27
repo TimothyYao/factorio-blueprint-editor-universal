@@ -1,6 +1,7 @@
 import { Container } from 'pixi.js'
 import { EditorMode } from '../containers/BlueprintContainer'
 import G from '../common/globals'
+import { inputMode } from '../common/input'
 import { Panel } from './controls/Panel'
 import { Slot } from './controls/Slot'
 import F from './controls/functions'
@@ -62,6 +63,11 @@ export class WiresPanel extends Panel {
     }
 
     protected override setPosition(): void {
+        // Retired on mobile, like the quickbar: the three wire buttons live in
+        // the action rail there (issue #89 — the panel was a permanent resident
+        // of the bottom band the PAINT/SELECT clusters need). Desktop unchanged.
+        this.visible = inputMode.mode === 'desktop'
+
         // The wires panel belongs next to the (centered, bottom-pinned) quickbar.
         // The quickbar scales down on narrow viewports, so anchor off its *actual*
         // scaled bounds rather than a hardcoded 442 — otherwise this panel runs
@@ -70,8 +76,8 @@ export class WiresPanel extends Panel {
         const sw = G.app.screen.width
         const sh = G.app.screen.height
         const qb = G.UI?.quickbarPanel
-        // When the quickbar is retired (mobile), there's nothing to anchor to —
-        // sit centered along the bottom where it used to be.
+        // No visible quickbar to anchor to (sub-~442px desktop viewports) — sit
+        // centered along the bottom instead.
         const qbb = qb && qb.visible ? qb.getBounds().rectangle : null
         if (!qbb) {
             this.clampToScreen(sw / 2 - this.width / 2, sh - this.height + 1)

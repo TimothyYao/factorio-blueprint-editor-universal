@@ -225,7 +225,11 @@ pipelines at once made touch taps double-act via the browser's synthetic
     - ✅ **Phase 0 — instrument + docs**: storyboard states added (rates panel,
       library panel, PAINT ghost + d-pad, held marquee), inventory doc
       refreshed with the post-#19 arrivals + re-opened top band.
-    - ⬜ **Wires → rail** (retire `WiresPanel` on mobile, like the quickbar)
+    - ✅ **Wires → rail**: three colour-coded rail buttons (toggle semantics via
+      `Editor.togglePaintItem` — tap to hold the wire, tap again to drop it);
+      `WiresPanel` retired on mobile like the quickbar, freeing the bottom band
+      for the PAINT/SELECT clusters. Desktop unchanged. e2e in
+      `actionToolbar.spec.ts` (toggle + panel absence) and `panels.spec.ts`.
     - ⬜ **Phase 1 — reserved bands** via `setViewportInsets` (all four edges)
     - ⬜ **Phase 2 — status readouts → DOM** (portrait bottom sheet / landscape
       drawer)

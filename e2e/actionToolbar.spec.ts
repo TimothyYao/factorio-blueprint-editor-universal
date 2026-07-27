@@ -13,7 +13,13 @@ const CHEST =
     '0eJxtjs0OgjAQhN9lztUgoRD6KsYYfjbapGwJLSohfXcX9ODBy2x2M9/MrmjdTONkOcKssJEGmJ+bwoOmYD3D6DKvi7rWRZ5VVVEquKYlJ+5xc4R4iCTS3UUFs53nAHOWTO7pBXNSCPbGjdt6uBlIyKf3PfGXSemiQBxttPQh92W58jy0NO0J/ziF0QeBth9XSFN21ArLPiUzpTfn9ku6'
 
 type TestHookWindow = {
-    __FBE_TEST__: { getState(): { blueprint: { entityCount: number } } }
+    __FBE_TEST__: {
+        getState(): {
+            blueprint: { entityCount: number }
+            wires: { visible: boolean }
+            paint: { active: boolean }
+        }
+    }
 }
 const entityCount = (page: Page): Promise<number> =>
     page.evaluate(
@@ -106,6 +112,29 @@ test.describe('action toolbar', () => {
             }
             // Select needs something to select — hidden on an empty blueprint.
             await expect(toolbar.locator('button[title="Select"]')).toHaveCount(0)
+        })
+
+        test('wire buttons toggle a wire cursor; the bottom wires panel is retired', async ({
+            page,
+        }) => {
+            await page.goto('/?test')
+            await waitForLoaded(page)
+
+            const state = (): Promise<{
+                wires: { visible: boolean }
+                paint: { active: boolean }
+            }> => page.evaluate(() => (window as unknown as TestHookWindow).__FBE_TEST__.getState())
+
+            // Retired on mobile (#89): the bottom band belongs to the PAINT/
+            // SELECT clusters; wires are reachable from the rail instead.
+            expect((await state()).wires.visible).toBe(false)
+
+            // Tap → the wire lands on the cursor (PAINT); tap again → dropped
+            // (the same toggle the desktop panel's slots implement).
+            await tapRail(page, 'Red wire')
+            await expect.poll(async () => (await state()).paint.active).toBe(true)
+            await tapRail(page, 'Red wire')
+            await expect.poll(async () => (await state()).paint.active).toBe(false)
         })
 
         test('the Select button appears once the blueprint is non-empty', async ({ page }) => {

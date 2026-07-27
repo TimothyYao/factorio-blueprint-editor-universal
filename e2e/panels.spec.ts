@@ -190,15 +190,25 @@ test.describe('quickbar', () => {
 })
 
 test.describe('wires panel', () => {
-    test('fits within the viewport (sits next to the quickbar)', async ({ page }) => {
+    test('desktop: fits within the viewport; mobile: retired (wires live in the rail)', async ({
+        page,
+    }) => {
         await page.goto('/?test')
         await waitForAppReady(page)
 
         const state = await readTestState(page)
         const viewport = page.viewportSize()!
 
+        if (isMobileProject()) {
+            // Retired on mobile (#89): the bottom band belongs to the contextual
+            // PAINT/SELECT clusters; the three wires are rail buttons instead
+            // (covered in actionToolbar.spec.ts).
+            expect(state.wires.visible).toBe(false)
+            return
+        }
+
         // Regression: the wires panel was anchored off the right edge of the
-        // (now scaled) quickbar via a hardcoded width, so on a phone in portrait
+        // (now scaled) quickbar via a hardcoded width, so on a narrow viewport
         // it fell entirely off-screen.
         expect(state.wires.visible).toBe(true)
         const b = state.wires.bounds

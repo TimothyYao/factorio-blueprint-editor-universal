@@ -954,6 +954,14 @@ body.mobile
         background: #5a2a2a
         &.active
             background: #b03030
+    // Wire buttons (#89): same square, the glyph carries the wire's colour
+    // (matching the in-game copper/red/green wire tints).
+    button.wire-copper .glyph
+        color: #cf7c00
+    button.wire-red .glyph
+        color: #c83718
+    button.wire-green .glyph
+        color: #588c38
 
     .rail-overflow
         position: fixed

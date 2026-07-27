@@ -32,23 +32,23 @@ Reference viewport for concrete numbers: a Pixel-7-ish **portrait** screen,
 
 ## Layer 1 — Pixi UI (drawn _on_ the canvas, via `UIContainer`)
 
-| Element                                         | Anchor                                  | Intrinsic size              | Scaling / behavior                                                                  | Portrait notes                                                                              |
-| ----------------------------------------------- | --------------------------------------- | --------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| **Quickbar** (`QuickbarPanel`, 2 rows)          | bottom-center (desktop)                 | 442 × 100                   | `fitToWidthScale`; **retired on mobile** (hidden)                                   | **Gone on mobile** — actions live in the rail; slots/keybinds still work, desktop unchanged |
-| **Wires panel** (`WiresPanel`)                  | beside the quickbar, else bottom-center | 136 × 62                    | clamp on-screen; **always visible**                                                 | 🔴 Permanently occupies the bottom band in _every_ state; shares it with the d-pads (#89)   |
-| **Entity-info** (`EntityInfoPanel`)             | top-right, `y=0`                        | 270 × 270 (grows w/ recipe) | fit + clamp; re-anchors on canvas inset                                             | 🔴 Renders **under** the DOM active-project pill (top-center, z5) — its title is covered    |
-| **Rates panel** (`RatesPanel`, #87)             | top-right, below the info panel's spot  | 270 × 400                   | fit + clamp; hardcoded `INFO_PANEL_CLEARANCE = 276` offset                          | Toggled (T / rail "Rates"); another fixed top-right tenant placed by convention, not system |
-| **Editors** (machine/inserter/chest/splitter/…) | centered                                | 402–**504** × 171–176       | scale-to-fit + clamp                                                                | Centered modal                                                                              |
-| **Inventory** (`InventoryDialog`)               | centered                                | **responsive W** × ~520     | width fits the tabs (capped to screen, ≥404); tab/item **scroll** + **Recents tab** | Touch-usable: long-press preview + Pin/Unpin                                                |
-| **Paint ghost icon**                            | follows finger (`globalX+16`)           | small                       | tracks pointer                                                                      | Not edge-anchored                                                                           |
-| **Debug** (`DebugContainer`)                    | top-left (≈145, 5)                      | text                        | hidden unless `?debug`                                                              | —                                                                                           |
+| Element                                         | Anchor                                 | Intrinsic size              | Scaling / behavior                                                                  | Portrait notes                                                                              |
+| ----------------------------------------------- | -------------------------------------- | --------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| **Quickbar** (`QuickbarPanel`, 2 rows)          | bottom-center (desktop)                | 442 × 100                   | `fitToWidthScale`; **retired on mobile** (hidden)                                   | **Gone on mobile** — actions live in the rail; slots/keybinds still work, desktop unchanged |
+| **Wires panel** (`WiresPanel`)                  | beside the quickbar (desktop)          | 136 × 62                    | clamp on-screen; **retired on mobile** (hidden)                                     | **Gone on mobile** — the three wires are colour-coded rail buttons (toggle to hold/drop)    |
+| **Entity-info** (`EntityInfoPanel`)             | top-right, `y=0`                       | 270 × 270 (grows w/ recipe) | fit + clamp; re-anchors on canvas inset                                             | 🔴 Renders **under** the DOM active-project pill (top-center, z5) — its title is covered    |
+| **Rates panel** (`RatesPanel`, #87)             | top-right, below the info panel's spot | 270 × 400                   | fit + clamp; hardcoded `INFO_PANEL_CLEARANCE = 276` offset                          | Toggled (T / rail "Rates"); another fixed top-right tenant placed by convention, not system |
+| **Editors** (machine/inserter/chest/splitter/…) | centered                               | 402–**504** × 171–176       | scale-to-fit + clamp                                                                | Centered modal                                                                              |
+| **Inventory** (`InventoryDialog`)               | centered                               | **responsive W** × ~520     | width fits the tabs (capped to screen, ≥404); tab/item **scroll** + **Recents tab** | Touch-usable: long-press preview + Pin/Unpin                                                |
+| **Paint ghost icon**                            | follows finger (`globalX+16`)          | small                       | tracks pointer                                                                      | Not edge-anchored                                                                           |
+| **Debug** (`DebugContainer`)                    | top-left (≈145, 5)                     | text                        | hidden unless `?debug`                                                              | —                                                                                           |
 
 ## Layer 2 — DOM overlays (on top of the canvas)
 
 | Element                                          | Anchor                                          | Size                                         | z-index | Mobile behavior                                                                                                                                                                                                                         |
 | ------------------------------------------------ | ----------------------------------------------- | -------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Action rail** (`#action-toolbar`)              | **left gutter** (below the logo + corner btns)  | 44px flush squares + labels; ⋯ overflow      | 4       | **Mobile only**; reserves a left canvas inset (`setViewportInsets`); **1-col portrait / 3-col landscape**, rest in ⋯. **Mode-gated** (#33): only buttons live in the current mode show                                                  |
-| **Paint d-pad** (`#paint-dpad`)                  | **bottom-center** (the freed quickbar band)     | 3×3 grid of 52px buttons (▲◀▶▼ + green ✓)  | **21**  | **Mobile + PAINT only**; nudge arrows + Place for steering a held ghost. Above toasts (z20) so they don't swallow its taps; may overlap the (Pixi) wires panel                                                                          |
+| **Paint d-pad** (`#paint-dpad`)                  | **bottom-center** (the freed quickbar band)     | 3×3 grid of 52px buttons (▲◀▶▼ + green ✓)  | **21**  | **Mobile + PAINT only**; nudge arrows + Place for steering a held ghost. Above toasts (z20) so they don't swallow its taps; has the bottom band to itself now that the wires panel is retired on mobile                                 |
 | **Select d-pad** (`#select-dpad`)                | **bottom-center**, above the select row         | 3×3 grid (▲◀▶▼, empty centre)              | **21**  | **Mobile + SELECT only**; nudges the held selection in place (preserves wiring)                                                                                                                                                         |
 | **Select actions** (`#select-actions`)           | **bottom-center** (same band as the d-pads)     | row of 64px buttons (Copy/Cut/Delete/Cancel) | **21**  | **Mobile + SELECT only**; what to do with the box selection (#21). One cluster shown per mode, so these never coexist                                                                                                                   |
 | **Edit bar** (`#edit-bar`)                       | **bottom-center** (same band)                   | row of 64px buttons (Select / Edit)          | **21**  | **Mobile + EDIT only**; a tapped entity → promote to selection, or open its editor                                                                                                                                                      |
@@ -73,14 +73,14 @@ footprint being _reserved_ (a top inset) rather than squatted.
 _(History: "✅ Top band" as of #19; regressed when #50's chrome was added
 without an inventory update — exactly the drift this doc warns about.)_
 
-**🔴 Bottom band — the wires panel.** The quickbar retirement removed the big
-tenant, but the **wires panel stayed as a permanent always-visible resident**
-of the freed band, in every state, sharing it with the PAINT/SELECT d-pads and
-action rows (which are modal and deliberate; the wires panel is neither). Its
-only job is spawning one of three paint items — an _action_, so it belongs in
-the rail. Planned: wires → rail buttons; retire the panel on mobile like the
-quickbar (#89). DOM **toasts** (bottom-right) can still pass over the band
-briefly, but they're transient.
+**✅ Bottom band.** The quickbar retirement removed the big tenant, and the
+**wires panel** — which had stayed on as a permanent always-visible resident of
+the freed band, in every state — is retired on mobile too (#89): its only job
+was spawning one of three paint items, an _action_, so the wires now live in
+the rail as colour-coded toggle buttons and the band belongs to the modal
+PAINT/SELECT clusters alone. Desktop keeps the panel beside the quickbar. DOM
+**toasts** (bottom-right) can still pass over the band briefly, but they're
+transient.
 
 **✅ Two opposite "action" surfaces.** Resolved by the above — touch actions now
 live in one place (the left rail), and the bottom Pixi quickbar is gone.
