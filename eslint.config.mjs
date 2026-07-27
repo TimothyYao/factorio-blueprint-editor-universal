@@ -35,6 +35,10 @@ export default tseslint.config(
             'packages/editor/src/basis',
             'packages/exporter',
             'functions/corsproxy.js',
+            // Playwright output (gitignored, but a local e2e failure drops
+            // minified trace-viewer bundles here that explode a plain `lint`).
+            'playwright-report',
+            'test-results',
         ],
     }
 )

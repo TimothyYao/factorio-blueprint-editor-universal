@@ -37,8 +37,10 @@ editor reconstructs those bonuses from prototype data:
 - **`UI/RatesPanel.ts`** — the PixiJS panel. Materials are bucketed the way
   the mod presents them: **products** (only produced), **intermediates**
   (produced _and_ consumed — shown as a colored net rate with its breakdown),
-  **ingredients** (only consumed, with the dominant machine's icon + ×N so the
-  count can't read as a rate multiplier). A footer counts rated machines and
+  **ingredients** (only consumed). Product/ingredient rows carry one machine
+  icon + ×n pair _per machine type_ (largest first, overflow folded into a
+  "+k" tail), so a mixed bank never collapses into one merged count — and the
+  count can't read as a rate multiplier. A footer counts rated machines and
   calls out machines skipped for lack of a recipe.
 - `UI/EntityInfoPanel.ts` consumes the same core functions for its single
   machine readout, so the two views can never disagree.

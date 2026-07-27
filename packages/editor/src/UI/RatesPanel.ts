@@ -307,22 +307,40 @@ export class RatesPanel extends Panel {
             return
         }
 
-        // Producer/consumer machine count, labelled with the (dominant)
-        // machine's icon: a bare "× 80" next to a rate read as a rate
-        // multiplier, not a machine count.
+        // Producer/consumer machine counts, one icon+×n pair *per machine
+        // type* (a mixed bank — say 2× asm2 and 3× asm3 on the same recipe —
+        // must not collapse into one machine's icon with a merged total).
+        // A bare "× 80" next to a rate would read as a rate multiplier, hence
+        // the icons. Largest groups first; what doesn't fit the panel width
+        // folds into a "+k" tail so the row never overflows.
         const machines = row.production > 0 ? row.producerMachines : row.consumerMachines
-        const count = row.production > 0 ? row.producers : row.consumers
-        const dominant = [...machines.entries()].sort((a, b) => b[1] - a[1])[0]?.[0]
+        const entries = [...machines.entries()].sort((a, b) => b[1] - a[1])
         let x = main.position.x + main.width + 10
-        if (dominant && FD.items[dominant]) {
-            const machineIcon = F.CreateIcon(dominant, 16, false)
-            machineIcon.position.set(x, y + 4)
-            this.m_Rows.addChild(machineIcon)
-            x += 18
+        const maxX = this.width - PAD - 22 // keep room for the "+k" tail
+        for (let i = 0; i < entries.length; i++) {
+            if (x > maxX) {
+                const rest = new Text({
+                    text: `+${entries.length - i}`,
+                    style: styles.dialog.hint,
+                })
+                rest.position.set(x, y + 5)
+                this.m_Rows.addChild(rest)
+                break
+            }
+            const [machineName, n] = entries[i]
+            // Machines are placeable, so the prototype name doubles as the item
+            // (icon) name — guard anyway for modded packs.
+            if (FD.items[machineName]) {
+                const machineIcon = F.CreateIcon(machineName, 16, false)
+                machineIcon.position.set(x, y + 4)
+                this.m_Rows.addChild(machineIcon)
+                x += 18
+            }
+            const label = new Text({ text: `×${n}`, style: styles.dialog.hint })
+            label.position.set(x, y + 5)
+            this.m_Rows.addChild(label)
+            x += label.width + 8
         }
-        const detail = new Text({ text: `×${count}`, style: styles.dialog.hint })
-        detail.position.set(x, y + 5)
-        this.m_Rows.addChild(detail)
     }
 
     /**
