@@ -104,7 +104,10 @@ async function capture(page: Page, hasTouch: boolean): Promise<Shot[]> {
     const shots: Shot[] = []
     const shot = async (label: string): Promise<void> => {
         await page.waitForTimeout(350)
-        shots.push({ label, buf: await page.screenshot() })
+        // scale:'device' keeps the emulated devicePixelRatio (2.625 on Pixel 7)
+        // — the default 'css' downsamples to 1×, which made the strips visibly
+        // blurrier than the same screens on real hardware.
+        shots.push({ label, buf: await page.screenshot({ scale: 'device' }) })
     }
 
     // 1) base — clear view, blueprint on the canvas, nothing open
@@ -196,6 +199,7 @@ async function composite(
     shots: Shot[],
     outFile: string
 ): Promise<void> {
+    const dpr = platform.contextOptions?.deviceScaleFactor ?? 1
     const figures = shots
         .map(
             s => `<figure style="margin:0">
@@ -207,13 +211,15 @@ async function composite(
         .join('')
     const html = `<!doctype html><meta charset="utf-8"><body style="margin:0;background:#181818">
         <div class="board" style="display:inline-block;padding:20px">
-            <div style="color:#fff;font:600 18px sans-serif;margin-bottom:14px">${platform.label} — ${size.width}×${size.height}px</div>
+            <div style="color:#fff;font:600 18px sans-serif;margin-bottom:14px">${platform.label} — ${size.width}×${size.height}px @ ${dpr}× (Chromium emulation)</div>
             <div style="display:flex;gap:14px;align-items:flex-start">${figures}</div>
         </div></body>`
 
-    const page = await browser.newPage()
+    // Render the board at 2× so the density-true shots survive compositing —
+    // a 1× board screenshot would throw the captured DPR straight back away.
+    const page = await browser.newPage({ deviceScaleFactor: 2 })
     await page.setContent(html)
-    await page.locator('.board').screenshot({ path: outFile })
+    await page.locator('.board').screenshot({ path: outFile, scale: 'device' })
     await page.close()
 }
 

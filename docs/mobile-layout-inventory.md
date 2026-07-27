@@ -21,6 +21,14 @@ size. Regenerate the strips with `STORYBOARD=1 npx playwright test
 storyboard.spec.ts` — before/after strips are the acceptance artifact for
 every layout slice.
 
+**What the instrument can't show:** the strips are **Chromium** emulation —
+they're density-true (captured at the device's emulated `devicePixelRatio`,
+2.625 on Pixel 7), but Playwright cannot emulate **mobile Firefox** at all
+(`isMobile` is Chromium-only), and Firefox genuinely differs here: its own
+font rendering, and FBE deliberately defaults it to the WebGL renderer (#79).
+The storyboard is authoritative for _geometry_ (what sits where, what
+collides); look-and-feel on Firefox-on-Android needs a real-device spot check.
+
 Reference viewport for concrete numbers: a Pixel-7-ish **portrait** screen,
 **412 × 915 CSS px**.
 
