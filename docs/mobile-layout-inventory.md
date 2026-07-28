@@ -149,8 +149,9 @@ retirement; direction 3 via the rail's ⋯ overflow). Summary:
    side drawer) — unblocked by the data plane's DOM-friendly icon sheet
    (`browser/icons.webp`, 64px cells + `icons.json` rects, CORS `*`); modal
    dialogs stay Pixi, anchored within the inset region.
-5. **Phase 3 — DOM icon seam**: icon-id → `background-position` over the
-   pack's `icons.webp` (the FIB fork's `IconManager` is the geometry
-   reference), glyph fallback; rail first.
+5. ✅ **Phase 3 — DOM icon seam** (`packIcons.ts`): icon-id →
+   `background-position` over the pack's `icons.webp`, keyed on the canonical
+   pack id, glyph fallback. Wire buttons show real sprites; prototype icons
+   only, so pure editor actions keep glyphs by design.
 6. **Phase 4 — e2e ratchets**: bounds-disjointness assertions via the `?test`
    hook for each resolved collision, so bands can't silently regress again.

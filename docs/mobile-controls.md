@@ -246,9 +246,16 @@ pipelines at once made touch taps double-act via the browser's synthetic
       ⋯ sheet._
     - ⬜ **Phase 2 — status readouts → DOM** (portrait bottom sheet / landscape
       drawer)
-    - ⬜ **Phase 3 — DOM icon seam** off the data plane's `browser/icons.webp` —
-      this also unblocks the rail's **real game-sprite icons** (previously
-      "blocked on `.basis`→DOM delivery"; unicode glyphs meanwhile)
+    - ✅ **Phase 3 — DOM icon seam** (`website/src/packIcons.ts`): any DOM
+      element marked `data-pack-icon="<id>"` upgrades to a real game icon,
+      rendered as a CSS background crop of the pack's `browser/icons.webp`
+      (fetched off the canonical pack id, so slim variants resolve to their
+      full pack's sheet; progressive — glyphs stay if the pack ships no
+      browser tier). The rail's **wire buttons** now show the actual wire item
+      sprites. Scope note: the sheet holds _prototype_ icons only — pure
+      editor actions (undo, rotate, …) have no game sprite and keep their
+      glyphs by design; Phase 2's DOM panels are the seam's bigger consumer.
+      e2e canary in `actionToolbar.spec.ts` (polls the upgraded background).
     - ⬜ **Phase 4 — e2e bounds-disjointness ratchets**
 - 🚧 **Touch placement: preview + confirm (Slice 1 done)** — desktop previews a
   placement by hovering (ghost shows orientation/validity before you click);

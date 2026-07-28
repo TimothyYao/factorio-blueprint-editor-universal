@@ -135,6 +135,22 @@ test.describe('action toolbar', () => {
             await expect.poll(async () => (await state()).paint.active).toBe(true)
             await tapRail(page, 'Red wire')
             await expect.poll(async () => (await state()).paint.active).toBe(false)
+
+            // Phase 3 (#89): the wire glyphs upgrade to real game icons from
+            // the pack's browser/ sheet on the data plane (progressive — poll;
+            // also a live canary for the sheet being published per pack).
+            await expect
+                .poll(
+                    () =>
+                        page.evaluate(() => {
+                            const glyph = document.querySelector(
+                                '#action-toolbar button[title="Red wire"] .glyph'
+                            )
+                            return glyph ? getComputedStyle(glyph).backgroundImage : ''
+                        }),
+                    { timeout: 15_000 }
+                )
+                .toContain('icons.webp')
         })
 
         test('the Select button appears once the blueprint is non-empty', async ({ page }) => {
