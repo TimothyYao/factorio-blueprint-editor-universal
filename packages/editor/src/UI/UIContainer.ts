@@ -79,9 +79,12 @@ export class UIContainer extends Container {
         this.ratesPanel.toggle()
     }
 
-    /** Whether the rates panel is currently shown (for e2e). */
+    /**
+     * Whether the rates readout is open (for e2e) — logical state, true in
+     * either presentation (desktop canvas panel / mobile DOM drawer).
+     */
     public get ratesPanelVisible(): boolean {
-        return this.ratesPanel.visible
+        return this.ratesPanel.shown
     }
 
     /** The rates panel's rendered text lines, top to bottom (for e2e). */

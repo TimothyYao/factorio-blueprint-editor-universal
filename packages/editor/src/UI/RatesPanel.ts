@@ -1,5 +1,6 @@
 import { Container, Rectangle, Text, TextStyle } from 'pixi.js'
 import G from '../common/globals'
+import { inputMode } from '../common/input'
 import FD from '../core/factorioData'
 import { Blueprint } from '../core/Blueprint'
 import { Entity } from '../core/Entity'
@@ -65,13 +66,39 @@ const netNegativeStyle = new TextStyle({
 /**
  * Compact per-second rate: 2 decimals under 10 (module ratios live in the
  * hundredths), 1 under 100, whole numbers above — keeps megabase-scale rows
- * from overflowing the panel's fixed width.
+ * from overflowing the panel's fixed width. Shared with the website's DOM
+ * drawer (#89 Phase 2) so both presentations format identically.
  */
-const formatRate = (n: number): string => {
+export const formatRate = (n: number): string => {
     const abs = Math.abs(n)
     const digits = abs < 10 ? 2 : abs < 100 ? 1 : 0
     // Trim trailing zeros so common exact rates read clean ("1.5", not "1.50").
     return `${Number(n.toFixed(digits))}/s`
+}
+
+/** One material row of the rates projection: gross rates + per-machine-type counts. */
+export interface RatesEntryData {
+    type: 'item' | 'fluid'
+    name: string
+    production: number
+    consumption: number
+    /** Producing machines by prototype name (largest groups first). */
+    producerMachines: Array<{ name: string; count: number }>
+    consumerMachines: Array<{ name: string; count: number }>
+}
+
+/**
+ * Render-free projection of the rates readout — the `EntityInfoData` pattern
+ * (#89 Phase 2) applied to this panel: built by `updateRates` from the same
+ * `calculateBlueprintRates` report the canvas rows are drawn from, delivered
+ * to the website's DOM drawer via the `fbe:rates` CustomEvent (null = hidden).
+ */
+export interface RatesData {
+    products: RatesEntryData[]
+    intermediates: RatesEntryData[]
+    ingredients: RatesEntryData[]
+    countedMachines: number
+    machinesWithoutRecipe: number
 }
 
 export class RatesPanel extends Panel {
@@ -84,6 +111,16 @@ export class RatesPanel extends Panel {
     /** Entities carrying recipe/modules listeners from the last recompute. */
     private readonly subscribedEntities = new Set<Entity>()
     private readonly recompute = (): void => this.updateRates()
+    /**
+     * Logical "the rates readout is open" state, decoupled from Pixi `visible`:
+     * on mobile the readout presents as the website's DOM drawer (#89 Phase 2),
+     * so the canvas panel stays hidden there while `m_shown` — the state the
+     * `showRates` toggle, the live recompute subscriptions and the e2e probe
+     * key off — is true. `visible` is always `m_shown && desktop`.
+     */
+    private m_shown = false
+    /** Input mode as of the last reposition (to detect live mode flips). */
+    private m_lastMode = inputMode.mode
 
     public constructor() {
         super(270, 400)
@@ -117,28 +154,36 @@ export class RatesPanel extends Panel {
     }
 
     public toggle(): void {
-        if (this.visible) {
+        if (this.m_shown) {
             this.hide()
         } else {
             this.show()
         }
     }
 
+    /** Whether the readout is open (either presentation — see `m_shown`). */
+    public get shown(): boolean {
+        return this.m_shown
+    }
+
     public show(): void {
-        this.visible = true
+        this.m_shown = true
+        this.visible = inputMode.mode === 'desktop'
         this.attach()
         this.updateRates()
     }
 
     public hide(): void {
+        this.m_shown = false
         this.visible = false
         this.detach()
+        window.dispatchEvent(new CustomEvent('fbe:rates', { detail: null }))
     }
 
     /** Called by UIContainer when `loadBlueprint` swaps `G.bp`, so an open
      * panel follows the new blueprint instead of listening to a dead one. */
     public onBlueprintSwapped(): void {
-        if (!this.visible) return
+        if (!this.m_shown) return
         this.detach()
         this.attach()
         this.updateRates()
@@ -189,7 +234,7 @@ export class RatesPanel extends Panel {
     }
 
     private updateRates(): void {
-        if (!this.visible) return
+        if (!this.m_shown) return
         this.m_Rows.removeChildren()
 
         const entities = G.bp.entities.valuesArray()
@@ -207,6 +252,32 @@ export class RatesPanel extends Panel {
         const intermediates = all
             .filter(r => r.production > 0 && r.consumption > 0)
             .sort((a, b) => a.production - a.consumption - (b.production - b.consumption))
+
+        // The DOM drawer's mirror of what the canvas rows below will show —
+        // same report, same bucketing/sorting, so the two can't disagree.
+        const toEntry = (r: ItemRateTotals): RatesEntryData => ({
+            type: r.type,
+            name: r.name,
+            production: r.production,
+            consumption: r.consumption,
+            producerMachines: [...r.producerMachines.entries()]
+                .sort((a, b) => b[1] - a[1])
+                .map(([name, count]) => ({ name, count })),
+            consumerMachines: [...r.consumerMachines.entries()]
+                .sort((a, b) => b[1] - a[1])
+                .map(([name, count]) => ({ name, count })),
+        })
+        window.dispatchEvent(
+            new CustomEvent<RatesData>('fbe:rates', {
+                detail: {
+                    products: products.map(toEntry),
+                    intermediates: intermediates.map(toEntry),
+                    ingredients: ingredients.map(toEntry),
+                    countedMachines: report.countedMachines,
+                    machinesWithoutRecipe: report.machinesWithoutRecipe,
+                },
+            })
+        )
 
         let y = this.title.height + 12
         const maxY = this.height - ROW_H - 6 // reserve the footer line
@@ -362,6 +433,17 @@ export class RatesPanel extends Panel {
     }
 
     protected override setPosition(): void {
+        // Canvas presentation is desktop-only (mobile gets the DOM drawer);
+        // re-derive on every reposition so a live input-mode switch converges —
+        // and on an actual mode flip, recompute so the presentation taking
+        // over starts from fresh data (the drawer only knows what was last
+        // dispatched; the canvas rows may predate edits made while hidden).
+        this.visible = this.m_shown && inputMode.mode === 'desktop'
+        if (this.m_lastMode !== inputMode.mode) {
+            this.m_lastMode = inputMode.mode
+            if (this.m_shown) this.updateRates()
+        }
+
         // Right edge of the UI safe area, below the entity info panel's anchor —
         // the top-left is owned by the website's logo/settings DOM overlay (and
         // the mobile rail), which a canvas panel would sit underneath. Scale

@@ -244,7 +244,7 @@ pipelines at once made touch taps double-act via the browser's synthetic
       _Enabled follow-up (not built): wrap the rail around the corner in
       portrait — overflow buttons flowing along the top band instead of the
       ⋯ sheet._
-    - 🚧 **Phase 2 — status readouts → DOM.** Entity info ✅: the editor
+    - ✅ **Phase 2 — status readouts → DOM.** Entity info ✅: the editor
       projects a render-free `EntityInfoData` (`buildEntityInfo` in
       `EntityInfoPanel.ts`, sharing the canvas panel's helpers so the numbers
       can't drift) and dispatches it on `fbe:entityinfo`;
@@ -258,8 +258,19 @@ pipelines at once made touch taps double-act via the browser's synthetic
       `panels.spec.ts` ("top band"): desktop asserts panel-not-sheet, mobile
       asserts sheet-not-panel + clearance of the pill and the bottom band;
       marquee suppression covers the sheet too (`touchMarquee.spec.ts`).
-      Remaining: the **rates panel** (still Pixi top-right on mobile) — same
-      recipe: data projection + DOM drawer.
+      Rates ✅ (same recipe): `RatesPanel` stays the state holder + computer
+      (its `showRates` toggle, live-recompute subscriptions and the e2e probe
+      key off a new logical `shown`, decoupled from Pixi `visible`) and
+      mirrors every recompute over `fbe:rates` as a `RatesData` projection —
+      same report, same bucketing/sorting, `formatRate` shared — which
+      `website/src/ratesDrawer.ts` renders top-right below the band (its ✕
+      routes back through the `showRates` action). Both readouts can be open
+      at once on mobile, mirroring the desktop right-edge stack (portrait:
+      rates top / info bottom; landscape: rates top-right / info
+      bottom-right). `rates.spec.ts` now dismisses via the drawer's DOM ✕ on
+      mobile and asserts drawer-not-panel per mode. **Phase 2 is complete** —
+      both status readouts are DOM on mobile; modal dialogs stay Pixi within
+      the safe area by design.
     - ✅ **Phase 3 — DOM icon seam** (`website/src/packIcons.ts`): any DOM
       element marked `data-pack-icon="<id>"` upgrades to a real game icon,
       rendered as a CSS background crop of the pack's `browser/icons.webp`
