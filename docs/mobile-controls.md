@@ -230,12 +230,17 @@ pipelines at once made touch taps double-act via the browser's synthetic
       `WiresPanel` retired on mobile like the quickbar, freeing the bottom band
       for the PAINT/SELECT clusters. Desktop unchanged. e2e in
       `actionToolbar.spec.ts` (toggle + panel absence) and `panels.spec.ts`.
-    - ✅ **Phase 1 — the top band is reserved**: `viewportRegions.ts` measures
-      the fixed top chrome live (corner logo + active-project pill,
-      ResizeObserver) and insets the canvas below it via
-      `setViewportInsets({ top })` — so the pill can no longer cover the
-      entity-info panel; one writer per edge (rail = `left`, regions = `top`).
-      Desktop stays full-bleed. Ratchet in `e2e/panels.spec.ts` ("top band").
+    - ✅ **Phase 1 — the top band is reserved, panels restricted, world
+      full-bleed**: `viewportRegions.ts` measures the fixed top chrome live
+      (corner logo + active-project pill, ResizeObserver) and reserves the band
+      via `setViewportInsets({ top })`, which bounds **`G.safeArea`** — the
+      rect every Pixi panel/dialog anchors and clamps within
+      (`Panel.clampToSafeArea`; `centerViewport` biases to its centre). The
+      canvas stays **full-bleed**, so the blueprint shows through the empty
+      parts of the rail gutter and top band instead of dead letterbox pixels.
+      Pill can no longer cover the entity-info panel; one writer per edge
+      (rail = `left`, regions = `top`). Desktop reserves nothing. Ratchet in
+      `e2e/panels.spec.ts` ("top band").
       _Enabled follow-up (not built): wrap the rail around the corner in
       portrait — overflow buttons flowing along the top band instead of the
       ⋯ sheet._

@@ -72,23 +72,25 @@ export class WiresPanel extends Panel {
         // The quickbar scales down on narrow viewports, so anchor off its *actual*
         // scaled bounds rather than a hardcoded 442 — otherwise this panel runs
         // off the right edge in portrait. If there's no room beside it, stack the
-        // panel just above the quickbar's right end; clamp on-screen as a backstop.
-        const sw = G.app.screen.width
-        const sh = G.app.screen.height
+        // panel just above the quickbar's right end; clamp as a backstop.
+        const sa = G.safeArea
         const qb = G.UI?.quickbarPanel
         // No visible quickbar to anchor to (sub-~442px desktop viewports) — sit
         // centered along the bottom instead.
         const qbb = qb && qb.visible ? qb.getBounds().rectangle : null
         if (!qbb) {
-            this.clampToScreen(sw / 2 - this.width / 2, sh - this.height + 1)
+            this.clampToSafeArea(
+                sa.x + sa.width / 2 - this.width / 2,
+                sa.y + sa.height - this.height + 1
+            )
             return
         }
 
         const besideX = qbb.x + qbb.width + 2
-        if (besideX + this.width > sw) {
-            this.clampToScreen(qbb.x + qbb.width - this.width, qbb.y - this.height + 1)
+        if (besideX + this.width > sa.x + sa.width) {
+            this.clampToSafeArea(qbb.x + qbb.width - this.width, qbb.y - this.height + 1)
         } else {
-            this.clampToScreen(besideX, sh - this.height + 1)
+            this.clampToSafeArea(besideX, sa.y + sa.height - this.height + 1)
         }
     }
 }

@@ -362,12 +362,16 @@ export class RatesPanel extends Panel {
     }
 
     protected override setPosition(): void {
-        // Right edge, below the entity info panel's anchor — the top-left is
-        // owned by the website's logo/settings DOM overlay (and the mobile
-        // rail), which a canvas panel would sit underneath. Scale down on a
-        // viewport narrower than the panel; clamp handles short viewports.
-        const scale = fitToWidthScale(G.app.screen.width, this.width)
+        // Right edge of the UI safe area, below the entity info panel's anchor —
+        // the top-left is owned by the website's logo/settings DOM overlay (and
+        // the mobile rail), which a canvas panel would sit underneath. Scale
+        // down on a safe area narrower than the panel; clamp handles short ones.
+        const sa = G.safeArea
+        const scale = fitToWidthScale(sa.width, this.width)
         this.scale.set(scale)
-        this.clampToScreen(G.app.screen.width - this.width * scale, INFO_PANEL_CLEARANCE * scale)
+        this.clampToSafeArea(
+            sa.x + sa.width - this.width * scale,
+            sa.y + INFO_PANEL_CLEARANCE * scale
+        )
     }
 }

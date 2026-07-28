@@ -225,7 +225,7 @@ const CHEST_BP =
     '0eJxtjs0OgjAQhN9lztUgoRD6KsYYfjbapGwJLSohfXcX9ODBy2x2M9/MrmjdTONkOcKssJEGmJ+bwoOmYD3D6DKvi7rWRZ5VVVEquKYlJ+5xc4R4iCTS3UUFs53nAHOWTO7pBXNSCPbGjdt6uBlIyKf3PfGXSemiQBxttPQh92W58jy0NO0J/ziF0QeBth9XSFN21ArLPiUzpTfn9ku6'
 
 test.describe('top band (#89 Phase 1)', () => {
-    test('mobile: canvas + top-anchored panels start below the fixed top chrome', async ({
+    test('canvas stays full-bleed; on mobile the top-anchored panels clear the chrome', async ({
         page,
     }) => {
         await page.goto(`/?test&source=${encodeURIComponent(CHEST_BP)}`)
@@ -238,19 +238,15 @@ test.describe('top band (#89 Phase 1)', () => {
         expect(logo).not.toBeNull()
         expect(canvas).not.toBeNull()
 
-        if (!isMobileProject()) {
-            // Desktop keeps the historical full-bleed canvas — the chrome and
-            // the top-right panels don't meet at normal window widths.
-            expect(canvas!.y).toBe(0)
-            return
-        }
+        // The canvas renders full-bleed on every platform — the world shows
+        // through the empty parts of the reserved bands ("restrict the panels,
+        // not the world"). The reservation lives in G.safeArea, which the Pixi
+        // panels anchor within, so the chrome constraint is asserted on the
+        // *panel* below, not on the canvas element.
+        expect(canvas!.y).toBe(0)
+        expect(canvas!.x).toBe(0)
 
-        // The canvas is inset below every piece of fixed top chrome, so the
-        // active-project pill can no longer cover the Pixi entity-info panel
-        // (DOM always renders above the canvas — reserving the band is the
-        // only way a canvas panel can win).
-        expect(canvas!.y).toBeGreaterThanOrEqual(pill!.y + pill!.height)
-        expect(canvas!.y).toBeGreaterThanOrEqual(logo!.y + logo!.height)
+        if (!isMobileProject()) return // desktop reserves nothing
 
         // The ?source blueprint imports asynchronously after boot — wait for
         // the chest to actually be in the blueprint before selecting it.

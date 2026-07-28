@@ -456,11 +456,13 @@ export class EntityInfoPanel extends Panel {
     }
 
     protected override setPosition(): void {
-        // Pin to the top-right; scale down on a viewport narrower than the panel
-        // (only sub-~290px screens) and clamp so it never spills off-screen.
-        const scale = fitToWidthScale(G.app.screen.width, this.width)
+        // Pin to the top-right of the UI safe area (below the top chrome band,
+        // clear of the rail); scale down on a safe area narrower than the panel
+        // (only sub-~290px regions) and clamp so it never spills out.
+        const sa = G.safeArea
+        const scale = fitToWidthScale(sa.width, this.width)
         this.scale.set(scale)
-        this.clampToScreen(G.app.screen.width - this.width * scale + 1, 0)
+        this.clampToSafeArea(sa.x + sa.width - this.width * scale + 1, sa.y)
     }
 }
 

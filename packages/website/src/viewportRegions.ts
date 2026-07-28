@@ -2,14 +2,17 @@ import { Editor, inputMode } from '@fbe/editor'
 
 // Viewport regions (#89 Phase 1): the website side of the layout authority.
 //
-// The action rail already reserves a *left* canvas inset; this module does the
-// same for the *top* band — the strip occupied by the fixed top DOM chrome (the
-// corner logo and the active-project pill). The canvas is inset below it via
-// `editor.setViewportInsets({ top })`, so the Pixi panels that anchor to the
-// canvas top (entity-info, rates) start *under* the chrome instead of being
-// covered by it — DOM always renders above the canvas, so reserving the band is
-// the only way a canvas panel can win. Measured live (ResizeObserver), not
-// hardcoded: the pill's height is styling, the logo's is an image.
+// The action rail already reserves a *left* band; this module does the same for
+// the *top* — the strip occupied by the fixed top DOM chrome (the corner logo
+// and the active-project pill). The reservation goes through
+// `editor.setViewportInsets({ top })`, which bounds `G.safeArea` — the rect the
+// Pixi panels anchor and clamp within — so panels that anchor to the top
+// (entity-info, rates) start *below* the chrome instead of being covered by it.
+// DOM always renders above the canvas, so reserving the band is the only way a
+// canvas panel can win. The canvas itself stays full-bleed: the world renders
+// under the chrome and shows through the empty parts of the bands. Measured
+// live (ResizeObserver), not hardcoded: the pill's height is styling, the
+// logo's is an image.
 //
 // Mobile-only, like the rail: on desktop the chrome and the top-right panels
 // don't meet at normal window widths, and the desktop layout stays untouched

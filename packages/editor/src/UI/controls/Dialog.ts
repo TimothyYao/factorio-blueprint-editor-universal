@@ -80,11 +80,12 @@ export abstract class Dialog extends Panel {
      * fit-to-width approach (see quickbarLayout) and clamps as a backstop.
      */
     protected override setPosition(): void {
-        const scale = fitToWidthScale(G.app.screen.width, this.width)
+        const sa = G.safeArea
+        const scale = fitToWidthScale(sa.width, this.width)
         this.scale.set(scale)
-        this.clampToScreen(
-            G.app.screen.width / 2 - (this.width * scale) / 2,
-            G.app.screen.height / 2 - (this.height * scale) / 2
+        this.clampToSafeArea(
+            sa.x + sa.width / 2 - (this.width * scale) / 2,
+            sa.y + sa.height / 2 - (this.height * scale) / 2
         )
     }
 

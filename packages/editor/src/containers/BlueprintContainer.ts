@@ -1458,6 +1458,15 @@ export class BlueprintContainer extends Container {
                 y: (this.size.y - bounds.height) / 2 - bounds.y,
             }
         )
+
+        // The canvas is full-bleed but the UI-free region isn't the whole
+        // screen: bias the centered content to the middle of `G.safeArea`, so
+        // "Center" doesn't tuck the blueprint under the rail / top chrome.
+        const sa = G.safeArea
+        this.viewport.translateBy(
+            sa.x + sa.width / 2 - G.app.screen.width / 2,
+            sa.y + sa.height / 2 - G.app.screen.height / 2
+        )
     }
 
     public getBlueprintBounds(): Rectangle {
