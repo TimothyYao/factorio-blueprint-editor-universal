@@ -1,4 +1,4 @@
-import { DATA_ROOT, getCanonicalDataPack } from '@fbe/editor'
+import { DATA_ROOT, getCanonicalDataPack, loadPackManifest } from '@fbe/editor'
 
 // Pack icons for DOM chrome (#89 Phase 3): real game icons, served from the
 // data plane's per-pack `browser/` artifact (`icons.webp`, 64px cells +
@@ -33,6 +33,12 @@ let sheetUrl = ''
  * (offline, a pack without the browser tier) leave the glyph fallbacks alone.
  */
 export async function loadPackIcons(): Promise<void> {
+    // getCanonicalDataPack() is only correct *after* the packs.json manifest
+    // has resolved (its documented contract) — before that a graphics-variant
+    // id returns itself, and slim variants publish no browser/ tier, so the
+    // fetch 404'd and every icon stayed a text fallback exactly for the users
+    // slim is for (phones). loadPackManifest() is cached and never rejects.
+    await loadPackManifest()
     const base = `${DATA_ROOT}/${getCanonicalDataPack()}/browser`
     try {
         const res = await fetch(`${base}/icons.json`)

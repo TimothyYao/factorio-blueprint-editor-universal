@@ -153,6 +153,31 @@ test.describe('action toolbar', () => {
                 .toContain('icons.webp')
         })
 
+        test('pack icons resolve to the canonical pack on a slim graphics variant', async ({
+            page,
+        }) => {
+            // Slim variants publish no browser/ tier of their own — the sheet
+            // must come from the canonical pack. Regression: loadPackIcons read
+            // getCanonicalDataPack() before the packs.json manifest resolved,
+            // so a persisted slim pack 404'd and every icon stayed a text
+            // fallback — precisely on the devices slim is for.
+            await page.goto('/?test&pack=vanilla-2.0-slim')
+            await waitForLoaded(page)
+
+            await expect
+                .poll(
+                    () =>
+                        page.evaluate(() => {
+                            const glyph = document.querySelector(
+                                '#action-toolbar button[title="Red wire"] .glyph'
+                            )
+                            return glyph ? getComputedStyle(glyph).backgroundImage : ''
+                        }),
+                    { timeout: 15_000 }
+                )
+                .toContain('vanilla-2.0/browser/icons.webp')
+        })
+
         test('the Select button appears once the blueprint is non-empty', async ({ page }) => {
             await page.goto(`/?test&source=${encodeURIComponent(CHEST)}`)
             await waitForLoaded(page)
