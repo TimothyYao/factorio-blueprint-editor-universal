@@ -244,8 +244,22 @@ pipelines at once made touch taps double-act via the browser's synthetic
       _Enabled follow-up (not built): wrap the rail around the corner in
       portrait — overflow buttons flowing along the top band instead of the
       ⋯ sheet._
-    - ⬜ **Phase 2 — status readouts → DOM** (portrait bottom sheet / landscape
-      drawer)
+    - 🚧 **Phase 2 — status readouts → DOM.** Entity info ✅: the editor
+      projects a render-free `EntityInfoData` (`buildEntityInfo` in
+      `EntityInfoPanel.ts`, sharing the canvas panel's helpers so the numbers
+      can't drift) and dispatches it on `fbe:entityinfo`;
+      `website/src/entityInfoSheet.ts` renders it as a **bottom sheet**
+      (portrait) / **right drawer** (landscape, CSS `orientation` query) with
+      real game icons via the Phase 3 seam. The Pixi panel is now
+      desktop-only — one presentation per input mode. The sheet sits above the
+      bottom band since the EDIT Select/Edit bar always co-occurs with it.
+      Sheet v1 renders the circuit summary as plain text (the canvas panel's
+      icon-rich version is the model for an upgrade). Ratchet reworked in
+      `panels.spec.ts` ("top band"): desktop asserts panel-not-sheet, mobile
+      asserts sheet-not-panel + clearance of the pill and the bottom band;
+      marquee suppression covers the sheet too (`touchMarquee.spec.ts`).
+      Remaining: the **rates panel** (still Pixi top-right on mobile) — same
+      recipe: data projection + DOM drawer.
     - ✅ **Phase 3 — DOM icon seam** (`website/src/packIcons.ts`): any DOM
       element marked `data-pack-icon="<id>"` upgrades to a real game icon,
       rendered as a CSS background crop of the pack's `browser/icons.webp`

@@ -25,6 +25,7 @@ import { initSettingsPane } from './settingsPane'
 import { initActionToolbar } from './actionToolbar'
 import { initViewportRegions } from './viewportRegions'
 import { loadPackIcons } from './packIcons'
+import { initEntityInfoSheet } from './entityInfoSheet'
 import { loadSavedBlueprint, clearSavedBlueprint } from './blueprintStorage'
 import { LibraryController } from './library/controller'
 import { createLibraryStore } from './library/store'
@@ -194,6 +195,8 @@ editor
         // Upgrade marked chrome (the rail's wire buttons) to real game icons
         // from the pack's browser/ sheet — progressive, glyphs stay on failure.
         void loadPackIcons()
+        // Mobile presentation of the entity info panel (#89 Phase 2).
+        initEntityInfoSheet()
 
         // Opt-in e2e probe for on-canvas state that the DOM can't expose.
         if (new URLSearchParams(window.location.search).has('test')) {

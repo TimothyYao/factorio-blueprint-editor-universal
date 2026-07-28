@@ -49,7 +49,7 @@ Reference viewport for concrete numbers: a Pixel-7-ish **portrait** screen,
 | ----------------------------------------------- | -------------------------------------- | --------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | **Quickbar** (`QuickbarPanel`, 2 rows)          | bottom-center (desktop)                | 442 × 100                   | `fitToWidthScale`; **retired on mobile** (hidden)                                   | **Gone on mobile** — actions live in the rail; slots/keybinds still work, desktop unchanged |
 | **Wires panel** (`WiresPanel`)                  | beside the quickbar (desktop)          | 136 × 62                    | clamp on-screen; **retired on mobile** (hidden)                                     | **Gone on mobile** — the three wires are colour-coded rail buttons (toggle to hold/drop)    |
-| **Entity-info** (`EntityInfoPanel`)             | top-right of `G.safeArea`              | 270 × 270 (grows w/ recipe) | fit + clamp within the safe area                                                    | Starts below the reserved top band on mobile (#89 Phase 1) — no longer under the pill       |
+| **Entity-info** (`EntityInfoPanel`)             | top-right of `G.safeArea` (desktop)    | 270 × 270 (grows w/ recipe) | fit + clamp; **desktop-only** (hidden on mobile)                                    | **Gone on mobile** — presented by the DOM `#entity-info-sheet` instead (#89 Phase 2)        |
 | **Rates panel** (`RatesPanel`, #87)             | top-right, below the info panel's spot | 270 × 400                   | fit + clamp; hardcoded `INFO_PANEL_CLEARANCE = 276` offset                          | Toggled (T / rail "Rates"); another fixed top-right tenant placed by convention, not system |
 | **Editors** (machine/inserter/chest/splitter/…) | centered                               | 402–**504** × 171–176       | scale-to-fit + clamp                                                                | Centered modal                                                                              |
 | **Inventory** (`InventoryDialog`)               | centered                               | **responsive W** × ~520     | width fits the tabs (capped to screen, ≥404); tab/item **scroll** + **Recents tab** | Touch-usable: long-press preview + Pin/Unpin                                                |
@@ -144,11 +144,12 @@ retirement; direction 3 via the rail's ⋯ overflow). Summary:
    top-band collision by construction. _Follow-up idea it enables: in
    portrait, the rail could **wrap around the corner** — overflow buttons
    flowing along the top band instead of hiding behind the ⋯ sheet._
-4. **Phase 2 — reclassify by role**: actions → rail; status readouts
-   (entity-info, rates) → DOM incrementally (portrait bottom sheet / landscape
-   side drawer) — unblocked by the data plane's DOM-friendly icon sheet
-   (`browser/icons.webp`, 64px cells + `icons.json` rects, CORS `*`); modal
-   dialogs stay Pixi, anchored within the inset region.
+4. 🚧 **Phase 2 — reclassify by role**: actions → rail ✅; **entity-info →
+   DOM ✅** — `buildEntityInfo` projects render-free data over
+   `fbe:entityinfo`, `entityInfoSheet.ts` renders a portrait bottom sheet /
+   landscape right drawer with Phase 3 icons, the Pixi panel is desktop-only.
+   Remaining: the **rates panel** (same recipe); modal dialogs stay Pixi,
+   anchored within the safe area.
 5. ✅ **Phase 3 — DOM icon seam** (`packIcons.ts`): icon-id →
    `background-position` over the pack's `icons.webp`, keyed on the canonical
    pack id, glyph fallback. Wire buttons show real sprites; prototype icons

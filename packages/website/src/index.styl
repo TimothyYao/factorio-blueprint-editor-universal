@@ -412,6 +412,56 @@ body.mobile
         color: #ffe6c0
         margin-right: 6px
 
+// Entity-info bottom sheet (#89 Phase 2) — the mobile presentation of the
+// entity info panel (entityInfoSheet.ts). Floats over the full-bleed canvas:
+// a bottom sheet in portrait (left edge clears the action rail; bottom offset
+// budgets for the EDIT Select/Edit bar, which always co-occurs with it), a
+// right-side drawer in landscape. Below the contextual clusters (z21) so their
+// buttons win if a very short viewport ever overlaps them.
+#entity-info-sheet
+    display: none
+    position: fixed
+    z-index: 15
+    left: 54px
+    right: 8px
+    bottom: 96px
+    max-height: 40vh
+    overflow-y: auto
+    padding: 10px 14px
+    color: #eee
+    font-size: 13px
+    background: rgba(48, 48, 48, 0.92)
+    border: 1px solid #888
+    border-radius: 10px
+    &.visible
+        display: block
+    @media (orientation: landscape)
+        left: auto
+        right: 8px
+        top: 44px
+        bottom: auto
+        width: 300px
+        max-height: unquote('calc(100vh - 140px)')
+    .eis-name
+        font-weight: 600
+        font-size: 15px
+        margin-bottom: 4px
+    .eis-line
+        margin: 2px 0
+    .eis-dim
+        color: #b5b5b5
+        font-size: 12px
+    .eis-row
+        display: flex
+        align-items: center
+        flex-wrap: wrap
+        gap: 6px
+        margin: 6px 0
+    .eis-stack
+        display: inline-flex
+        align-items: center
+        gap: 3px
+
 // Library panel — DOM overlay (like #info-panel) listing the active pack's tree.
 #library-panel
     display: none

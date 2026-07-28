@@ -1,8 +1,9 @@
 import { Container } from 'pixi.js'
 import { Entity } from '../core/Entity'
+import { inputMode } from '../common/input'
 import { DebugContainer } from './DebugContainer'
 import { QuickbarPanel } from './QuickbarPanel'
-import { EntityInfoPanel } from './EntityInfoPanel'
+import { EntityInfoPanel, buildEntityInfo } from './EntityInfoPanel'
 import { InventoryDialog, SlotClear } from './InventoryDialog'
 import { SignalPicker, SignalChoice } from './SignalPicker'
 import { NumericKeypad } from './NumericKeypad'
@@ -43,7 +44,17 @@ export class UIContainer extends Container {
     }
 
     public updateEntityInfoPanel(entity?: Entity): void {
-        this.entityInfoPanel.updateVisualization(entity)
+        // Desktop shows the canvas panel; mobile shows the website's DOM
+        // bottom sheet (#89 Phase 2) — one presentation per input mode, same
+        // signal. The sheet gets a render-free data projection over a window
+        // event (the same DOM/canvas bridge pattern as `fbe:viewportchange`),
+        // dispatched in both modes so a live mode switch has fresh data ready.
+        this.entityInfoPanel.updateVisualization(inputMode.mode === 'desktop' ? entity : undefined)
+        window.dispatchEvent(
+            new CustomEvent('fbe:entityinfo', {
+                detail: entity ? buildEntityInfo(entity) : null,
+            })
+        )
     }
 
     /** Whether the top-right entity info panel is currently shown (for e2e). */

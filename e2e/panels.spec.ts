@@ -246,8 +246,6 @@ test.describe('top band (#89 Phase 1)', () => {
         expect(canvas!.y).toBe(0)
         expect(canvas!.x).toBe(0)
 
-        if (!isMobileProject()) return // desktop reserves nothing
-
         // The ?source blueprint imports asynchronously after boot — wait for
         // the chest to actually be in the blueprint before selecting it.
         await expect
@@ -256,24 +254,34 @@ test.describe('top band (#89 Phase 1)', () => {
             })
             .toBeGreaterThan(0)
 
-        // Disjointness ratchet: open the info panel for real and assert its
-        // viewport-space top clears the pill.
-        const bounds = await page.evaluate(() => {
+        // Drive the same signal a hover/tap-select produces.
+        const shown = await page.evaluate(() => {
             const w = window as unknown as {
-                __FBE_TEST__?: {
-                    showEntityInfo: (name: string) => boolean
-                    infoPanelBounds: () => {
-                        x: number
-                        y: number
-                        width: number
-                        height: number
-                    } | null
-                }
+                __FBE_TEST__?: { showEntityInfo: (name: string) => boolean }
             }
-            if (!w.__FBE_TEST__.showEntityInfo('wooden-chest')) return null
-            return w.__FBE_TEST__.infoPanelBounds()
+            return w.__FBE_TEST__.showEntityInfo('wooden-chest')
         })
-        expect(bounds).not.toBeNull()
-        expect(canvas!.y + bounds!.y).toBeGreaterThanOrEqual(pill!.y + pill!.height)
+        expect(shown).toBe(true)
+        const sheet = page.locator('#entity-info-sheet')
+
+        if (!isMobileProject()) {
+            // Desktop: the Pixi panel presents (top-right of the safe area,
+            // which is the whole screen here); the DOM sheet stays out of it.
+            expect((await readTestState(page)).infoPanelVisible).toBe(true)
+            await expect(sheet).toBeHidden()
+            return
+        }
+
+        // Mobile: the DOM bottom sheet presents (#89 Phase 2) — the Pixi panel
+        // is retired here, and the sheet (bottom-anchored) trivially clears the
+        // top chrome; assert both, plus that it stays out of the bottom band
+        // where the contextual EDIT bar lives.
+        expect((await readTestState(page)).infoPanelVisible).toBe(false)
+        await expect(sheet).toBeVisible()
+        await expect(sheet).toContainText('Wooden chest')
+        const sb = await sheet.boundingBox()
+        const viewport = page.viewportSize()!
+        expect(sb!.y).toBeGreaterThanOrEqual(pill!.y + pill!.height)
+        expect(sb!.y + sb!.height).toBeLessThanOrEqual(viewport.height - 80)
     })
 })

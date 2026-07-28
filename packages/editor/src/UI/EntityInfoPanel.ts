@@ -7,6 +7,7 @@ import {
     TransportBeltConnectablePrototype,
 } from 'factorio:prototype'
 import G from '../common/globals'
+import { inputMode } from '../common/input'
 import util from '../common/util'
 import { ISignal } from '../types'
 import {
@@ -65,6 +66,38 @@ const containerToBelt = (rotationSpeed: number, beltSpeed: number, n: number): n
 
 const roundToTwo = (n: number): number => Math.round(n * 100) / 100
 const roundToFour = (n: number): number => Math.round(n * 10000) / 10000
+
+/** One side of a recipe row: an item/fluid token with its (resolved) amount. */
+export interface EntityInfoStack {
+    type: string
+    name: string
+    amount: number
+}
+
+/**
+ * Pure, render-free projection of what the entity info panel shows — the seam
+ * that lets the website's DOM bottom sheet (#89 Phase 2) present the same facts
+ * without touching Pixi. Built by `buildEntityInfo` below, which shares this
+ * module's helpers (effect maths, belt/inserter speeds) with the canvas panel
+ * so the two presentations can't drift. Delivered to the DOM via the
+ * `fbe:entityinfo` CustomEvent (see `UIContainer.updateEntityInfoPanel`).
+ */
+export interface EntityInfoData {
+    /** Localised entity name. */
+    name: string
+    /** Stat lines (crafting speed / power / productivity, belt or inserter speed). */
+    lines: string[]
+    /** The set recipe, as authored (per craft). */
+    recipe?: { time: number; ingredients: EntityInfoStack[]; results: EntityInfoStack[] }
+    /** Per-second in/out with module/beacon effects + productivity applied. */
+    effectiveRecipe?: { ingredients: EntityInfoStack[]; results: EntityInfoStack[] }
+    /**
+     * Circuit summary as plain text (mode flags, enable condition). The canvas
+     * panel renders this section icon-rich; the sheet's v1 degrades to text —
+     * upgrading it to icon tokens is a noted follow-up.
+     */
+    circuit: string[]
+}
 
 /**
  * This class creates a panel to show detailed informations about each entity (as the original game and maybe more).
@@ -456,6 +489,12 @@ export class EntityInfoPanel extends Panel {
     }
 
     protected override setPosition(): void {
+        // Mobile renders entity info as the website's DOM bottom sheet (#89
+        // Phase 2) — hide the canvas panel there (incl. on a live input-mode
+        // switch, which re-runs setPosition; don't force-show on the way back:
+        // the next hover re-populates it).
+        if (inputMode.mode === 'mobile') this.visible = false
+
         // Pin to the top-right of the UI safe area (below the top chrome band,
         // clear of the rail); scale down on a safe area narrower than the panel
         // (only sub-~290px regions) and clamp so it never spills out.
@@ -485,4 +524,130 @@ function findBeaconsReaching(entity: Entity): BeaconSource[] {
             footprint: { position: beacon.position, size: beacon.size },
         }))
         .filter(beacon => beaconReaches(beacon, machine))
+}
+
+/**
+ * Project `entity` into the render-free `EntityInfoData` the DOM bottom sheet
+ * consumes (#89 Phase 2). Mirrors `updateVisualization` section by section —
+ * machine effects, recipe + effective per-second IO, belt/inserter speeds,
+ * circuit summary — through the same module helpers, so the numbers shown on
+ * canvas (desktop) and in DOM (mobile) come from one computation.
+ */
+export function buildEntityInfo(entity: Entity): EntityInfoData {
+    const data: EntityInfoData = {
+        name: String(FD.entities[entity.name].localised_name),
+        lines: [],
+        circuit: [],
+    }
+
+    if (entity.entityData.type === 'assembling-machine') {
+        const { speed, productivity, consumption } = computeMachineEffects(
+            resolveModuleNames(entity.modules),
+            findBeaconsReaching(entity)
+        )
+        const machineData = entity.entityData as CraftingMachinePrototype
+        const newCraftingSpeed = machineData.crafting_speed * (1 + speed)
+        const newEnergyUsage = parseInt(machineData.energy_usage.slice(0, -2)) * (1 + consumption)
+        const fmt = (n: number): string =>
+            ` (${Math.sign(n) === 1 ? '+' : '-'}${roundToTwo(Math.abs(n) * 100)}%)`
+        data.lines.push(
+            `Crafting speed: ${roundToFour(newCraftingSpeed)}${speed ? fmt(speed) : ''}`,
+            `Power consumption: ${roundToTwo(newEnergyUsage)} kW${consumption ? fmt(consumption) : ''}`,
+            `Productivity bonus: ${Math.sign(productivity) === -1 ? '-' : '+'}${roundToTwo(Math.abs(productivity) * 100)}%`
+        )
+
+        const recipe = entity.recipe ? FD.recipes[entity.recipe] : undefined
+        if (recipe !== undefined) {
+            const energy_required = recipe.energy_required || 0.5
+            const effectiveProductivity = recipe.allow_productivity ? productivity : 0
+            data.recipe = {
+                time: energy_required,
+                ingredients: recipe.ingredients.map(i => ({
+                    type: i.type,
+                    name: i.name,
+                    amount: roundToTwo(getIngredientAmount(i)),
+                })),
+                results: recipe.results.map(r => ({
+                    type: r.type,
+                    name: r.name,
+                    amount: roundToTwo(getProductAmountWithProductivity(r, 0)),
+                })),
+            }
+            data.effectiveRecipe = {
+                ingredients: recipe.ingredients.map(i => ({
+                    type: i.type,
+                    name: i.name,
+                    amount: roundToTwo(
+                        (getIngredientAmount(i) * newCraftingSpeed) / energy_required
+                    ),
+                })),
+                results: recipe.results.map(r => ({
+                    type: r.type,
+                    name: r.name,
+                    amount: roundToTwo(
+                        (getProductAmountWithProductivity(r, effectiveProductivity) *
+                            newCraftingSpeed) /
+                            energy_required
+                    ),
+                })),
+            }
+        }
+    }
+
+    const isBelt =
+        entity.entityData.type === 'transport-belt' ||
+        entity.entityData.type === 'underground-belt' ||
+        entity.entityData.type === 'splitter' ||
+        entity.entityData.type === 'loader'
+
+    if (entity.entityData.type === 'inserter') {
+        // Same to-a-belt refinement as the canvas panel: unloading onto a belt
+        // is slower than container-to-container.
+        let speed = containerToContainer(
+            (entity.entityData as InserterPrototype).rotation_speed,
+            entity.inserterStackSize
+        )
+        const tiles = entity.name === 'long-handed-inserter' ? 2 : 1
+        const toP = util.rotatePointBasedOnDir([0, tiles], entity.direction)
+        const to = G.bp.entityPositionGrid.getEntityAtPosition(util.sumprod(entity.position, toP))
+        const toIsBelt =
+            to &&
+            (to.entityData.type === 'transport-belt' ||
+                to.entityData.type === 'underground-belt' ||
+                to.entityData.type === 'splitter' ||
+                to.entityData.type === 'loader')
+        if (toIsBelt) {
+            speed = containerToBelt(
+                (entity.entityData as InserterPrototype).rotation_speed,
+                (to.entityData as TransportBeltConnectablePrototype).speed,
+                entity.inserterStackSize
+            )
+        }
+        data.lines.push(
+            `Speed: ${roundToTwo(speed)} items/s`,
+            '> changes if inserter unloads to a belt'
+        )
+    }
+
+    if (isBelt) {
+        data.lines.push(
+            `Speed: ${roundToTwo(
+                getBeltSpeed((entity.entityData as TransportBeltConnectablePrototype).speed)
+            )} items/s`
+        )
+    }
+
+    // Circuit summary, textual (the canvas panel's icon-rich rendering is the
+    // richer sibling; the sheet upgrades later).
+    data.circuit.push(...entity.circuitModeSummary)
+    if (entity.circuitCondition !== undefined) {
+        const c = entity.circuitCondition
+        data.circuit.push(
+            `Enabled if ${c.first_signal?.name ?? '?'} ${c.comparator ?? '<'} ${
+                c.second_signal?.name ?? c.constant ?? 0
+            }`
+        )
+    }
+
+    return data
 }
