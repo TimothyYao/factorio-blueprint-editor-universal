@@ -6,11 +6,12 @@ import { applyPackIcon } from './packIcons'
 // readout (#87). The editor's RatesPanel stays the state holder and computer —
 // it recomputes live (entity add/remove, recipe/module edits) and mirrors
 // every result over the `fbe:rates` CustomEvent (null = closed); this module
-// renders that projection as a DOM drawer anchored top-right, below the top
-// band. The canvas panel is desktop-only, so exactly one presentation is live
-// per input mode. Anchoring is complementary to the entity-info sheet (bottom
-// in portrait, bottom-right in landscape): the two can be open at once, like
-// their desktop counterparts stacked on the right edge.
+// renders that projection as a DOM drawer — bottom-right in portrait (the
+// reachable band: it's an explicitly toggled overview the user scrolls and
+// dismisses, unlike the passive tap-select sheet at the top), top-right in
+// landscape. The canvas panel is desktop-only, so exactly one presentation is
+// live per input mode; sheet + drawer anchor complementarily so both can be
+// open at once, like their desktop counterparts stacked on the right edge.
 export function initRatesDrawer(): void {
     const drawer = document.createElement('div')
     drawer.id = 'rates-drawer'

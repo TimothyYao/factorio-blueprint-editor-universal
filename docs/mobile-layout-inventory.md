@@ -146,11 +146,14 @@ retirement; direction 3 via the rail's ⋯ overflow). Summary:
    flowing along the top band instead of hiding behind the ⋯ sheet._
 4. ✅ **Phase 2 — reclassify by role**: actions → rail; **entity-info →
    DOM** (`buildEntityInfo` → `fbe:entityinfo` → `entityInfoSheet.ts`, a
-   portrait bottom sheet / landscape bottom-right drawer); **rates → DOM**
-   (`RatesData` → `fbe:rates` → `ratesDrawer.ts`, top-right below the band —
-   both readouts can be open at once, mirroring the desktop right-edge
-   stack). The Pixi panels are desktop-only; modal dialogs stay Pixi,
-   anchored within the safe area, by design.
+   full-width **top** sheet in portrait / bottom-right drawer in landscape);
+   **rates → DOM** (`RatesData` → `fbe:rates` → `ratesDrawer.ts`,
+   bottom-right in portrait / top-right in landscape). Portrait follows the
+   **reachability rule**: the active area of a portrait phone is the bottom,
+   so the passive tap-select readout goes top and the explicitly toggled,
+   interactive overview goes bottom. Both can be open at once. The Pixi
+   panels are desktop-only; modal dialogs stay Pixi, anchored within the
+   safe area, by design.
 5. ✅ **Phase 3 — DOM icon seam** (`packIcons.ts`): icon-id →
    `background-position` over the pack's `icons.webp`, keyed on the canonical
    pack id, glyph fallback. Wire buttons show real sprites; prototype icons

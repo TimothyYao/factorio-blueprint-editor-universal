@@ -2,20 +2,21 @@ import { inputMode } from '@fbe/editor'
 import type { EntityInfoData, EntityInfoStack } from '@fbe/editor'
 import { applyPackIcon } from './packIcons'
 
-// Entity-info bottom sheet (#89 Phase 2): the mobile presentation of the
-// entity info panel. The editor dispatches a render-free `EntityInfoData` on
-// every hover/tap-select via the `fbe:entityinfo` window event (see
+// Entity-info sheet (#89 Phase 2): the mobile presentation of the entity info
+// panel. The editor dispatches a render-free `EntityInfoData` on every
+// hover/tap-select via the `fbe:entityinfo` window event (see
 // `UIContainer.updateEntityInfoPanel`); this module renders it as DOM — a
-// bottom sheet in portrait, a right-side drawer in landscape (CSS decides,
-// see index.styl) — with real game icons through the packIcons seam. The Pixi
-// panel stays the desktop presentation; on mobile it's hidden, so exactly one
-// renderer is live per input mode.
+// full-width top sheet in portrait, a bottom-right drawer in landscape (CSS
+// decides, see index.styl) — with real game icons through the packIcons seam.
+// The Pixi panel stays the desktop presentation; on mobile it's hidden, so
+// exactly one renderer is live per input mode.
 //
-// Placement: the sheet floats over the world (full-bleed canvas) *above* the
-// bottom-center contextual clusters' band, because tapping an entity shows the
-// EDIT (Select/Edit) bar at the same moment — the two always co-occur, so the
-// sheet's bottom offset budgets for the bar. z-index below the clusters keeps
-// their buttons tappable if they ever overlap on a very short viewport.
+// Placement: the sheet floats over the world (full-bleed canvas) at the *top*
+// in portrait — it appears on every tap-select, and the active, reachable area
+// of a portrait phone is the bottom of the screen, so the passive readout
+// stays out of it (and clear of the bottom-center EDIT Select/Edit bar, which
+// always co-occurs with it). z-index below the clusters keeps their buttons
+// tappable if they ever overlap on a very short viewport.
 export function initEntityInfoSheet(): void {
     const sheet = document.createElement('div')
     sheet.id = 'entity-info-sheet'

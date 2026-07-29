@@ -248,11 +248,14 @@ pipelines at once made touch taps double-act via the browser's synthetic
       projects a render-free `EntityInfoData` (`buildEntityInfo` in
       `EntityInfoPanel.ts`, sharing the canvas panel's helpers so the numbers
       can't drift) and dispatches it on `fbe:entityinfo`;
-      `website/src/entityInfoSheet.ts` renders it as a **bottom sheet**
-      (portrait) / **right drawer** (landscape, CSS `orientation` query) with
-      real game icons via the Phase 3 seam. The Pixi panel is now
-      desktop-only — one presentation per input mode. The sheet sits above the
-      bottom band since the EDIT Select/Edit bar always co-occurs with it.
+      `website/src/entityInfoSheet.ts` renders it as a **full-width top
+      sheet** (portrait) / **bottom-right drawer** (landscape, CSS
+      `orientation` query) with real game icons via the Phase 3 seam. The Pixi
+      panel is now desktop-only — one presentation per input mode. Portrait
+      placement follows the reachability rule (feedback on PR #91): the
+      active, reachable area of a portrait phone is the **bottom**, so the
+      passive tap-select readout goes to the top, clear of the thumbs and of
+      the EDIT Select/Edit bar that always co-occurs with it.
       Sheet v1 renders the circuit summary as plain text (the canvas panel's
       icon-rich version is the model for an upgrade). Ratchet reworked in
       `panels.spec.ts` ("top band"): desktop asserts panel-not-sheet, mobile
@@ -263,14 +266,15 @@ pipelines at once made touch taps double-act via the browser's synthetic
       key off a new logical `shown`, decoupled from Pixi `visible`) and
       mirrors every recompute over `fbe:rates` as a `RatesData` projection —
       same report, same bucketing/sorting, `formatRate` shared — which
-      `website/src/ratesDrawer.ts` renders top-right below the band (its ✕
-      routes back through the `showRates` action). Both readouts can be open
-      at once on mobile, mirroring the desktop right-edge stack (portrait:
-      rates top / info bottom; landscape: rates top-right / info
-      bottom-right). `rates.spec.ts` now dismisses via the drawer's DOM ✕ on
-      mobile and asserts drawer-not-panel per mode. **Phase 2 is complete** —
-      both status readouts are DOM on mobile; modal dialogs stay Pixi within
-      the safe area by design.
+      `website/src/ratesDrawer.ts` renders bottom-right in portrait — the
+      reachable band, right for an explicitly toggled overview the user
+      scrolls and dismisses — and top-right in landscape (its ✕ routes back
+      through the `showRates` action). Both readouts can be open at once on
+      mobile, anchored complementarily (portrait: info top / rates bottom;
+      landscape: rates top-right / info bottom-right). `rates.spec.ts`
+      dismisses via the drawer's DOM ✕ on mobile and asserts drawer-not-panel
+      per mode. **Phase 2 is complete** — both status readouts are DOM on
+      mobile; modal dialogs stay Pixi within the safe area by design.
     - ✅ **Phase 3 — DOM icon seam** (`website/src/packIcons.ts`): any DOM
       element marked `data-pack-icon="<id>"` upgrades to a real game icon,
       rendered as a CSS background crop of the pack's `browser/icons.webp`

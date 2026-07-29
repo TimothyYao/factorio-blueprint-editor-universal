@@ -272,10 +272,11 @@ test.describe('top band (#89 Phase 1)', () => {
             return
         }
 
-        // Mobile: the DOM bottom sheet presents (#89 Phase 2) — the Pixi panel
-        // is retired here, and the sheet (bottom-anchored) trivially clears the
-        // top chrome; assert both, plus that it stays out of the bottom band
-        // where the contextual EDIT bar lives.
+        // Mobile: the DOM sheet presents (#89 Phase 2) — the Pixi panel is
+        // retired here. In portrait the sheet is a full-width top band: it
+        // must clear the fixed top chrome (the pill) *and* stay out of the
+        // bottom reachable band, where the user's thumbs (and the contextual
+        // EDIT bar) live — the placement rationale, as assertions.
         expect((await readTestState(page)).infoPanelVisible).toBe(false)
         await expect(sheet).toBeVisible()
         await expect(sheet).toContainText('Wooden chest')
