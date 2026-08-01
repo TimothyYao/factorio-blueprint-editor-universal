@@ -171,11 +171,18 @@ body.mobile
                 width: 22px
                 height: 22px
 
-    // Fold the corner buttons (Github / Settings) into the top of the action
-    // bar: flush dark squares directly under the logo, visually continuous with
-    // the rail below (the dark body shows through the inset gutter).
+    // Fold the corner buttons (Github / Settings / Library) into the top of
+    // the action bar: flush dark squares directly under the logo, laid out on
+    // the SAME column grid as the rail below (2 portrait / 3 landscape — keep
+    // in sync with actionToolbar.ts layout()), so the whole left edge is one
+    // aligned lattice and the block costs one or two rows instead of a
+    // three-tall stack.
     #buttons
         top: 52px
+        display: grid
+        grid-template-columns: repeat(2, 44px)
+        @media (orientation: landscape)
+            grid-template-columns: repeat(3, 44px)
         .github-button
         .settings-button
             display: flex

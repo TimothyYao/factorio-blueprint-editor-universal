@@ -352,10 +352,14 @@ export function initActionToolbar(editor: Editor, handlers: Record<string, () =>
                 (!b.spec.when || b.spec.when(editor))
         )
 
-        // As many priority buttons as fit the height (×3 columns in landscape);
-        // the rest collapse into the ⋯ overflow so nothing falls below the
-        // viewport. The ⋯ takes the last grid cell when present.
-        const columns = window.innerWidth > window.innerHeight ? 3 : 1
+        // Multi-column grid: 2 columns in portrait, 3 in landscape — matching
+        // the corner-button block above (index.styl gives #buttons the same
+        // column template), so the whole left edge reads as one aligned
+        // lattice instead of a tall single-file stack. As many priority
+        // buttons as fit the height stay in the rail; the rest collapse into
+        // the ⋯ overflow so nothing falls below the viewport. The ⋯ takes the
+        // last grid cell when present.
+        const columns = window.innerWidth > window.innerHeight ? 3 : 2
         const rows = Math.max(1, Math.floor((window.innerHeight - top - MARGIN) / BTN))
         const capacity = rows * columns
         const overflowNeeded = live.length > capacity
