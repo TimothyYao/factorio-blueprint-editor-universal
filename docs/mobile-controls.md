@@ -230,12 +230,61 @@ pipelines at once made touch taps double-act via the browser's synthetic
       `WiresPanel` retired on mobile like the quickbar, freeing the bottom band
       for the PAINT/SELECT clusters. Desktop unchanged. e2e in
       `actionToolbar.spec.ts` (toggle + panel absence) and `panels.spec.ts`.
-    - ⬜ **Phase 1 — reserved bands** via `setViewportInsets` (all four edges)
-    - ⬜ **Phase 2 — status readouts → DOM** (portrait bottom sheet / landscape
-      drawer)
-    - ⬜ **Phase 3 — DOM icon seam** off the data plane's `browser/icons.webp` —
-      this also unblocks the rail's **real game-sprite icons** (previously
-      "blocked on `.basis`→DOM delivery"; unicode glyphs meanwhile)
+    - ✅ **Phase 1 — the top band is reserved, panels restricted, world
+      full-bleed**: `viewportRegions.ts` measures the fixed top chrome live
+      (corner logo + active-project pill, ResizeObserver) and reserves the band
+      via `setViewportInsets({ top })`, which bounds **`G.safeArea`** — the
+      rect every Pixi panel/dialog anchors and clamps within
+      (`Panel.clampToSafeArea`; `centerViewport` biases to its centre). The
+      canvas stays **full-bleed**, so the blueprint shows through the empty
+      parts of the rail gutter and top band instead of dead letterbox pixels.
+      Pill can no longer cover the entity-info panel; one writer per edge
+      (rail = `left`, regions = `top`). Desktop reserves nothing. Ratchet in
+      `e2e/panels.spec.ts` ("top band").
+      _Enabled follow-up (not built): wrap the rail around the corner in
+      portrait — overflow buttons flowing along the top band instead of the
+      ⋯ sheet._
+    - ✅ **Phase 2 — status readouts → DOM.** Entity info ✅: the editor
+      projects a render-free `EntityInfoData` (`buildEntityInfo` in
+      `EntityInfoPanel.ts`, sharing the canvas panel's helpers so the numbers
+      can't drift) and dispatches it on `fbe:entityinfo`;
+      `website/src/entityInfoSheet.ts` renders it as a **full-width top
+      sheet** (portrait) / **bottom-right drawer** (landscape, CSS
+      `orientation` query) with real game icons via the Phase 3 seam. The Pixi
+      panel is now desktop-only — one presentation per input mode. Portrait
+      placement follows the reachability rule (feedback on PR #91): the
+      active, reachable area of a portrait phone is the **bottom**, so the
+      passive tap-select readout goes to the top, clear of the thumbs and of
+      the EDIT Select/Edit bar that always co-occurs with it.
+      Sheet v1 renders the circuit summary as plain text (the canvas panel's
+      icon-rich version is the model for an upgrade). Ratchet reworked in
+      `panels.spec.ts` ("top band"): desktop asserts panel-not-sheet, mobile
+      asserts sheet-not-panel + clearance of the pill and the bottom band;
+      marquee suppression covers the sheet too (`touchMarquee.spec.ts`).
+      Rates ✅ (same recipe): `RatesPanel` stays the state holder + computer
+      (its `showRates` toggle, live-recompute subscriptions and the e2e probe
+      key off a new logical `shown`, decoupled from Pixi `visible`) and
+      mirrors every recompute over `fbe:rates` as a `RatesData` projection —
+      same report, same bucketing/sorting, `formatRate` shared — which
+      `website/src/ratesDrawer.ts` renders bottom-right in portrait — the
+      reachable band, right for an explicitly toggled overview the user
+      scrolls and dismisses — and top-right in landscape (its ✕ routes back
+      through the `showRates` action). Both readouts can be open at once on
+      mobile, anchored complementarily (portrait: info top / rates bottom;
+      landscape: rates top-right / info bottom-right). `rates.spec.ts`
+      dismisses via the drawer's DOM ✕ on mobile and asserts drawer-not-panel
+      per mode. **Phase 2 is complete** — both status readouts are DOM on
+      mobile; modal dialogs stay Pixi within the safe area by design.
+    - ✅ **Phase 3 — DOM icon seam** (`website/src/packIcons.ts`): any DOM
+      element marked `data-pack-icon="<id>"` upgrades to a real game icon,
+      rendered as a CSS background crop of the pack's `browser/icons.webp`
+      (fetched off the canonical pack id, so slim variants resolve to their
+      full pack's sheet; progressive — glyphs stay if the pack ships no
+      browser tier). The rail's **wire buttons** now show the actual wire item
+      sprites. Scope note: the sheet holds _prototype_ icons only — pure
+      editor actions (undo, rotate, …) have no game sprite and keep their
+      glyphs by design; Phase 2's DOM panels are the seam's bigger consumer.
+      e2e canary in `actionToolbar.spec.ts` (polls the upgraded background).
     - ⬜ **Phase 4 — e2e bounds-disjointness ratchets**
 - 🚧 **Touch placement: preview + confirm (Slice 1 done)** — desktop previews a
   placement by hovering (ghost shows orientation/validity before you click);

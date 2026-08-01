@@ -31,6 +31,13 @@ export { DATA_ROOT, DATA_PACK, DEFAULT_DATA_PACK, setDataPack }
 export { loadPackManifest, getCanonicalDataPack, canonicalPackId, canonicalPacks }
 export { graphicsOptions }
 export type { InputMode, EditorTestState, FbeTestHook, PackManifestEntry }
+// The render-free entity-info projection consumed by the website's DOM bottom
+// sheet (#89 Phase 2); delivered at runtime via the `fbe:entityinfo` event.
+export type { EntityInfoData, EntityInfoStack } from './UI/EntityInfoPanel'
+// Likewise for the rates readout (`fbe:rates`); formatRate keeps the DOM
+// drawer's numbers formatted exactly like the canvas panel's.
+export type { RatesData, RatesEntryData } from './UI/RatesPanel'
+export { formatRate } from './UI/RatesPanel'
 export default {
     registerAction,
     callAction,

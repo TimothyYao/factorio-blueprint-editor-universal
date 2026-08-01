@@ -24,6 +24,14 @@ interface ToolbarButton {
     action: string
     /** Unicode glyph shown large. */
     glyph: string
+    /**
+     * Optional pack-icon id (`"item/red-wire"`): when the active pack's icon
+     * sheet is loaded (packIcons.ts), the glyph is replaced by the real game
+     * icon; until then — or on a pack without the browser artifact — the glyph
+     * stays as the fallback. Only buttons that represent a *game thing* can
+     * carry one; pure editor actions have no game sprite and keep glyphs.
+     */
+    icon?: string
     /** Short caption (also the button `title`, which e2e locates by). */
     label: string
     /** Extra class (cancel/confirm/delete get emphasized in the relevant modes). */
@@ -103,10 +111,28 @@ const BUTTONS: ToolbarButton[] = [
     // Wires (#89): paint items, but not inventory items — the Items dialog can't
     // reach them, so they get rail buttons (which also retires the bottom-band
     // wires panel on mobile). Tapping toggles: spawn the wire, or drop it if
-    // it's already held. Colored via their class (see index.styl).
-    { action: 'copper-wire', glyph: '∿', label: 'Copper', className: 'wire-copper' },
-    { action: 'red-wire', glyph: '∿', label: 'Red wire', className: 'wire-red' },
-    { action: 'green-wire', glyph: '∿', label: 'Green wire', className: 'wire-green' },
+    // it's already held. Colored glyphs (index.styl) until the pack icon loads.
+    {
+        action: 'copper-wire',
+        glyph: '∿',
+        icon: 'item/copper-wire',
+        label: 'Copper',
+        className: 'wire-copper',
+    },
+    {
+        action: 'red-wire',
+        glyph: '∿',
+        icon: 'item/red-wire',
+        label: 'Red wire',
+        className: 'wire-red',
+    },
+    {
+        action: 'green-wire',
+        glyph: '∿',
+        icon: 'item/green-wire',
+        label: 'Green wire',
+        className: 'wire-green',
+    },
     // Blueprint-level / management actions — global; keyboard-only otherwise, so
     // unreachable on touch (see issue #26). Low priority → live in the ⋯ overflow.
     { action: 'copyBlueprint', glyph: '📋', label: 'Copy BP' },
@@ -240,6 +266,9 @@ export function initActionToolbar(editor: Editor, handlers: Record<string, () =>
         const glyph = document.createElement('span')
         glyph.className = 'glyph'
         glyph.textContent = spec.glyph
+        // Marked for the pack-icon upgrade (packIcons.ts swaps the glyph for
+        // the real game sprite once the sheet manifest loads).
+        if (spec.icon) glyph.dataset.packIcon = spec.icon
         button.appendChild(glyph)
         if (withLabel) {
             const label = document.createElement('span')

@@ -218,3 +218,71 @@ test.describe('wires panel', () => {
         expect(b.y + b.height).toBeLessThanOrEqual(viewport.height + 1)
     })
 })
+
+// A self-contained vanilla-2.0 blueprint (a single wooden chest) so the
+// top-band spec has an entity whose info panel it can open.
+const CHEST_BP =
+    '0eJxtjs0OgjAQhN9lztUgoRD6KsYYfjbapGwJLSohfXcX9ODBy2x2M9/MrmjdTONkOcKssJEGmJ+bwoOmYD3D6DKvi7rWRZ5VVVEquKYlJ+5xc4R4iCTS3UUFs53nAHOWTO7pBXNSCPbGjdt6uBlIyKf3PfGXSemiQBxttPQh92W58jy0NO0J/ziF0QeBth9XSFN21ArLPiUzpTfn9ku6'
+
+test.describe('top band (#89 Phase 1)', () => {
+    test('canvas stays full-bleed; on mobile the top-anchored panels clear the chrome', async ({
+        page,
+    }) => {
+        await page.goto(`/?test&source=${encodeURIComponent(CHEST_BP)}`)
+        await waitForAppReady(page)
+
+        const pill = await page.locator('#active-project').boundingBox()
+        const logo = await page.locator('#corner-panel').boundingBox()
+        const canvas = await page.locator('#editor').boundingBox()
+        expect(pill).not.toBeNull()
+        expect(logo).not.toBeNull()
+        expect(canvas).not.toBeNull()
+
+        // The canvas renders full-bleed on every platform — the world shows
+        // through the empty parts of the reserved bands ("restrict the panels,
+        // not the world"). The reservation lives in G.safeArea, which the Pixi
+        // panels anchor within, so the chrome constraint is asserted on the
+        // *panel* below, not on the canvas element.
+        expect(canvas!.y).toBe(0)
+        expect(canvas!.x).toBe(0)
+
+        // The ?source blueprint imports asynchronously after boot — wait for
+        // the chest to actually be in the blueprint before selecting it.
+        await expect
+            .poll(async () => (await readTestState(page)).blueprint.entityCount, {
+                timeout: 30_000,
+            })
+            .toBeGreaterThan(0)
+
+        // Drive the same signal a hover/tap-select produces.
+        const shown = await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__?: { showEntityInfo: (name: string) => boolean }
+            }
+            return w.__FBE_TEST__.showEntityInfo('wooden-chest')
+        })
+        expect(shown).toBe(true)
+        const sheet = page.locator('#entity-info-sheet')
+
+        if (!isMobileProject()) {
+            // Desktop: the Pixi panel presents (top-right of the safe area,
+            // which is the whole screen here); the DOM sheet stays out of it.
+            expect((await readTestState(page)).infoPanelVisible).toBe(true)
+            await expect(sheet).toBeHidden()
+            return
+        }
+
+        // Mobile: the DOM sheet presents (#89 Phase 2) — the Pixi panel is
+        // retired here. In portrait the sheet is a full-width top band: it
+        // must clear the fixed top chrome (the pill) *and* stay out of the
+        // bottom reachable band, where the user's thumbs (and the contextual
+        // EDIT bar) live — the placement rationale, as assertions.
+        expect((await readTestState(page)).infoPanelVisible).toBe(false)
+        await expect(sheet).toBeVisible()
+        await expect(sheet).toContainText('Wooden chest')
+        const sb = await sheet.boundingBox()
+        const viewport = page.viewportSize()!
+        expect(sb!.y).toBeGreaterThanOrEqual(pill!.y + pill!.height)
+        expect(sb!.y + sb!.height).toBeLessThanOrEqual(viewport.height - 80)
+    })
+})

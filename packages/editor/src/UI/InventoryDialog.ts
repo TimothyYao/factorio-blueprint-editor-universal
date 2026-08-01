@@ -813,21 +813,22 @@ export class InventoryDialog extends Dialog {
     /**
      * Override the base centering: the recipe strip hangs ~78px below the 442px
      * body (~520px total), so fit against that full extent — width *and* height —
-     * and center the scaled box, clamped on-screen.
+     * and center the scaled box within the UI safe area, clamped to it.
      */
     protected override setPosition(): void {
         const totalHeight = 520
+        const sa = G.safeArea
         const scale = Math.min(
-            fitToWidthScale(G.app.screen.width, this.width),
-            fitToWidthScale(G.app.screen.height, totalHeight)
+            fitToWidthScale(sa.width, this.width),
+            fitToWidthScale(sa.height, totalHeight)
         )
         this.scale.set(scale)
 
         const w = this.width * scale
         const h = totalHeight * scale
         this.position.set(
-            Math.max(0, Math.min(G.app.screen.width / 2 - w / 2, G.app.screen.width - w)),
-            Math.max(0, Math.min(G.app.screen.height / 2 - h / 2, G.app.screen.height - h))
+            Math.max(sa.x, Math.min(sa.x + sa.width / 2 - w / 2, sa.x + sa.width - w)),
+            Math.max(sa.y, Math.min(sa.y + sa.height / 2 - h / 2, sa.y + sa.height - h))
         )
     }
 

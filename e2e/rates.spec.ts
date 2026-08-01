@@ -73,27 +73,27 @@ test.describe('rates panel', () => {
         // icon — "× 1" glued to the rate read as a rate multiplier.
         expect(lines.some(l => /^×\d+$/.test(l))).toBe(true)
 
-        // Dismiss with the panel's own ✕ (the only route that needs neither a
-        // keyboard nor re-finding the toggle in the rail's ⋯ overflow). Also
-        // pins the anchor: right half of the screen, clear of the top-left
-        // logo/settings DOM stack.
-        const closePos = await page.evaluate(() =>
-            (window as unknown as { __FBE_TEST__: RatesHook }).__FBE_TEST__.ratesPanelClosePos()
-        )
-        expect(closePos).not.toBeNull()
-        const viewport = page.viewportSize()
-        expect(closePos.x).toBeGreaterThan(viewport.width / 2)
-        expect(closePos.y).toBeGreaterThan(100)
-        // The hook reports canvas-relative CSS px; on mobile the action rail
-        // insets the canvas, so add the #editor box offset (0 on desktop) to
-        // get page coordinates — same convention as touchGestures.ts.
-        const box = await page.locator('#editor').boundingBox()
-        const x = (box?.x ?? 0) + closePos.x
-        const y = (box?.y ?? 0) + closePos.y
+        // Dismiss with the readout's own ✕ (the only route that needs neither a
+        // keyboard nor re-finding the toggle in the rail's ⋯ overflow). The
+        // presentation differs per mode (#89 Phase 2): mobile shows the DOM
+        // drawer (tap its ✕ directly, and assert it rendered the same footer
+        // the canvas rows carry); desktop shows the canvas panel (click its ✕
+        // via the hook coordinates — which also pins the right-edge anchor).
         if (isMobileProject()) {
-            await page.touchscreen.tap(x, y)
+            const drawer = page.locator('#rates-drawer')
+            await expect(drawer).toBeVisible()
+            await expect(drawer).toContainText('1 machine counted')
+            await drawer.locator('.rates-close').tap()
         } else {
-            await page.mouse.click(x, y)
+            await expect(page.locator('#rates-drawer')).toBeHidden()
+            const closePos = await page.evaluate(() =>
+                (window as unknown as { __FBE_TEST__: RatesHook }).__FBE_TEST__.ratesPanelClosePos()
+            )
+            expect(closePos).not.toBeNull()
+            const viewport = page.viewportSize()
+            expect(closePos.x).toBeGreaterThan(viewport.width / 2)
+            expect(closePos.y).toBeGreaterThan(100)
+            await page.mouse.click(closePos.x, closePos.y)
         }
         await expect.poll(async () => (await readTestState(page)).ratesPanelVisible).toBe(false)
     })

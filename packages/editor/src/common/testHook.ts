@@ -68,7 +68,12 @@ export interface EditorTestState {
         /** Direction of the first selected entity (for the rotate-in-select test). */
         direction: number | null
     }
-    /** Whether the top-right entity info panel is showing (hover/tap-select). */
+    /**
+     * Whether the top-right entity info panel is showing (hover/tap-select).
+     * Desktop presentation only: on mobile this is always false — the DOM
+     * `#entity-info-sheet` presents instead (#89 Phase 2), and specs assert on
+     * that element directly.
+     */
     infoPanelVisible: boolean
     /** Whether the top-left blueprint-wide production rates panel is showing. */
     ratesPanelVisible: boolean
@@ -232,6 +237,12 @@ export interface FbeTestHook {
      * dialog reacts to a live input-mode switch.
      */
     openEditorClearHint: () => string | null
+    /**
+     * Bounds of the entity info panel (CSS px, canvas-relative), null while
+     * hidden — desktop presentation only (see `infoPanelVisible`); on mobile
+     * the DOM sheet is asserted through the DOM instead.
+     */
+    infoPanelBounds: () => { x: number; y: number; width: number; height: number } | null
     /** Toggle the blueprint-wide production rates panel (as the T keybind does). */
     toggleRatesPanel: () => void
     /**
@@ -411,6 +422,7 @@ export function installTestHook(win: Window = window): void {
             Dialog.closeAll()
             return G.UI.createEditor(e)?.clearHintText ?? null
         },
+        infoPanelBounds: () => G.UI.entityInfoPanelBounds(),
         toggleRatesPanel: () => G.UI.toggleRatesPanel(),
         ratesPanelLines: () => G.UI.ratesPanelLines(),
         ratesPanelClosePos: () => G.UI.ratesPanelClosePos(),

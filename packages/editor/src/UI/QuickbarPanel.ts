@@ -201,14 +201,15 @@ export class QuickbarPanel extends Panel {
         // those are class fields not yet initialized on that first call. The
         // getters report the intrinsic size regardless of scale, so this stays
         // correct across the repeated resize calls.
-        const scale = fitToWidthScale(G.app.screen.width, this.width)
+        const sa = G.safeArea
+        const scale = fitToWidthScale(sa.width, this.width)
         this.scale.set(scale)
 
         const scaledWidth = this.width * scale
         const scaledHeight = this.height * scale
         this.position.set(
-            G.app.screen.width / 2 - scaledWidth / 2,
-            G.app.screen.height - scaledHeight + 1
+            sa.x + sa.width / 2 - scaledWidth / 2,
+            sa.y + sa.height - scaledHeight + 1
         )
     }
 }

@@ -174,8 +174,11 @@ test.describe('touch placement (deferred)', () => {
         expect((await getState(page)).dialogOpen).toBe(true)
 
         // Tapping the canvas outside the editor dismisses it (no stale overlay
-        // lingering when you tap away). The editor is centered, so tap low.
-        await page.locator('#editor').tap({ position: { x: 206, y: 740 } })
+        // lingering when you tap away). The editor is centered, so tap below it —
+        // but not too low: the canvas is inset below the top chrome (#89 Phase 1),
+        // so the element's bottom rows now sit under the fixed bottom-center
+        // EDIT bar, which would intercept the tap.
+        await page.locator('#editor').tap({ position: { x: 206, y: 600 } })
         expect((await getState(page)).dialogOpen).toBe(false)
     })
 

@@ -366,4 +366,15 @@ export default {
     actions,
     getTexture,
     logger,
+    /**
+     * The UI safe area (CSS px): the viewport minus the edges reserved for DOM
+     * chrome (the mobile action rail's left gutter, the top logo/pill band).
+     * The canvas renders **full-bleed** underneath — the world shows through
+     * the reserved bands — so this rect is a *layout* constraint, not a crop:
+     * Pixi panels/dialogs anchor and clamp within it (see `Panel.clampToSafeArea`).
+     * Kept current by `Editor.applyCanvasSize` (viewport resizes + inset changes,
+     * the latter signalled via `fbe:viewportchange`). Equals the full screen
+     * whenever nothing is reserved (desktop). See docs/mobile-layout-inventory.md.
+     */
+    safeArea: { x: 0, y: 0, width: 0, height: 0 },
 }

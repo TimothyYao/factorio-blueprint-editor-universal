@@ -1,8 +1,9 @@
 import { Container } from 'pixi.js'
 import { Entity } from '../core/Entity'
+import { inputMode } from '../common/input'
 import { DebugContainer } from './DebugContainer'
 import { QuickbarPanel } from './QuickbarPanel'
-import { EntityInfoPanel } from './EntityInfoPanel'
+import { EntityInfoPanel, buildEntityInfo } from './EntityInfoPanel'
 import { InventoryDialog, SlotClear } from './InventoryDialog'
 import { SignalPicker, SignalChoice } from './SignalPicker'
 import { NumericKeypad } from './NumericKeypad'
@@ -43,7 +44,17 @@ export class UIContainer extends Container {
     }
 
     public updateEntityInfoPanel(entity?: Entity): void {
-        this.entityInfoPanel.updateVisualization(entity)
+        // Desktop shows the canvas panel; mobile shows the website's DOM
+        // bottom sheet (#89 Phase 2) — one presentation per input mode, same
+        // signal. The sheet gets a render-free data projection over a window
+        // event (the same DOM/canvas bridge pattern as `fbe:viewportchange`),
+        // dispatched in both modes so a live mode switch has fresh data ready.
+        this.entityInfoPanel.updateVisualization(inputMode.mode === 'desktop' ? entity : undefined)
+        window.dispatchEvent(
+            new CustomEvent('fbe:entityinfo', {
+                detail: entity ? buildEntityInfo(entity) : null,
+            })
+        )
     }
 
     /** Whether the top-right entity info panel is currently shown (for e2e). */
@@ -51,14 +62,29 @@ export class UIContainer extends Container {
         return this.entityInfoPanel.visible
     }
 
+    /**
+     * Screen-space bounds of the entity info panel (CSS px, canvas-relative),
+     * or null while hidden — backs the top-band e2e ratchet (#89): the panel
+     * anchors to the canvas top, so with the top inset reserved its viewport
+     * position must clear the DOM chrome above the canvas.
+     */
+    public entityInfoPanelBounds(): { x: number; y: number; width: number; height: number } | null {
+        if (!this.entityInfoPanel.visible) return null
+        const r = this.entityInfoPanel.getBounds().rectangle
+        return { x: r.x, y: r.y, width: r.width, height: r.height }
+    }
+
     /** Toggle the blueprint-wide production rates panel (`showRates` action). */
     public toggleRatesPanel(): void {
         this.ratesPanel.toggle()
     }
 
-    /** Whether the rates panel is currently shown (for e2e). */
+    /**
+     * Whether the rates readout is open (for e2e) — logical state, true in
+     * either presentation (desktop canvas panel / mobile DOM drawer).
+     */
     public get ratesPanelVisible(): boolean {
-        return this.ratesPanel.visible
+        return this.ratesPanel.shown
     }
 
     /** The rates panel's rendered text lines, top to bottom (for e2e). */

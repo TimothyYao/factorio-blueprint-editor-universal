@@ -33,20 +33,28 @@ export class Editor {
     private readonly m_bpEmitter = new EventEmitter<{ change: [] }>()
 
     // Viewport insets (CSS px) reserved for DOM chrome — e.g. the mobile action
-    // rail's left gutter. The canvas is sized to the remaining area and offset by
-    // the insets, so the Pixi UI (which lays out off `app.screen`) reflows out of
-    // the reserved bands instead of being covered. The "restrict the canvas" half
-    // of the gutter idea; see docs/mobile-layout-inventory.md.
+    // rail's left gutter and the top logo/pill band. The canvas stays
+    // **full-bleed** (the world renders under the chrome and shows through the
+    // empty parts of the bands); the insets are published as `G.safeArea`, the
+    // rect the Pixi panels anchor and clamp within. "Restrict the panels, not
+    // the world" — see docs/mobile-layout-inventory.md. (This also keeps the
+    // renderer size identical to the window size, so the Viewport's
+    // window-resize handler can never go stale against an inset-only resize —
+    // a latent bug of the earlier crop-the-renderer model.)
     private m_insets = { left: 0, top: 0, right: 0, bottom: 0 }
 
     private readonly applyCanvasSize = (): void => {
-        const { left, top, right, bottom } = this.m_insets
-        const w = Math.max(1, window.innerWidth - left - right)
-        const h = Math.max(1, window.innerHeight - top - bottom)
-        G.app.renderer.resize(w, h)
+        G.app.renderer.resize(Math.max(1, window.innerWidth), Math.max(1, window.innerHeight))
         const canvas = G.app.canvas as HTMLCanvasElement
-        canvas.style.left = `${left}px`
-        canvas.style.top = `${top}px`
+        canvas.style.left = '0'
+        canvas.style.top = '0'
+        const { left, top, right, bottom } = this.m_insets
+        G.safeArea = {
+            x: left,
+            y: top,
+            width: Math.max(1, window.innerWidth - left - right),
+            height: Math.max(1, window.innerHeight - top - bottom),
+        }
     }
 
     public async init(canvas: HTMLCanvasElement, logger?: Logger): Promise<void> {
@@ -189,9 +197,11 @@ export class Editor {
     }
 
     /**
-     * Reserve viewport edges (CSS px) for DOM chrome; the canvas shrinks into the
-     * remaining area and the Pixi UI reflows accordingly. Pass only the edges you
-     * want to change. Used by the mobile action rail to claim a left gutter.
+     * Reserve viewport edges (CSS px) for DOM chrome; the reserved bands become
+     * the boundary of `G.safeArea` and the Pixi UI reflows into it — the canvas
+     * itself stays full-bleed, so the world shows through the empty parts of
+     * the bands. Pass only the edges you want to change. Used by the mobile
+     * action rail (left) and the website's viewportRegions module (top).
      */
     public setViewportInsets(
         insets: Partial<{ left: number; top: number; right: number; bottom: number }>

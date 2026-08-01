@@ -88,9 +88,11 @@ test.describe('touch marquee select', () => {
         for (const title of ['Up', 'Down', 'Left', 'Right']) {
             await expect(page.locator(`#select-dpad button[title="${title}"]`)).toBeVisible()
         }
-        // The box sweeps over entities; the hover/info panel must stay hidden so it
-        // doesn't obscure the drawing (the panel is suppressed during select).
+        // The box sweeps over entities; the hover/info presentation must stay
+        // hidden so it doesn't obscure the drawing (suppressed during select) —
+        // on mobile that presentation is the DOM bottom sheet (#89 Phase 2).
         expect((await getState(page)).infoPanelVisible).toBe(false)
+        await expect(page.locator('#entity-info-sheet')).toBeHidden()
     })
 
     test('Rotate is hidden for a multi-entity selection (group rotation unsupported)', async ({

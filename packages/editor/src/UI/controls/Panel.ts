@@ -66,16 +66,19 @@ export abstract class Panel extends Container {
 
     /**
      * Place the panel's top-left at (x, y) but clamp it so the panel — at its
-     * current scale — stays fully within the viewport. Lets edge-anchored and
-     * centered panels degrade gracefully on narrow (portrait) screens instead of
-     * spilling off an edge.
+     * current scale — stays fully within `G.safeArea` (the viewport minus the
+     * bands reserved for DOM chrome; the whole screen when nothing is
+     * reserved). Lets edge-anchored and centered panels degrade gracefully on
+     * narrow (portrait) screens instead of spilling off an edge or sliding
+     * under the rail / top chrome.
      */
-    protected clampToScreen(x: number, y: number): void {
+    protected clampToSafeArea(x: number, y: number): void {
+        const sa = G.safeArea
         const w = this.width * this.scale.x
         const h = this.height * this.scale.y
         this.position.set(
-            Math.max(0, Math.min(x, G.app.screen.width - w)),
-            Math.max(0, Math.min(y, G.app.screen.height - h))
+            Math.max(sa.x, Math.min(x, sa.x + sa.width - w)),
+            Math.max(sa.y, Math.min(y, sa.y + sa.height - h))
         )
     }
 
