@@ -3,6 +3,7 @@ import { inputMode, type InputMode } from './input'
 import { EditorMode } from '../containers/BlueprintContainer'
 import { PaintEntityContainer } from '../containers/PaintEntityContainer'
 import { PaintBlueprintContainer } from '../containers/PaintBlueprintContainer'
+import { PaintTileContainer } from '../containers/PaintTileContainer'
 import { Dialog } from '../UI/controls/Dialog'
 import { InventoryDialog } from '../UI/InventoryDialog'
 import { Modules } from '../UI/editors/components/Modules'
@@ -30,8 +31,12 @@ export interface EditorTestState {
         visible: boolean
         bounds: { x: number; y: number; width: number; height: number }
     }
-    /** Entities currently in the blueprint — lets tests assert what got placed. */
-    blueprint: { entityCount: number }
+    /**
+     * Entities/tiles currently in the blueprint — lets tests assert what got
+     * placed (tiles are separate from entities: a landfill paint bumps
+     * `tileCount` only).
+     */
+    blueprint: { entityCount: number; tileCount: number }
     /**
      * The paint cursor (held item). On touch, a tap positions/previews the ghost
      * without committing, so tests read `tile` to confirm where it landed and
@@ -49,6 +54,13 @@ export interface EditorTestState {
          * Lets placement tests target the blueprint case specifically.
          */
         kind: 'entity' | 'blueprint' | null
+        /**
+         * Square tile brush edge length while a *tile* brush is held (the
+         * value the [ / ] keys and the d-pad Size buttons drive); null for
+         * entity/wire/blueprint cursors — so non-null doubles as "the cursor
+         * is a tile brush".
+         */
+        tileSize: number | null
     }
     /**
      * True while a modal dialog (e.g. an entity editor overlay) is open. On touch,
@@ -97,7 +109,7 @@ export function getEditorTestState(): EditorTestState {
             visible: wp.visible && wr.width > 0 && wr.height > 0,
             bounds: { x: wr.x, y: wr.y, width: wr.width, height: wr.height },
         },
-        blueprint: { entityCount: G.bp.entities.size },
+        blueprint: { entityCount: G.bp.entities.size, tileCount: G.bp.tiles.size },
         paint: {
             active: painting,
             visible: painting && G.BPC.paintContainer.visible,
@@ -112,6 +124,10 @@ export function getEditorTestState(): EditorTestState {
                   ? 'blueprint'
                   : G.BPC.paintContainer instanceof PaintEntityContainer
                     ? 'entity'
+                    : null,
+            tileSize:
+                painting && G.BPC.paintContainer instanceof PaintTileContainer
+                    ? G.BPC.paintContainer.brushSize
                     : null,
         },
         dialogOpen: Dialog.anyOpen(),

@@ -213,6 +213,24 @@ pipelines at once made touch taps double-act via the browser's synthetic
       the serialized shape because a wrong one produces a blueprint Factorio
       rejects. Plus e2e in `clearSlots.spec.ts` for open/set/clear and the
       provider-opens-nothing case.
+- ✅ **Tile brush is controllable on touch** (size + erase) — the tile paint
+  (landfill / concrete / …) was stuck at its 2×2 default on mobile (the `[` /
+  `]` size ratchet is keyboard-only), and laid tiles couldn't be removed _at
+  all_ (desktop mines them by right-click-dragging with a tile brush held —
+  no touch equivalent existed). The PAINT d-pad's free corners now carry
+  tile-gated controls: **Size − / +** (top corners; the same registry actions
+  as `[` / `]`, so desktop and rail stay in lockstep) and **Erase**
+  (bottom-left; fires the existing `mine` action, which in PAINT mode removes
+  the tiles under the ghost footprint) — so the flow is tap-to-position, then
+  ✓ paints or ⌫ erases the same size² square, and the brush size doubles as
+  the eraser size, mirroring desktop. The corners show only while the cursor
+  is a tile brush: `makeCluster` grew per-button `when` gating (re-evaluated
+  on every mode emit — `spawnPaintContainer` re-emits PAINT on cursor swaps,
+  so an entity→tile switch re-gates live), keyed on the new
+  `Editor.cursorIsTile`. Desktop unchanged. Seams: `actionToolbar.ts`
+  (`PAINT_DPAD` corners + cluster `refresh`), `Editor.cursorIsTile`,
+  `PaintTileContainer.brushSize`. Covered by `e2e/touchTiles.spec.ts` via new
+  `?test` fields (`paint.tileSize`, `blueprint.tileCount`).
 
 ## Not done / next
 
@@ -412,6 +430,14 @@ pipelines at once made touch taps double-act via the browser's synthetic
 - ⬜ **Pinch in desktop mode** — desktop currently ignores touch entirely, so a
   touch-laptop in desktop mode can't pinch. Out of scope for now (we don't care
   about touch-on-desktop yet); revisit if needed.
+- ⬜ **Tiles in selections** — the marquee (and desktop's modifier+drag
+  copy/delete) collects `entityPositionGrid.getEntitiesInArea` only, so tiles
+  can't be box-selected, area-deleted, or copied/cut _anywhere_ (the paste
+  ghost `PaintBlueprintContainer` is entity-only, upstream included). The
+  mechanical fix is known (a `Blueprint.getTilesInArea` over `bp.tiles`, tiles
+  in `deleteMarquee`, a tiles-capable paste ghost), but it's deferred until
+  there's a usable answer for _choosing_ tile selection on touch without
+  another rail action — see the tile-brush entry above for what did land.
 
 ## Notes / tradeoffs
 
