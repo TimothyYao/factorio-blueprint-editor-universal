@@ -257,6 +257,12 @@ export interface FbeTestHook {
      * a real click/tap instead of the toggle action.
      */
     ratesPanelClosePos: () => { x: number; y: number } | null
+    /**
+     * Train-stop config, read through the entity — text typed into the DOM
+     * station-name overlay (#56) only counts once it has been committed to the
+     * blueprint, not merely rendered in the input.
+     */
+    entityTrainStop: (name: string) => { station: string; manualTrainsLimit: number | null } | null
     /** Quickbar slot contents, `null` for an unassigned slot. */
     quickbarItems: () => (string | null)[]
     /** On-screen centre of quickbar slot `index`, or null if it isn't rendered. */
@@ -426,6 +432,12 @@ export function installTestHook(win: Window = window): void {
         toggleRatesPanel: () => G.UI.toggleRatesPanel(),
         ratesPanelLines: () => G.UI.ratesPanelLines(),
         ratesPanelClosePos: () => G.UI.ratesPanelClosePos(),
+        entityTrainStop: name => {
+            const e = findEntity(name)
+            if (!e) return null
+            // `undefined` (no limit) would vanish in the CDP round-trip; use null.
+            return { station: e.station, manualTrainsLimit: e.manualTrainsLimit ?? null }
+        },
         quickbarItems: () =>
             G.UI.quickbarPanel.serialize().map(itemName => itemName ?? null) as (string | null)[],
         quickbarSlotPos: index => {

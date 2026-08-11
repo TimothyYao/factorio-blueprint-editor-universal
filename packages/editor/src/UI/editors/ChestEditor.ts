@@ -14,10 +14,11 @@ import { Editor } from './Editor'
  * - **buffer** — request list.
  *
  * Counts use the canvas-rendered `NumericField`/`NumericKeypad` rather than the
- * DOM `TextInput`, which is unusable on touch (#56) — this editor is reachable
- * on a phone, so a DOM overlay input would make the count uneditable there. That
- * also drops the old slider: the keypad covers the same range in fewer taps and
- * without a drag target that fights the dialog for pointer events.
+ * DOM `TextInput`, which was unusable on touch when this editor was built (#56,
+ * since fixed) — and the keypad remains the better fit here: fewer taps than an
+ * OS keyboard for small counts. That also drops the old slider: the keypad
+ * covers the same range without a drag target that fights the dialog for
+ * pointer events.
  */
 export class ChestEditor extends Editor {
     /** Whether this chest has request *counts* (storage chests filter only). */

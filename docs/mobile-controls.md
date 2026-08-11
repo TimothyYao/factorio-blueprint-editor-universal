@@ -214,6 +214,26 @@ pipelines at once made touch taps double-act via the browser's synthetic
       rejects. Plus e2e in `clearSlots.spec.ts` for open/set/clear and the
       provider-opens-nothing case.
 
+- ✅ **Station names are typeable on touch** (issue #56) — the train-stop
+  editor's station-name / trains-limit fields are DOM `<input>`s overlaid on the
+  canvas (`UI/controls/TextInput.ts`) — the one editor UI that is _not_
+  canvas-drawn, because free text needs the OS keyboard. The overlay was broken
+  on every high-DPI device: the CSS transform double-applied the device pixel
+  ratio (pixi-text-input math predating PixiJS v8, where `renderer.width` went
+  from physical to logical px), landing the input off-screen — a tap focused
+  `<body>`, so no caret and no virtual keyboard — and it inherited
+  `user-select: none` from `<html>`. Fixed at the seam: the transform now maps
+  logical→CSS px only; inputs opt back into `user-select: text` +
+  `touch-action: manipulation`; the font-size is pinned at `16px` (it was
+  invalid unitless CSS, silently falling back to the browser default — and
+  anything under 16px triggers iOS focus-zoom); and the numeric variant
+  requests the digit keyboard via `inputmode=numeric`. The train-stop fields
+  were the last `TextInput` consumers — chest counts and circuit numbers had
+  already moved to the canvas `NumericKeypad` (#44), which stays the right
+  call for pure-numeric entry. e2e in `e2e/trainStop.spec.ts` (an in-viewport
+  ratchet pinning the off-screen regression, plus a real tap → focus → type →
+  entity round-trip on both projects) via a new `entityTrainStop` `?test` probe.
+
 ## Not done / next
 
 - 🚧 **Mobile panel layout v2** (issue #89, the phased plan; screen-space map in

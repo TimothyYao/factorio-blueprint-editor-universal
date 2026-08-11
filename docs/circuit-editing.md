@@ -54,8 +54,9 @@ Reusable building blocks:
   `InventoryDialog`). The item-only `InventoryDialog` can't show fluids/virtuals,
   hence a dedicated dialog. A **✕ None** button clears the slot.
 - **`NumericKeypad` / `NumericField`** (`UI/`) — a fully canvas-rendered numeric
-  pad. The DOM-overlay `TextInput` is broken on touch/high-DPI (off-screen,
-  no keyboard — #56), so circuit numeric entry doesn't use it.
+  pad. The DOM-overlay `TextInput` was broken on touch/high-DPI (off-screen,
+  no keyboard — #56, since fixed); the keypad stays the choice for circuit
+  numeric entry — fewer taps than an OS keyboard for small numbers.
 - **`SignalSlot`, `Operand`** (signal _or_ signed constant, single slot),
   **`CycleButton`** (tap-to-cycle operators), **`CircuitCondition`** (enable
   checkbox + condition row) — `UI/editors/components/`.
@@ -97,5 +98,8 @@ it"_ per input mode. Editors declare they have clearable slots via
 - **#49** — ✅ highlight a hovered entity's circuit network (#60): boxes the
   connected entities (`OverlayContainer.showNetworkHighlight` via
   `WireConnections.getConnectedNetwork`) so the network reads at a glance.
-- **#56** — DOM `TextInput` broken on touch (station name, chest counts).
+- **#56** — ✅ DOM `TextInput` fixed for touch/high-DPI (the PixiJS-v8
+  transform double-scale, inherited `user-select: none`, unitless font-size):
+  station name / trains limit now focus and type on a phone; chest counts had
+  already moved to `NumericKeypad`. e2e: `e2e/trainStop.spec.ts`.
 - **#59** — ad-hoc editor layout / shared form-layout helper.
