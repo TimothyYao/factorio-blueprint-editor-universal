@@ -233,6 +233,15 @@ pipelines at once made touch taps double-act via the browser's synthetic
   call for pure-numeric entry. e2e in `e2e/trainStop.spec.ts` (an in-viewport
   ratchet pinning the off-screen regression, plus a real tap → focus → type →
   entity round-trip on both projects) via a new `entityTrainStop` `?test` probe.
+- ✅ **Train stop: full 2.0 editor, touch-first** — the editor grew the whole
+  post-2.0 surface (priority + the circuit pane: enable condition,
+  send-to/read-from train, the four flag+signal outputs) built from the circuit
+  editors' touch-first blocks — `Checkbox` fires on pointerdown, `SignalSlot`
+  goes through the full-size picker and long-press-clears, priority uses the
+  canvas `NumericField` keypad. Design record in `docs/circuit-editing.md`;
+  probe-driven touch e2e in `e2e/trainStop.spec.ts`. Side effect: every routed
+  editor now holds a clearable slot, so `clearSlots.spec.ts`'s "hint absent"
+  negative case is extinct (the test now asserts the hint on the train stop).
 
 ## Not done / next
 
@@ -432,6 +441,15 @@ pipelines at once made touch taps double-act via the browser's synthetic
 - ⬜ **Pinch in desktop mode** — desktop currently ignores touch entirely, so a
   touch-laptop in desktop mode can't pinch. Out of scope for now (we don't care
   about touch-on-desktop yet); revisit if needed.
+- ⬜ **Toasts can swallow taps aimed at an open dialog** — the toast stack is
+  bottom-right with `pointer-events: auto` per toast (tap-to-dismiss); on a
+  phone several stacked toasts reach the lower rows of a centred canvas dialog,
+  and until they expire (5s) a tap meant for a control under one lands on the
+  toast instead. Surfaced by the train-stop editor's flag checkboxes
+  (`trainStop.spec.ts` clears toasts before tapping as a workaround). Fix idea:
+  on mobile, anchor toasts in the reserved top band (out of the reach zone and
+  clear of dialogs, which clamp to the safe area below it) — needs #89's layout
+  authority to reserve/route correctly.
 
 ## Notes / tradeoffs
 

@@ -71,6 +71,7 @@ export interface EntityEvents {
     requestFromBufferChest: []
     station: []
     manualTrainsLimit: []
+    trainStopPriority: []
     /** The entity's circuit/control_behavior config changed wholesale (e.g. paste settings). */
     controlBehavior: []
 }
@@ -940,7 +941,9 @@ export class Entity extends EventEmitter<EntityEvents> {
                     )
                 break
             case 'train-stop':
-                if (cb.send_to_train) lines.push('Sends to train')
+                // send_to_train defaults ON, so the game only serializes `false` —
+                // a plain truthiness check would never fire on a native export.
+                if (cb.send_to_train !== false) lines.push('Sends to train')
                 if (cb.read_from_train) lines.push('Reads from train')
                 if (cb.read_stopped_train)
                     lines.push(
@@ -950,8 +953,24 @@ export class Entity extends EventEmitter<EntityEvents> {
                                 : ''
                         }`
                     )
-                if (cb.set_trains_limit) lines.push('Sets trains limit from circuit')
-                if (cb.read_trains_count) lines.push('Reads trains count')
+                if (cb.set_trains_limit)
+                    lines.push(
+                        `Sets trains limit from circuit${
+                            cb.trains_limit_signal?.name ? ` ← ${cb.trains_limit_signal.name}` : ''
+                        }`
+                    )
+                if (cb.read_trains_count)
+                    lines.push(
+                        `Reads trains count${
+                            cb.trains_count_signal?.name ? ` → ${cb.trains_count_signal.name}` : ''
+                        }`
+                    )
+                if (cb.set_priority)
+                    lines.push(
+                        `Sets priority from circuit${
+                            cb.priority_signal?.name ? ` ← ${cb.priority_signal.name}` : ''
+                        }`
+                    )
                 break
             case 'rail-signal':
             case 'rail-chain-signal':
@@ -1100,6 +1119,177 @@ export class Entity extends EventEmitter<EntityEvents> {
             .updateValue(this.m_rawEntity, 'manual_trains_limit', limit, 'Change trains limit')
             .onDone(() => this.emit('manualTrainsLimit'))
             .commit()
+    }
+
+    // ── Train stop (post-2.0) ────────────────────────────────────────────────
+    // Root-level priority plus the circuit flags. Each output/input flag pairs
+    // with a signal the game defaults to a letter virtual signal (T/L/C/P);
+    // enabling a flag seeds that default so the serialized shape matches a
+    // native export. Flags store `undefined` rather than `false` (the game
+    // omits defaults) — except `send_to_train`, whose default is ON, so only
+    // an explicit `false` is ever written.
+
+    /** Train stop priority (0–255, 50 = the game default, omitted when 50). */
+    public get trainStopPriority(): number {
+        return this.m_rawEntity.priority ?? 50
+    }
+
+    public set trainStopPriority(priority: number) {
+        const clamped = Math.max(0, Math.min(255, Math.round(priority)))
+        const value = clamped === 50 ? undefined : clamped
+        if (this.m_rawEntity.priority === value) return
+
+        this.m_BP.history
+            .updateValue(this.m_rawEntity, 'priority', value, 'Change station priority')
+            .onDone(() => this.emit('trainStopPriority'))
+            .commit()
+    }
+
+    /** Send circuit signals to the stopped train (the game defaults this ON). */
+    public get sendToTrain(): boolean {
+        return this.m_rawEntity.control_behavior?.send_to_train !== false
+    }
+
+    public set sendToTrain(send: boolean) {
+        this.mutateControlBehavior(cb => {
+            cb.send_to_train = send ? undefined : false
+        }, 'Toggle send to train')
+    }
+
+    /** Read the stopped train's contents onto the circuit network. */
+    public get readFromTrain(): boolean {
+        return !!this.m_rawEntity.control_behavior?.read_from_train
+    }
+
+    public set readFromTrain(read: boolean) {
+        this.mutateControlBehavior(cb => {
+            cb.read_from_train = read || undefined
+        }, 'Toggle read from train')
+    }
+
+    /**
+     * Shared shape of the four flag+signal outputs: toggling the flag on seeds
+     * the game's default signal if none is chosen yet; an explicit choice is
+     * left alone in both directions (disabling keeps it for a later re-enable —
+     * a stray signal next to an unset flag is inert and Factorio accepts it).
+     */
+    private setTrainStopFlag(
+        flag: 'read_stopped_train' | 'set_trains_limit' | 'read_trains_count' | 'set_priority',
+        signal:
+            | 'train_stopped_signal'
+            | 'trains_limit_signal'
+            | 'trains_count_signal'
+            | 'priority_signal',
+        defaultSignal: string,
+        enabled: boolean,
+        label: string
+    ): void {
+        this.mutateControlBehavior(cb => {
+            cb[flag] = enabled || undefined
+            if (enabled && !cb[signal]) {
+                cb[signal] = { type: 'virtual', name: defaultSignal }
+            }
+        }, label)
+    }
+
+    /** Output the stopped train's id (default signal-T). */
+    public get readStoppedTrain(): boolean {
+        return !!this.m_rawEntity.control_behavior?.read_stopped_train
+    }
+
+    public set readStoppedTrain(read: boolean) {
+        this.setTrainStopFlag(
+            'read_stopped_train',
+            'train_stopped_signal',
+            'signal-T',
+            read,
+            'Toggle read stopped train'
+        )
+    }
+
+    public get trainStoppedSignal(): ISignal | undefined {
+        return this.m_rawEntity.control_behavior?.train_stopped_signal
+    }
+
+    public set trainStoppedSignal(signal: ISignal | undefined) {
+        this.mutateControlBehavior(cb => {
+            cb.train_stopped_signal = signal
+        }, 'Change stopped train signal')
+    }
+
+    /** Set the trains limit from the circuit network (default signal-L). */
+    public get setTrainsLimit(): boolean {
+        return !!this.m_rawEntity.control_behavior?.set_trains_limit
+    }
+
+    public set setTrainsLimit(set: boolean) {
+        this.setTrainStopFlag(
+            'set_trains_limit',
+            'trains_limit_signal',
+            'signal-L',
+            set,
+            'Toggle set trains limit'
+        )
+    }
+
+    public get trainsLimitSignal(): ISignal | undefined {
+        return this.m_rawEntity.control_behavior?.trains_limit_signal
+    }
+
+    public set trainsLimitSignal(signal: ISignal | undefined) {
+        this.mutateControlBehavior(cb => {
+            cb.trains_limit_signal = signal
+        }, 'Change trains limit signal')
+    }
+
+    /** Output the number of trains heading to this stop (default signal-C). */
+    public get readTrainsCount(): boolean {
+        return !!this.m_rawEntity.control_behavior?.read_trains_count
+    }
+
+    public set readTrainsCount(read: boolean) {
+        this.setTrainStopFlag(
+            'read_trains_count',
+            'trains_count_signal',
+            'signal-C',
+            read,
+            'Toggle read trains count'
+        )
+    }
+
+    public get trainsCountSignal(): ISignal | undefined {
+        return this.m_rawEntity.control_behavior?.trains_count_signal
+    }
+
+    public set trainsCountSignal(signal: ISignal | undefined) {
+        this.mutateControlBehavior(cb => {
+            cb.trains_count_signal = signal
+        }, 'Change trains count signal')
+    }
+
+    /** Set the stop's priority from the circuit network (default signal-P, post 2.0). */
+    public get setPriority(): boolean {
+        return !!this.m_rawEntity.control_behavior?.set_priority
+    }
+
+    public set setPriority(set: boolean) {
+        this.setTrainStopFlag(
+            'set_priority',
+            'priority_signal',
+            'signal-P',
+            set,
+            'Toggle set priority'
+        )
+    }
+
+    public get prioritySignal(): ISignal | undefined {
+        return this.m_rawEntity.control_behavior?.priority_signal
+    }
+
+    public set prioritySignal(signal: ISignal | undefined) {
+        this.mutateControlBehavior(cb => {
+            cb.priority_signal = signal
+        }, 'Change priority signal')
     }
 
     public get selectorCombinatorSelectMax(): boolean {

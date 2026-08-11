@@ -74,6 +74,17 @@ Editors: `ArithmeticCombinatorEditor`, `DeciderCombinatorEditor`,
 `CircuitConditionEditor` (pumps/belts); `InserterEditor`/`MiningEditor` embed
 the circuit condition via `Editor.addCircuitCondition`.
 
+`TrainStopEditor` carries the full post-2.0 train-stop surface: station name +
+manual limit (DOM `TextInput`, #56), **priority** (root-level 0–255,
+`NumericField`, 50-the-default omitted from the export like the game does) and
+a circuit pane — the shared enable condition plus the six flags
+(`send_to_train` — default ON, only `false` is ever serialized —
+`read_from_train`, and the four flag+signal outputs `read_stopped_train` /
+`set_trains_limit` / `read_trains_count` / `set_priority`, each seeding the
+game's default letter signal T/L/C/P on enable). Serialized shapes pinned in
+`core/trainStopSettings.test.ts`; probe-driven e2e in `e2e/trainStop.spec.ts`
+(`trainStopControlPos` + `entityTrainStop`).
+
 > **Known debt (#59):** these editors lay out controls with absolute
 > coordinates + hardcoded dialog sizes — no shared form-layout system. Fine for
 > now (combinator editing isn't the main use case); revisit before the deferred

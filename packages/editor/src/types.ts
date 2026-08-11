@@ -257,6 +257,11 @@ export interface IEntity {
     station?: string
     /** trains limit, only present if entity is train-stop */
     manual_trains_limit?: number
+    /**
+     * post 2.0 - train stop priority, 0-255 with 50 the default (the game omits
+     * the default from the export), only present if entity is train-stop
+     */
+    priority?: number
     /** only present if entity is locomotive, train-stop or lamp */
     color?: ColorWithAlpha
     /** only present if entity type is lamp */
@@ -469,6 +474,10 @@ export interface IEntity {
         read_trains_count?: boolean
         /** only present if entity is train-stop */
         trains_count_signal?: ISignal
+        /** post 2.0, only present if entity is train-stop */
+        set_priority?: boolean
+        /** post 2.0, only present if entity is train-stop */
+        priority_signal?: ISignal
 
         /** only present if entity is rail-signal */
         circuit_close_signal?: boolean

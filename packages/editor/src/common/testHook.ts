@@ -9,6 +9,7 @@ import { Modules } from '../UI/editors/components/Modules'
 import { Filters } from '../UI/editors/components/Filters'
 import { Recipe } from '../UI/editors/components/Recipe'
 import { Editor } from '../UI/editors/Editor'
+import { TrainStopEditor } from '../UI/editors/TrainStopEditor'
 import { Entity } from '../core/Entity'
 
 /**
@@ -227,8 +228,8 @@ export interface FbeTestHook {
     inventoryOpen: () => boolean
     /**
      * Open `name`'s editor and report its clear-a-slot hint text (null when the
-     * editor has no clearable slots — e.g. a logistic chest, whose filter setter
-     * is unimplemented). The hint is canvas-drawn, so the DOM can't see it.
+     * editor has no clearable slots — currently none: every routed editor holds
+     * at least one). The hint is canvas-drawn, so the DOM can't see it.
      */
     editorClearHint: (name: string) => string | null
     /**
@@ -259,10 +260,31 @@ export interface FbeTestHook {
     ratesPanelClosePos: () => { x: number; y: number } | null
     /**
      * Train-stop config, read through the entity — text typed into the DOM
-     * station-name overlay (#56) only counts once it has been committed to the
-     * blueprint, not merely rendered in the input.
+     * station-name overlay (#56) / flags toggled in the editor only count once
+     * they have been committed to the blueprint, not merely rendered.
      */
-    entityTrainStop: (name: string) => { station: string; manualTrainsLimit: number | null } | null
+    entityTrainStop: (name: string) => {
+        station: string
+        manualTrainsLimit: number | null
+        priority: number
+        sendToTrain: boolean
+        readFromTrain: boolean
+        readStoppedTrain: boolean
+        trainStoppedSignal: string | null
+        setTrainsLimit: boolean
+        trainsLimitSignal: string | null
+        readTrainsCount: boolean
+        trainsCountSignal: string | null
+        setPriority: boolean
+        prioritySignal: string | null
+    } | null
+    /**
+     * On-screen centre of a named control in the *open* train-stop editor
+     * (canvas-relative CSS px) — the circuit checkboxes/slots are canvas-drawn,
+     * so the spec has no other way to press one for real. Null when no
+     * train-stop editor is open or the name is unknown.
+     */
+    trainStopControlPos: (control: string) => { x: number; y: number } | null
     /** Quickbar slot contents, `null` for an unassigned slot. */
     quickbarItems: () => (string | null)[]
     /** On-screen centre of quickbar slot `index`, or null if it isn't rendered. */
@@ -435,8 +457,27 @@ export function installTestHook(win: Window = window): void {
         entityTrainStop: name => {
             const e = findEntity(name)
             if (!e) return null
-            // `undefined` (no limit) would vanish in the CDP round-trip; use null.
-            return { station: e.station, manualTrainsLimit: e.manualTrainsLimit ?? null }
+            // `undefined` (no limit / no signal) would vanish in the CDP
+            // round-trip; normalize to null.
+            return {
+                station: e.station,
+                manualTrainsLimit: e.manualTrainsLimit ?? null,
+                priority: e.trainStopPriority,
+                sendToTrain: e.sendToTrain,
+                readFromTrain: e.readFromTrain,
+                readStoppedTrain: e.readStoppedTrain,
+                trainStoppedSignal: e.trainStoppedSignal?.name ?? null,
+                setTrainsLimit: e.setTrainsLimit,
+                trainsLimitSignal: e.trainsLimitSignal?.name ?? null,
+                readTrainsCount: e.readTrainsCount,
+                trainsCountSignal: e.trainsCountSignal?.name ?? null,
+                setPriority: e.setPriority,
+                prioritySignal: e.prioritySignal?.name ?? null,
+            }
+        },
+        trainStopControlPos: control => {
+            const editor = Dialog.openDialogs.findLast(d => d instanceof TrainStopEditor)
+            return editor instanceof TrainStopEditor ? editor.controlPosition(control) : null
         },
         quickbarItems: () =>
             G.UI.quickbarPanel.serialize().map(itemName => itemName ?? null) as (string | null)[],

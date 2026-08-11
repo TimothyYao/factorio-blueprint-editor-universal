@@ -29,7 +29,8 @@ const BP =
 // request (one slot, no count); a **requester** chest with no `request_filters` key
 // at all — the "never configured" shape that used to throw on open; a **passive
 // provider**, which requests nothing and so must open no editor; and a **train
-// stop**, an editor with no slots at all (the hint's negative case).
+// stop** (once the hint's no-slots negative case; its 2.0 circuit pane has slots
+// now, so it asserts the hint like the rest — `trainStop.spec.ts` covers it fully).
 const CHEST_BP =
     '0eNp9ksFuwjAQRH8F7dmpIIQW/B29VRFywkJXMrbr3SCiyP9eOaERFaUna0fjN+OVB2hshyGSE9ADkOAZ9J2mwJoGLWhoLZpYsPXCi/YTWRZHukoXERRcMDJ5B3rzWu6q3W5TlW/rcrtUQK13DPpjAKaTMzaHSB8Q9JSlwJlznlh8NCcsRjQkBeQOeAW9SrUCdEJCOIHGod+77txgBL16glAQPJOMtQa4gl6+bBT045kURPzqkGV/JCsYOXsY22yfUn7iFcyOX+otk6J3RbBG8hpa3+U1rlKd6pTUQ9VyvnZLx/isbHlX9g/SeiYFw0wXLEL0Fzo8B1b/A6sZKNGQK1h8eIRsR0SVFLCYSYf3/BVGe370N6lYxgY='
 
@@ -384,11 +385,18 @@ test.describe('the clear-a-slot hint', () => {
         )
     })
 
-    test('is absent on an editor with no slots at all', async ({ page }) => {
+    test('is offered on the train stop now that it has signal slots', async ({ page }) => {
+        // This used to assert the hint's *negative* case (an editor with no
+        // clearable slots at all) — but the train stop grew its 2.0 circuit pane
+        // (enable condition + output-signal slots), and with it every routed
+        // editor now holds something clearable, so the negative case is extinct.
+        // The provider chest keeps covering "opens no editor at all" instead.
         await page.goto(`/?test&source=${encodeURIComponent(CHEST_BP)}`)
         await waitForAppReady(page)
 
-        expect(await readClearHint(page, 'train-stop')).toBeNull()
+        expect(await readClearHint(page, 'train-stop')).toBe(
+            isMobileProject() ? 'Hold a slot to clear it' : 'Right-click a slot to clear it'
+        )
     })
 
     test('follows a live input-mode switch while the editor stays open', async ({ page }) => {

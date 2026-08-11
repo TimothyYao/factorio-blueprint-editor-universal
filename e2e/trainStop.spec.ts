@@ -25,9 +25,26 @@ const isMobileProject = (): boolean => test.info().project.name === 'mobile-chro
 const CHEST_BP =
     '0eNp9ksFuwjAQRH8F7dmpIIQW/B29VRFywkJXMrbr3SCiyP9eOaERFaUna0fjN+OVB2hshyGSE9ADkOAZ9J2mwJoGLWhoLZpYsPXCi/YTWRZHukoXERRcMDJ5B3rzWu6q3W5TlW/rcrtUQK13DPpjAKaTMzaHSB8Q9JSlwJlznlh8NCcsRjQkBeQOeAW9SrUCdEJCOIHGod+77txgBL16glAQPJOMtQa4gl6+bBT045kURPzqkGV/JCsYOXsY22yfUn7iFcyOX+otk6J3RbBG8hpa3+U1rlKd6pTUQ9VyvnZLx/isbHlX9g/SeiYFw0wXLEL0Fzo8B1b/A6sZKNGQK1h8eIRsR0SVFLCYSYf3/BVGe370N6lYxgY='
 
+interface TrainStopState {
+    station: string
+    manualTrainsLimit: number | null
+    priority: number
+    sendToTrain: boolean
+    readFromTrain: boolean
+    readStoppedTrain: boolean
+    trainStoppedSignal: string | null
+    setTrainsLimit: boolean
+    trainsLimitSignal: string | null
+    readTrainsCount: boolean
+    trainsCountSignal: string | null
+    setPriority: boolean
+    prioritySignal: string | null
+}
+
 interface TrainStopHook {
     openEntityEditor: (name: string) => boolean
-    entityTrainStop: (name: string) => { station: string; manualTrainsLimit: number | null } | null
+    entityTrainStop: (name: string) => TrainStopState | null
+    trainStopControlPos: (control: string) => { x: number; y: number } | null
 }
 
 async function waitForAppReady(page: Page): Promise<void> {
@@ -44,14 +61,33 @@ async function openTrainStopEditor(page: Page): Promise<void> {
     expect(opened, 'the train-stop editor should open').toBe(true)
 }
 
-const readTrainStop = (
-    page: Page
-): Promise<{ station: string; manualTrainsLimit: number | null } | null> =>
+const readTrainStop = (page: Page): Promise<TrainStopState | null> =>
     page.evaluate(() =>
         (window as unknown as { __FBE_TEST__: TrainStopHook }).__FBE_TEST__.entityTrainStop(
             'train-stop'
         )
     )
+
+/** Canvas offset — the probe returns canvas-relative coords, input needs page coords. */
+async function canvasOrigin(page: Page): Promise<{ x: number; y: number }> {
+    const box = await page.locator('#editor').boundingBox()
+    return { x: box?.x ?? 0, y: box?.y ?? 0 }
+}
+
+/** Tap/click an on-canvas control located by the `trainStopControlPos` probe. */
+async function tapControl(page: Page, control: string): Promise<void> {
+    const pos = await page.evaluate(
+        name =>
+            (window as unknown as { __FBE_TEST__: TrainStopHook }).__FBE_TEST__.trainStopControlPos(
+                name
+            ),
+        control
+    )
+    expect(pos, `control "${control}" should be locatable in the open editor`).not.toBeNull()
+    const o = await canvasOrigin(page)
+    if (isMobileProject()) await page.touchscreen.tap(o.x + pos.x, o.y + pos.y)
+    else await page.mouse.click(o.x + pos.x, o.y + pos.y)
+}
 
 /** Tap (mobile project) / click (desktop) the input where it actually renders. */
 async function tapInput(page: Page, input: Locator): Promise<void> {
@@ -134,5 +170,83 @@ test.describe('train-stop editor text fields', () => {
         // The digit-restriction still applies: letters must not get through.
         await page.keyboard.type('x')
         await expect(input).toHaveValue('12')
+    })
+})
+
+test.describe('train-stop 2.0 circuit settings', () => {
+    // The circuit pane is canvas-drawn (unlike the DOM text fields above), so
+    // these press the real checkboxes via the `trainStopControlPos` probe and
+    // read the result back through the entity — the same construction-plus-
+    // committed-state depth the other circuit editors get; the serialized
+    // shapes themselves are pinned by core/trainStopSettings.test.ts.
+    test.beforeEach(async ({ page }) => {
+        await page.goto(`/?test&source=${encodeURIComponent(CHEST_BP)}`)
+        await waitForAppReady(page)
+        await openTrainStopEditor(page)
+    })
+
+    test('the editor opens with the game defaults and no errors', async ({ page }) => {
+        const errors: string[] = []
+        page.on('pageerror', e => errors.push(e.message))
+
+        const state = await readTrainStop(page)
+        expect(state.priority).toBe(50)
+        expect(state.sendToTrain).toBe(true) // ON by default, like the game
+        expect(state.readFromTrain).toBe(false)
+        expect(state.setPriority).toBe(false)
+        expect(errors).toEqual([])
+    })
+
+    /**
+     * Tap a flag checkbox until the entity reflects `expected` — two flake
+     * sources make a bare tap-then-assert unreliable here:
+     *  - The load-time toasts stack bottom-right with `pointer-events: auto`
+     *    (tap-to-dismiss); on a phone the stack reaches the centred dialog's
+     *    lower rows, and a toast that slides in before the tap swallows it.
+     *    They're cleared before each attempt (they're not what's under test).
+     *  - A synthesized touch travels Chromium's async compositor path, so
+     *    under full-suite contention the pointerdown can land after an
+     *    immediately-following evaluate; polling + retapping absorbs that.
+     * Retapping is safe because the target state is absolute: a tap that did
+     * land flips the poll to `expected` within the window, and a genuinely
+     * lost tap leaves the state untouched for the next attempt.
+     */
+    async function tapFlag<K extends keyof TrainStopState>(
+        page: Page,
+        control: string,
+        key: K,
+        expected: TrainStopState[K]
+    ): Promise<void> {
+        for (let attempt = 0; ; attempt++) {
+            await page.evaluate(() =>
+                document.querySelectorAll('.toasts-toast').forEach(t => t.remove())
+            )
+            await tapControl(page, control)
+            try {
+                await expect
+                    .poll(async () => (await readTrainStop(page))[key], { timeout: 2_000 })
+                    .toBe(expected)
+                return
+            } catch (e) {
+                if (attempt >= 2) throw e
+            }
+        }
+    }
+
+    test('tapping a flag checkbox commits it to the blueprint', async ({ page }) => {
+        await tapFlag(page, 'readFromTrain', 'readFromTrain', true)
+
+        // send-to-train is the inverted flag: a tap turns the default OFF.
+        await tapFlag(page, 'sendToTrain', 'sendToTrain', false)
+    })
+
+    test('enabling an output seeds its game-default signal', async ({ page }) => {
+        await tapFlag(page, 'readStoppedTrain', 'readStoppedTrain', true)
+        // The signal is seeded in the same control_behavior write as the flag.
+        expect((await readTrainStop(page)).trainStoppedSignal).toBe('signal-T')
+
+        // The 2.0-only pair: set priority from circuit, defaulting to signal-P.
+        await tapFlag(page, 'setPriority', 'setPriority', true)
+        expect((await readTrainStop(page)).prioritySignal).toBe('signal-P')
     })
 })
