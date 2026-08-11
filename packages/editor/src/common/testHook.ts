@@ -267,6 +267,7 @@ export interface FbeTestHook {
         station: string
         manualTrainsLimit: number | null
         priority: number
+        color: { r: number; g: number; b: number; a: number } | null
         sendToTrain: boolean
         readFromTrain: boolean
         readStoppedTrain: boolean
@@ -463,6 +464,7 @@ export function installTestHook(win: Window = window): void {
                 station: e.station,
                 manualTrainsLimit: e.manualTrainsLimit ?? null,
                 priority: e.trainStopPriority,
+                color: e.trainStopColor ?? null,
                 sendToTrain: e.sendToTrain,
                 readFromTrain: e.readFromTrain,
                 readStoppedTrain: e.readStoppedTrain,

@@ -87,6 +87,13 @@ export class EntityContainer {
             }
         }
 
+        // The train-stop sign (and locomotive body) is tinted by the root-level
+        // `color` at sprite-build time, so a colour edit needs a full sprite
+        // rebuild to show — cheap, and instant feedback while picking a swatch.
+        const onColorChange = (): void => {
+            this.redraw()
+        }
+
         const onEntityDestroy = (): void => {
             this.redrawSurroundingEntities()
 
@@ -115,6 +122,7 @@ export class EntityContainer {
         this.m_Entity.on('splitterInputPriority', this.redrawEntityInfo, this)
         this.m_Entity.on('splitterOutputPriority', this.redrawEntityInfo, this)
         this.m_Entity.on('controlBehavior', this.redrawEntityInfo, this)
+        this.m_Entity.on('color', onColorChange)
 
         this.m_Entity.on('destroy', onEntityDestroy)
 
@@ -129,6 +137,7 @@ export class EntityContainer {
             this.m_Entity.off('splitterInputPriority', this.redrawEntityInfo, this)
             this.m_Entity.off('splitterOutputPriority', this.redrawEntityInfo, this)
             this.m_Entity.off('controlBehavior', this.redrawEntityInfo, this)
+            this.m_Entity.off('color', onColorChange)
 
             this.m_Entity.off('destroy', onEntityDestroy)
         })

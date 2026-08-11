@@ -72,6 +72,8 @@ export interface EntityEvents {
     station: []
     manualTrainsLimit: []
     trainStopPriority: []
+    /** The entity's root-level `color` changed (train stop sign / locomotive). */
+    color: []
     /** The entity's circuit/control_behavior config changed wholesale (e.g. paste settings). */
     controlBehavior: []
 }
@@ -1089,8 +1091,31 @@ export class Entity extends EventEmitter<EntityEvents> {
         return this.m_BP.wireConnections.getEntityConnections(this.entityNumber).length > 0
     }
 
-    public get trainStopColor(): ColorWithAlpha {
+    /**
+     * The stop's sign colour — root-level `color`, undefined = the prototype
+     * default (the renderer falls back to `e.color` when tinting, and the game
+     * omits the field entirely for an untouched stop).
+     */
+    public get trainStopColor(): ColorWithAlpha | undefined {
         return this.m_rawEntity.color
+    }
+
+    public set trainStopColor(color: ColorWithAlpha | undefined) {
+        const current = this.m_rawEntity.color
+        const same =
+            (!current && !color) ||
+            (current &&
+                color &&
+                current.r === color.r &&
+                current.g === color.g &&
+                current.b === color.b &&
+                current.a === color.a)
+        if (same) return
+
+        this.m_BP.history
+            .updateValue(this.m_rawEntity, 'color', color, 'Change station color')
+            .onDone(() => this.emit('color'))
+            .commit()
     }
 
     /** Entity Train Stop Station name */

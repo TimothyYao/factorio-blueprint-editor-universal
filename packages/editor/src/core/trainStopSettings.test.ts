@@ -144,6 +144,33 @@ describe.skipIf(!have)('train stop settings', () => {
         })
     })
 
+    describe('sign colour', () => {
+        it('writes the root-level color and clears back to absent', () => {
+            // Absence = the prototype default (the renderer falls back to the
+            // prototype's own tint), so reset must remove the key, not write a
+            // "default colour" guess.
+            const e = makeStop()
+            expect(e.trainStopColor).toBeUndefined()
+
+            const red = { r: 1, g: 0, b: 0, a: 0.5 }
+            e.trainStopColor = red
+            expect(raw(e).color).toEqual(red)
+
+            e.trainStopColor = undefined
+            expect(raw(e).color).toBeUndefined()
+        })
+
+        it('setting the same colour again is a no-op (no history churn)', () => {
+            const e = makeStop()
+            e.trainStopColor = { r: 1, g: 0, b: 0, a: 0.5 }
+            const before = raw(e).color
+            e.trainStopColor = { r: 1, g: 0, b: 0, a: 0.5 }
+            // Same value object identity — an equal write short-circuits before
+            // touching history, so the raw reference is untouched.
+            expect(raw(e).color).toBe(before)
+        })
+    })
+
     describe('summary + preserved siblings', () => {
         it('reports the enabled flags in the circuit summary', () => {
             const e = makeStop()

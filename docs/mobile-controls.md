@@ -234,7 +234,8 @@ pipelines at once made touch taps double-act via the browser's synthetic
   ratchet pinning the off-screen regression, plus a real tap → focus → type →
   entity round-trip on both projects) via a new `entityTrainStop` `?test` probe.
 - ✅ **Train stop: full 2.0 editor, touch-first** — the editor grew the whole
-  post-2.0 surface (priority + the circuit pane: enable condition,
+  post-2.0 surface (priority, the sign colour — a one-tap preset swatch row
+  with ✕ reset, live on the sprite — + the circuit pane: enable condition,
   send-to/read-from train, the four flag+signal outputs) built from the circuit
   editors' touch-first blocks — `Checkbox` fires on pointerdown, `SignalSlot`
   goes through the full-size picker and long-press-clears, priority uses the

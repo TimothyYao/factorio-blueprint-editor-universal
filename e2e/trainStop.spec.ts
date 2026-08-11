@@ -29,6 +29,7 @@ interface TrainStopState {
     station: string
     manualTrainsLimit: number | null
     priority: number
+    color: { r: number; g: number; b: number; a: number } | null
     sendToTrain: boolean
     readFromTrain: boolean
     readStoppedTrain: boolean
@@ -225,7 +226,7 @@ test.describe('train-stop 2.0 circuit settings', () => {
             try {
                 await expect
                     .poll(async () => (await readTrainStop(page))[key], { timeout: 2_000 })
-                    .toBe(expected)
+                    .toEqual(expected)
                 return
             } catch (e) {
                 if (attempt >= 2) throw e
@@ -248,5 +249,16 @@ test.describe('train-stop 2.0 circuit settings', () => {
         // The 2.0-only pair: set priority from circuit, defaulting to signal-P.
         await tapFlag(page, 'setPriority', 'setPriority', true)
         expect((await readTrainStop(page)).prioritySignal).toBe('signal-P')
+    })
+
+    test('a colour swatch commits the sign colour, and ✕ resets it', async ({ page }) => {
+        expect((await readTrainStop(page)).color).toBeNull()
+
+        // First swatch = the red preset; the committed value is exactly what
+        // the swatch declares (a: 0.5, matching game serialization).
+        await tapFlag(page, 'colorRed', 'color', { r: 1, g: 0, b: 0, a: 0.5 })
+
+        // Reset removes the field — back to the prototype-default sign.
+        await tapFlag(page, 'colorReset', 'color', null)
     })
 })

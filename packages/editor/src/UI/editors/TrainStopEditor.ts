@@ -1,16 +1,45 @@
+import { Graphics, Text } from 'pixi.js'
 import { Entity } from '../../core/Entity'
 import { ISignal } from '../../types'
+import { ColorWithAlpha } from '../../core/factorioData'
 import { Checkbox } from '../controls/Checkbox'
 import { TextInput } from '../controls/TextInput'
 import { NumericField } from '../controls/NumericField'
+import { Slot } from '../controls/Slot'
 import { SignalSlot } from './components/SignalSlot'
 import { Editor } from './Editor'
+import { styles } from '../style'
 import G from '../../common/globals'
 
 /**
+ * Swatch palette for the station sign colour — an approximation of the game's
+ * colour-picker preset row. Factorio accepts any float RGB, so these don't
+ * need to byte-match the game's presets; `a: 0.5` mirrors how the game
+ * serializes entity colours. Absence of `color` = the prototype default, so
+ * the row ends with a reset swatch rather than a "default colour" guess.
+ */
+const COLOR_PRESETS: ColorWithAlpha[] = [
+    { r: 1, g: 0, b: 0, a: 0.5 }, // red
+    { r: 1, g: 0.55, b: 0.1, a: 0.5 }, // orange
+    { r: 1, g: 0.9, b: 0.1, a: 0.5 }, // yellow
+    { r: 0.2, g: 0.8, b: 0.2, a: 0.5 }, // green
+    { r: 0.2, g: 0.8, b: 0.9, a: 0.5 }, // cyan
+    { r: 0.25, g: 0.45, b: 0.9, a: 0.5 }, // blue
+    { r: 0.9, g: 0.4, b: 0.75, a: 0.5 }, // pink
+    { r: 1, g: 1, b: 1, a: 0.5 }, // white
+]
+
+const toHex = (c: ColorWithAlpha): number =>
+    (Math.round(c.r * 255) << 16) | (Math.round(c.g * 255) << 8) | Math.round(c.b * 255)
+
+const sameColor = (a: ColorWithAlpha | undefined, b: ColorWithAlpha | undefined): boolean =>
+    (!a && !b) || (!!a && !!b && a.r === b.r && a.g === b.g && a.b === b.b && a.a === b.a)
+
+/**
  * Train Stop Editor — the full post-2.0 configuration surface: station name,
- * manual trains limit, priority (2.0) and the circuit pane (enable condition,
- * send-to/read-from train, and the four flag+signal outputs). The name and
+ * manual trains limit, priority (2.0), the sign colour (preset swatches +
+ * reset) and the circuit pane (enable condition, send-to/read-from train, and
+ * the four flag+signal outputs). The name and
  * limit stay DOM `TextInput`s — free text needs the OS keyboard (#56 made that
  * overlay work on touch); priority uses the canvas `NumericField` like every
  * other pure-numeric field, and the circuit rows reuse the combinator editors'
@@ -25,7 +54,7 @@ export class TrainStopEditor extends Editor {
     >
 
     public constructor(entity: Entity) {
-        super(446, 360, entity)
+        super(446, 390, entity)
 
         this.addLabel(140, 46, 'Station Name:')
         // The length is arbitrary, but the Textbox doesn't work right without it
@@ -61,8 +90,39 @@ export class TrainStopEditor extends Editor {
         priorityField.position.set(275, 122)
         this.addChild(priorityField)
 
-        this.addLabel(12, 170, 'Circuit network')
-        this.addCircuitCondition(12, 190)
+        // Colour of the station sign: one tap per swatch, live on the sprite
+        // (`EntityContainer` rebuilds on the `color` event). The active swatch
+        // shows via the Button's built-in pressed highlight; ✕ resets to the
+        // prototype default (removes `color` from the export, like the game).
+        this.addLabel(140, 166, 'Color:')
+        const swatches: { slot: Slot<undefined>; color: ColorWithAlpha | undefined }[] = []
+        const addSwatch = (i: number, color: ColorWithAlpha | undefined): Slot<undefined> => {
+            const slot = new Slot<undefined>(22, 22)
+            if (color) {
+                slot.content = new Graphics().rect(-7, -7, 14, 14).fill(toHex(color))
+            } else {
+                const x = new Text({ text: '✕', style: styles.dialog.label })
+                x.anchor.set(0.5)
+                slot.content = x
+            }
+            slot.position.set(210 + i * 24, 158)
+            slot.on('pointerdown', () => {
+                this.m_Entity.trainStopColor = color
+            })
+            this.addChild(slot)
+            swatches.push({ slot, color })
+            return slot
+        }
+        COLOR_PRESETS.forEach((c, i) => addSwatch(i, c))
+        const resetSwatch = addSwatch(COLOR_PRESETS.length, undefined)
+        const refreshSwatches = (): void => {
+            const current = this.m_Entity.trainStopColor
+            for (const s of swatches) s.slot.active = sameColor(s.color, current)
+        }
+        refreshSwatches()
+
+        this.addLabel(12, 196, 'Circuit network')
+        this.addCircuitCondition(12, 216)
 
         // The circuit flags, wired checkbox → entity setter. Rows with an output
         // signal sit in the right column beside the enable-condition block; the
@@ -94,10 +154,10 @@ export class TrainStopEditor extends Editor {
             return slot
         }
 
-        const sendToTrain = flag(12, 290, 'Send to train', this.m_Entity.sendToTrain, v => {
+        const sendToTrain = flag(12, 316, 'Send to train', this.m_Entity.sendToTrain, v => {
             this.m_Entity.sendToTrain = v
         })
-        const readFromTrain = flag(12, 316, 'Read from train', this.m_Entity.readFromTrain, v => {
+        const readFromTrain = flag(12, 342, 'Read from train', this.m_Entity.readFromTrain, v => {
             this.m_Entity.readFromTrain = v
         })
 
@@ -105,7 +165,7 @@ export class TrainStopEditor extends Editor {
         const slotX = col + 158
         const readStopped = flag(
             col,
-            199,
+            225,
             'Read stopped train',
             this.m_Entity.readStoppedTrain,
             v => {
@@ -114,43 +174,43 @@ export class TrainStopEditor extends Editor {
         )
         const stoppedSignal = signal(
             slotX,
-            190,
+            216,
             this.m_Entity.trainStoppedSignal,
             'Stopped train signal',
             s => {
                 this.m_Entity.trainStoppedSignal = s
             }
         )
-        const setLimit = flag(col, 241, 'Set trains limit', this.m_Entity.setTrainsLimit, v => {
+        const setLimit = flag(col, 267, 'Set trains limit', this.m_Entity.setTrainsLimit, v => {
             this.m_Entity.setTrainsLimit = v
         })
         const limitSignal = signal(
             slotX,
-            232,
+            258,
             this.m_Entity.trainsLimitSignal,
             'Trains limit signal',
             s => {
                 this.m_Entity.trainsLimitSignal = s
             }
         )
-        const readCount = flag(col, 283, 'Read trains count', this.m_Entity.readTrainsCount, v => {
+        const readCount = flag(col, 309, 'Read trains count', this.m_Entity.readTrainsCount, v => {
             this.m_Entity.readTrainsCount = v
         })
         const countSignal = signal(
             slotX,
-            274,
+            300,
             this.m_Entity.trainsCountSignal,
             'Trains count signal',
             s => {
                 this.m_Entity.trainsCountSignal = s
             }
         )
-        const setPriority = flag(col, 325, 'Set priority', this.m_Entity.setPriority, v => {
+        const setPriority = flag(col, 351, 'Set priority', this.m_Entity.setPriority, v => {
             this.m_Entity.setPriority = v
         })
         const prioritySignal = signal(
             slotX,
-            316,
+            342,
             this.m_Entity.prioritySignal,
             'Priority signal',
             s => {
@@ -196,6 +256,8 @@ export class TrainStopEditor extends Editor {
             priorityField.value = this.m_Entity.trainStopPriority
         })
 
+        this.onEntityChange('color', refreshSwatches)
+
         // Every circuit mutation lands as one `controlBehavior` event (undo/redo
         // and paste-settings included), so one refresh syncs the whole pane —
         // e.g. enabling "read stopped train" seeds signal-T, which has to appear
@@ -217,6 +279,8 @@ export class TrainStopEditor extends Editor {
         // for these controls' on-screen centres by name (`trainStopControlPos`).
         this.m_controls = {
             priority: priorityField,
+            colorRed: swatches[0].slot,
+            colorReset: resetSwatch,
             sendToTrain,
             readFromTrain,
             readStoppedTrain: readStopped,

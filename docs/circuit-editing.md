@@ -76,8 +76,10 @@ the circuit condition via `Editor.addCircuitCondition`.
 
 `TrainStopEditor` carries the full post-2.0 train-stop surface: station name +
 manual limit (DOM `TextInput`, #56), **priority** (root-level 0–255,
-`NumericField`, 50-the-default omitted from the export like the game does) and
-a circuit pane — the shared enable condition plus the six flags
+`NumericField`, 50-the-default omitted from the export like the game does),
+the **sign colour** (a preset swatch row + ✕ reset writing root-level `color`;
+`EntityContainer` rebuilds the sprite on the `color` event so the tint is
+live; reset removes the field = the prototype default) and a circuit pane — the shared enable condition plus the six flags
 (`send_to_train` — default ON, only `false` is ever serialized —
 `read_from_train`, and the four flag+signal outputs `read_stopped_train` /
 `set_trains_limit` / `read_trains_count` / `set_priority`, each seeding the
