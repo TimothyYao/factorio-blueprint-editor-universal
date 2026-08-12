@@ -107,11 +107,16 @@ export class Editor {
         G.UI.showDebuggingLayer = G.debug
     }
 
-    /** Re-emit the active container's mode + the blueprint's entity changes on the stable emitters. */
+    /** Re-emit the active container's mode + the blueprint's content changes on the stable emitters. */
     private bindBPCMode(): void {
         G.BPC.on('mode', (mode: EditorMode) => this.m_modeEmitter.emit('mode', mode))
         G.bp.on('create-entity', () => this.m_bpEmitter.emit('change'))
         G.bp.on('remove-entity', () => this.m_bpEmitter.emit('change'))
+        // Tiles count as blueprint content too: the rail's Select-tiles button
+        // gates on `blueprintHasTiles`, so painting/erasing tiles must re-filter
+        // the rail just like entity changes do.
+        G.bp.on('create-tile', () => this.m_bpEmitter.emit('change'))
+        G.bp.on('remove-tile', () => this.m_bpEmitter.emit('change'))
         // Nudge consumers for the freshly-bound blueprint (e.g. after a load swaps
         // it in). No-op at boot — nobody's subscribed yet (the rail's own initial
         // layout covers the empty-blueprint start).
@@ -128,9 +133,14 @@ export class Editor {
         this.m_modeEmitter.on('mode', cb)
     }
 
-    /** Subscribe to blueprint entity add/remove (across blueprint swaps on load). */
+    /** Subscribe to blueprint entity/tile add/remove (across blueprint swaps on load). */
     public onBlueprintChange(cb: () => void): void {
         this.m_bpEmitter.on('change', cb)
+    }
+
+    /** Whether the working blueprint holds any tiles (gates the rail's Select tiles). */
+    public get blueprintHasTiles(): boolean {
+        return !G.bp.tiles.isEmpty()
     }
 
     /** Whether the working blueprint has no entities/tiles (gates the rail's Select). */
@@ -175,13 +185,21 @@ export class Editor {
 
     // --- Touch marquee (#21) — thin delegators for the website's Select button
     // and the Copy/Cut/Delete bar (the gesture itself lives in BlueprintContainer).
-    /** Arm the marquee: the next one-finger drag draws a selection box (mobile). */
-    public armMarquee(): void {
-        G.BPC.armMarquee()
+    /**
+     * Arm the marquee: the next one-finger drag draws a selection box (mobile).
+     * `tilesOnly` arms the tiles-flavoured select (the rail's "Select tiles"):
+     * the box collects tiles even where entities sit on top of them.
+     */
+    public armMarquee(tilesOnly = false): void {
+        G.BPC.armMarquee(tilesOnly)
     }
     /** Entities in the held marquee selection (0 when not in SELECT mode). */
     public get marqueeCount(): number {
         return G.BPC.marqueeCount
+    }
+    /** Tiles in the held marquee selection (0 when not in SELECT mode). */
+    public get marqueeTileCount(): number {
+        return G.BPC.marqueeTileCount
     }
     public copyMarquee(): void {
         G.BPC.copyMarquee()
@@ -307,7 +325,10 @@ export class Editor {
         // follows) carries them through.
         const result = bp.entities.valuesArray().map(e => new Entity(e.rawEntity, bp))
 
-        G.BPC.spawnPaintContainer(result, 0)
+        // Tiles ride along too — the ghost renders and places them (a pasted
+        // blueprint's landfill/concrete used to be silently dropped). Note a
+        // tile-carrying ghost can't flip/rotate (see canFlipOrRotateByCopying).
+        G.BPC.spawnPaintContainer(result, 0, bp.tiles.valuesArray())
     }
 
     public async loadBlueprint(bp: Blueprint): Promise<void> {

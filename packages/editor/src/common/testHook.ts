@@ -76,6 +76,13 @@ export interface EditorTestState {
      */
     marquee: {
         count: number
+        /**
+         * Tiles in the held selection. Selections are either/or: entities win
+         * (game-like), so `count` and `tileCount` are never both non-zero —
+         * a tile selection comes from a box with no entities, or from the
+         * rail's "Select tiles".
+         */
+        tileCount: number
         origin: { x: number; y: number } | null
         /** Direction of the first selected entity (for the rotate-in-select test). */
         direction: number | null
@@ -133,6 +140,7 @@ export function getEditorTestState(): EditorTestState {
         dialogOpen: Dialog.anyOpen(),
         marquee: {
             count: G.BPC.marqueeCount,
+            tileCount: G.BPC.marqueeTileCount,
             origin: G.BPC.marqueeOrigin ?? null,
             direction: G.BPC.marqueeDirection ?? null,
         },

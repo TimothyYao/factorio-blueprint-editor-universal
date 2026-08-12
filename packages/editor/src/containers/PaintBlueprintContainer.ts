@@ -1,16 +1,26 @@
 import { Entity } from '../core/Entity'
 import { IPoint } from '../types'
 import { Blueprint } from '../core/Blueprint'
+import { Tile } from '../core/Tile'
 import { inputMode } from '../common/input'
 import { EntitySprite } from './EntitySprite'
 import { PaintContainer } from './PaintContainer'
 import { PaintBlueprintEntityContainer } from './PaintBlueprintEntityContainer'
 import { BlueprintContainer } from './BlueprintContainer'
+import { TileContainer } from './TileContainer'
 import { IConnectionPoint } from '../core/WireConnections'
 
 export class PaintBlueprintContainer extends PaintContainer {
     private readonly bp: Blueprint
     private readonly entities = new Map<Entity, PaintBlueprintEntityContainer>()
+    /**
+     * Tiles carried by the ghost (marquee tile Copy/Cut, pasted blueprints with
+     * landfill/concrete), as name + center-relative position. Kept out of the
+     * internal entity `Blueprint` on purpose: `this.bp` exists to re-bind wires,
+     * which tiles don't participate in — they only need rendering (sprites
+     * below) and placing (`createTiles` at ghost position + offset).
+     */
+    private readonly ghostTiles: { name: string; x: number; y: number }[]
     /**
      * Tile the source entities were centered on (their bounding-box center). The
      * ghost re-centers everything on this, so positioning the ghost at this world
@@ -19,24 +29,27 @@ export class PaintBlueprintContainer extends PaintContainer {
      */
     private readonly center: IPoint
 
-    public constructor(bpc: BlueprintContainer, entities: Entity[]) {
+    public constructor(bpc: BlueprintContainer, entities: Entity[], tiles: Tile[] = []) {
         super(bpc, 'blueprint')
 
-        const minX = entities.reduce(
-            (min, e) => Math.min(min, e.position.x - e.size.x / 2),
-            Infinity
+        // Bounding box over entity footprints *and* tile cells (a tile's hash
+        // position is its center, so its cell spans ±0.5) — a tiles-only ghost
+        // must still get a finite center.
+        const minX = Math.min(
+            entities.reduce((min, e) => Math.min(min, e.position.x - e.size.x / 2), Infinity),
+            tiles.reduce((min, t) => Math.min(min, t.x - 0.5), Infinity)
         )
-        const minY = entities.reduce(
-            (min, e) => Math.min(min, e.position.y - e.size.y / 2),
-            Infinity
+        const minY = Math.min(
+            entities.reduce((min, e) => Math.min(min, e.position.y - e.size.y / 2), Infinity),
+            tiles.reduce((min, t) => Math.min(min, t.y - 0.5), Infinity)
         )
-        const maxX = entities.reduce(
-            (max, e) => Math.max(max, e.position.x + e.size.x / 2),
-            -Infinity
+        const maxX = Math.max(
+            entities.reduce((max, e) => Math.max(max, e.position.x + e.size.x / 2), -Infinity),
+            tiles.reduce((max, t) => Math.max(max, t.x + 0.5), -Infinity)
         )
-        const maxY = entities.reduce(
-            (max, e) => Math.max(max, e.position.y + e.size.y / 2),
-            -Infinity
+        const maxY = Math.max(
+            entities.reduce((max, e) => Math.max(max, e.position.y + e.size.y / 2), -Infinity),
+            tiles.reduce((max, t) => Math.max(max, t.y + 0.5), -Infinity)
         )
 
         const center = {
@@ -46,9 +59,13 @@ export class PaintBlueprintContainer extends PaintContainer {
         this.center = center
 
         const entNrWhitelist = new Set(entities.map(e => e.entityNumber))
-        const wires = entities[0].Blueprint.wireConnections
-            .serializeBpWires()
-            .filter(wire => entNrWhitelist.has(wire[0]) && entNrWhitelist.has(wire[2]))
+        // A tiles-only ghost has no source entity to read connections from.
+        const wires =
+            entities.length === 0
+                ? []
+                : entities[0].Blueprint.wireConnections
+                      .serializeBpWires()
+                      .filter(wire => entNrWhitelist.has(wire[0]) && entNrWhitelist.has(wire[2]))
         this.bp = new Blueprint({
             entities: entities.map(e => {
                 const ent = e.serialize(entNrWhitelist)
@@ -66,6 +83,24 @@ export class PaintBlueprintContainer extends PaintContainer {
         }
 
         this.children.sort(EntitySprite.compareFn)
+
+        // Tile sprites go *under* the (already sorted) entity sprites — same
+        // layering as the world, where the tile plane renders below entities.
+        // Grouped by name so each group shares one `generateSprites` call; the
+        // group's base position feeds the texture-variant hash only, so passing
+        // the source center keeps the variants stable across re-spawns.
+        this.ghostTiles = tiles.map(t => ({ name: t.name, x: t.x - center.x, y: t.y - center.y }))
+        const byName = new Map<string, IPoint[]>()
+        for (const t of this.ghostTiles) {
+            if (!byName.has(t.name)) byName.set(t.name, [])
+            byName.get(t.name).push({ x: t.x, y: t.y })
+        }
+        for (const [name, positions] of byName) {
+            for (const s of TileContainer.generateSprites(name, center, positions)) {
+                this.addChildAt(s, 0)
+            }
+        }
+
         for (const [e] of this.entities) {
             this.bpc.underlayContainer.activateRelatedAreas(e.name)
         }
@@ -139,7 +174,12 @@ export class PaintBlueprintContainer extends PaintContainer {
     }
 
     public override canFlipOrRotateByCopying(): boolean {
-        return true
+        // Flip/rotate work by re-spawning the ghost from rotated/flipped entity
+        // *copies* — tiles have no copy path yet, so they'd silently vanish from
+        // the ghost. Gate the whole mechanism off while tiles are aboard (the
+        // Flip buttons hide via `cursorCanFlip`; Rotate falls through to this
+        // class's no-op `rotate`).
+        return this.ghostTiles.length === 0
     }
 
     public override rotatedEntities(ccw?: boolean): Entity[] {
@@ -225,7 +265,25 @@ export class PaintBlueprintContainer extends PaintContainer {
             }
         }
 
+        // Lay the carried tiles at ghost position + relative offset, per name
+        // (createTiles takes one name at a time). Inside the same transaction so
+        // one undo reverts the whole paste.
+        for (const [name, positions] of this.ghostTilesByName()) {
+            this.bpc.bp.createTiles(name, positions)
+        }
+
         this.bpc.bp.history.commitTransaction()
+    }
+
+    /** The ghost's tiles as name → *absolute* world-tile positions (at the current spot). */
+    private ghostTilesByName(): Map<string, IPoint[]> {
+        const pos = this.getGridPosition()
+        const byName = new Map<string, IPoint[]>()
+        for (const t of this.ghostTiles) {
+            if (!byName.has(t.name)) byName.set(t.name, [])
+            byName.get(t.name).push({ x: t.x + pos.x, y: t.y + pos.y })
+        }
+        return byName
     }
 
     public override removeContainerUnder(): void {
@@ -234,6 +292,11 @@ export class PaintBlueprintContainer extends PaintContainer {
         this.bpc.bp.history.startTransaction('Remove Entities')
         for (const [, c] of this.entities) {
             c.removeContainerUnder()
+        }
+        // Mirror the tile brush: mining with a tile-carrying ghost also clears
+        // the tiles under its footprint.
+        for (const [, positions] of this.ghostTilesByName()) {
+            this.bpc.bp.removeTiles(positions)
         }
         this.bpc.bp.history.commitTransaction()
     }
