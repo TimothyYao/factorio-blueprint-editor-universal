@@ -379,7 +379,9 @@ pipelines at once made touch taps double-act via the browser's synthetic
   move-in-place; the ghost is then the same paste ghost the placement work (#30)
   makes drag/nudge/center-placeable, closing the cut/copy/paste loop on touch.
   Reuses the desktop selection rectangle + `getEntitiesInArea` + cursor-box
-  highlight; `OverlayContainer.freezeSelectionArea()` pins the box on release.
+  highlight. _(Originally the box stayed frozen on release; the tiles round
+  changed that — the rectangle is drag feedback only and hides once the
+  selection is held, whose visual is the cursor boxes / tile highlight.)_
   While the box is drawn/held the hover/info panel is suppressed (it would
   obscure the box), and a second finger mid-draw cleanly **abandons** the box so
   pinch/zoom can't strand it. Seams: `BlueprintContainer`
@@ -430,14 +432,36 @@ pipelines at once made touch taps double-act via the browser's synthetic
 - ⬜ **Pinch in desktop mode** — desktop currently ignores touch entirely, so a
   touch-laptop in desktop mode can't pinch. Out of scope for now (we don't care
   about touch-on-desktop yet); revisit if needed.
-- ⬜ **Tiles in selections** — the marquee (and desktop's modifier+drag
-  copy/delete) collects `entityPositionGrid.getEntitiesInArea` only, so tiles
-  can't be box-selected, area-deleted, or copied/cut _anywhere_ (the paste
-  ghost `PaintBlueprintContainer` is entity-only, upstream included). The
-  mechanical fix is known (a `Blueprint.getTilesInArea` over `bp.tiles`, tiles
-  in `deleteMarquee`, a tiles-capable paste ghost), but it's deferred until
-  there's a usable answer for _choosing_ tile selection on touch without
-  another rail action — see the tile-brush entry above for what did land.
+- ✅ **Tiles in selections (marquee)** — the marquee now sees tiles, resolved
+  like the game: the box selects **entities**, and only when it holds none does
+  it fall back to the **tiles** underneath (either/or, never mixed). The rail
+  gains **Select tiles** (shown only while the blueprint holds tiles, via new
+  `create-tile`/`remove-tile` blueprint events feeding `onBlueprintChange`) —
+  the tiles-flavoured arm that collects tiles even _under_ entities, the case
+  the entities-win rule can't reach. A held tile selection offers Copy / Cut /
+  Delete: Delete → `Blueprint.removeTiles`; Copy/Cut ride a **tiles-capable
+  paste ghost** — `PaintBlueprintContainer` carries name+offset tile records
+  (kept out of its internal wire-rebinding `Blueprint` on purpose), renders
+  them under the entity sprites, lays them via `createTiles` on place and
+  clears them on right-click mine. `Editor.appendBlueprint` passes tiles
+  through too, so **pasted blueprint strings keep their landfill/concrete**
+  (previously dropped silently). Selection visuals: selected tiles get a
+  **per-tile highlight** (`OverlayContainer.updateTileSelectionHighlight`,
+  translucent fill + outline per cell in the desktop copy-select green — tiles
+  have no container mapping to hang a cursor box on), live during the drag;
+  and the blue **rectangle now hides on release** for _all_ selections (it
+  used to stay frozen over the canvas) — once held, the cursor boxes / tile
+  highlight are the selection's visual. Scoped out on purpose: the entity-only
+  nudge d-pad hides for a tile selection (no group-move path for tiles); a
+  tile-carrying ghost can't flip/rotate (those re-spawn from entity copies —
+  `canFlipOrRotateByCopying` gates them off);
+  and desktop's modifier+drag COPY/DELETE modes remain entity-only. Seams:
+  `Blueprint.getTilesInArea` + tile events, `BlueprintContainer`
+  (`armMarquee(tilesOnly)`, either/or `marqueeUpdateFn`, `marqueeTiles` through
+  copy/cut/delete), `PaintBlueprintContainer` ghost tiles,
+  `actionToolbar.ts` (Select tiles button, `when`-gated SELECT d-pad).
+  Covered by the marquee half of `e2e/touchTiles.spec.ts` via
+  `marquee.tileCount` on the `?test` hook.
 
 ## Notes / tradeoffs
 

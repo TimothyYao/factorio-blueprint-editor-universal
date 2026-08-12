@@ -1,21 +1,28 @@
 import { test, expect, type Page } from '@playwright/test'
+import { dragOneFinger } from './touchGestures'
 
 // Tile-brush controls on touch: the PAINT d-pad's corners carry Size − / +
 // (the keyboard's [ / ] ratchet — the brush was stuck at 2×2 on mobile) and
 // Erase (desktop's right-click mine — laid tiles were unremovable on touch),
-// shown only while the cursor is a *tile* brush. Tiles render on the <canvas>,
-// so these assert against the `?test` state hook (`paint.tileSize`,
-// `blueprint.tileCount`). See docs/mobile-controls.md.
+// shown only while the cursor is a *tile* brush. Plus the marquee's tile side:
+// the regular Select resolves game-like (entities win, tiles only when the box
+// holds none) and the rail's "Select tiles" collects tiles even under
+// entities. Tiles render on the <canvas>, so these assert against the `?test`
+// state hook (`paint.tileSize`, `blueprint.tileCount`, `marquee.tileCount`).
+// See docs/mobile-controls.md.
 
 interface TilesState {
     paint: {
         active: boolean
         visible: boolean
+        kind: 'entity' | 'blueprint' | null
         tile: { x: number; y: number } | null
         /** Non-null exactly while a tile brush is held. */
         tileSize: number | null
     }
     blueprint: { entityCount: number; tileCount: number }
+    /** Either/or: entities win, so count and tileCount are never both non-zero. */
+    marquee: { count: number; tileCount: number }
 }
 
 function getState(page: Page): Promise<TilesState> {
@@ -148,5 +155,182 @@ test.describe('touch tile brush (size + erase)', () => {
         await dpad(page, 'Erase').click({ force: true })
         await expect.poll(() => tileCount(page)).toBe(0)
         expect((await getState(page)).paint.active).toBe(true)
+    })
+})
+
+// --- Marquee: tiles in selections -----------------------------------------
+
+// Tap a rail button by title (open the ⋯ overflow first if it spilled there).
+// Force-click: fixed geometry, but the actionability wait is flaky under
+// parallel render-loop contention (see actionToolbar.spec).
+async function tapRail(page: Page, title: string): Promise<void> {
+    const toolbar = page.locator('#action-toolbar')
+    const btn = toolbar.locator(`button[title="${title}"]`)
+    if (!(await btn.isVisible())) await toolbar.locator('button.rail-more').click({ force: true })
+    await btn.click({ force: true })
+}
+
+const tapIn = (page: Page, cluster: string, title: string): Promise<void> =>
+    page.locator(`#${cluster} button[title="${title}"]`).click({ force: true })
+
+// Pixel counts of the marquee's overlay visuals (blue drag rectangle / green
+// tile highlight), via the `?test` probe — the canvas is opaque to the DOM.
+const overlayPixels = (page: Page): Promise<{ box: number; highlight: number }> =>
+    page.evaluate(() =>
+        (
+            window as unknown as {
+                __FBE_TEST__: { marqueeOverlayPixels: () => { box: number; highlight: number } }
+            }
+        ).__FBE_TEST__.marqueeOverlayPixels()
+    )
+
+// Lay a 2×2 landfill patch at `at` with the slot-1 brush, then drop the cursor
+// (rail Cancel) so the marquee buttons (modes NONE/EDIT) come back.
+async function layPatch(page: Page, at: { x: number; y: number }): Promise<void> {
+    await holdSlot(page, '1')
+    await page.locator('#editor').tap({ position: at })
+    await page.locator('#editor').tap({ position: at })
+    await expect.poll(() => tileCount(page)).toBeGreaterThan(0)
+    await tapRail(page, 'Cancel')
+    await expect.poll(async () => (await getState(page)).paint.active).toBe(false)
+}
+
+// Place the slot-2 belt at `at` (tap to preview, tap to commit), then drop the cursor.
+async function placeBelt(page: Page, at: { x: number; y: number }): Promise<void> {
+    await holdSlot(page, '2')
+    await page.locator('#editor').tap({ position: at })
+    await page.locator('#editor').tap({ position: at })
+    await expect.poll(async () => (await getState(page)).blueprint.entityCount).toBe(1)
+    await tapRail(page, 'Cancel')
+    await expect.poll(async () => (await getState(page)).paint.active).toBe(false)
+}
+
+// Boxes: one tight around the TILE_A patch (clear of TILE_B), one over both.
+const BOX_A_FROM = { x: 120, y: 420 }
+const BOX_A_TO = { x: 240, y: 540 }
+const BOX_BOTH_FROM = { x: 120, y: 420 }
+const BOX_BOTH_TO = { x: 400, y: 700 }
+
+test.describe('touch marquee: tiles in selections', () => {
+    test.beforeEach(() => {
+        test.skip(
+            test.info().project.name !== 'mobile-chromium',
+            'the marquee is a mobile-only touch gesture'
+        )
+    })
+
+    test('regular Select prefers entities; a box with none falls back to tiles', async ({
+        page,
+    }) => {
+        test.slow() // several place/select rounds against one render loop
+
+        await gotoWithQuickbar(page)
+        await layPatch(page, TILE_A)
+        await placeBelt(page, TILE_B)
+
+        // A box over both: game-like resolution — the entity wins, tiles ignored.
+        await tapRail(page, 'Select')
+        await dragOneFinger(page, BOX_BOTH_FROM, BOX_BOTH_TO)
+        await expect.poll(async () => (await getState(page)).marquee.count).toBe(1)
+        expect((await getState(page)).marquee.tileCount).toBe(0)
+        // The blue rectangle is drag feedback only — once the selection is held
+        // it must be gone (it used to linger frozen over the canvas).
+        expect((await overlayPixels(page)).box).toBe(0)
+        await tapIn(page, 'select-actions', 'Cancel')
+
+        // A box over the patch only: no entities inside → the tiles are selected,
+        // and the entity-only nudge d-pad hides (Copy/Cut/Delete still offered).
+        await tapRail(page, 'Select')
+        await dragOneFinger(page, BOX_A_FROM, BOX_A_TO)
+        await expect.poll(async () => (await getState(page)).marquee.tileCount).toBe(4)
+        expect((await getState(page)).marquee.count).toBe(0)
+        await expect(page.locator('#select-dpad button[title="Up"]')).toBeHidden()
+        await expect(page.locator('#select-actions button[title="Delete"]')).toBeVisible()
+        // A held tile selection shows its per-tile highlight, not the rectangle.
+        const held = await overlayPixels(page)
+        expect(held.box).toBe(0)
+        expect(held.highlight).toBeGreaterThan(0)
+
+        // Delete removes the selected tiles and nothing else — highlight included.
+        await tapIn(page, 'select-actions', 'Delete')
+        await expect.poll(() => tileCount(page)).toBe(0)
+        expect((await getState(page)).blueprint.entityCount).toBe(1)
+        expect((await overlayPixels(page)).highlight).toBe(0)
+    })
+
+    test('Select tiles collects the tiles even under an entity', async ({ page }) => {
+        test.slow()
+
+        await gotoWithQuickbar(page)
+        // No tiles yet → the tiles-flavoured Select isn't offered (rail or overflow).
+        await expect(page.locator('#action-toolbar button[title="Select tiles"]')).toBeHidden()
+
+        // A patch with a belt sitting on top of it (layers coexist).
+        await layPatch(page, TILE_A)
+        await placeBelt(page, TILE_A)
+        await expect(page.locator('#action-toolbar button[title="Select tiles"]')).toBeVisible()
+
+        // Regular Select over the spot picks the belt (entities win)...
+        await tapRail(page, 'Select')
+        await dragOneFinger(page, BOX_A_FROM, BOX_A_TO)
+        await expect.poll(async () => (await getState(page)).marquee.count).toBe(1)
+        await tapIn(page, 'select-actions', 'Cancel')
+
+        // ...Select tiles reaches the tiles underneath it.
+        await tapRail(page, 'Select tiles')
+        await dragOneFinger(page, BOX_A_FROM, BOX_A_TO)
+        await expect.poll(async () => (await getState(page)).marquee.tileCount).toBe(4)
+        expect((await getState(page)).marquee.count).toBe(0)
+        expect((await overlayPixels(page)).highlight).toBeGreaterThan(0)
+
+        // Deleting the tile selection leaves the belt alone.
+        await tapIn(page, 'select-actions', 'Delete')
+        await expect.poll(() => tileCount(page)).toBe(0)
+        expect((await getState(page)).blueprint.entityCount).toBe(1)
+    })
+
+    test('Copy on a tile selection spawns a placeable ghost — nudge + Place duplicates', async ({
+        page,
+    }) => {
+        test.slow()
+
+        await gotoWithQuickbar(page)
+        await layPatch(page, TILE_A)
+
+        await tapRail(page, 'Select')
+        await dragOneFinger(page, BOX_A_FROM, BOX_A_TO)
+        await expect.poll(async () => (await getState(page)).marquee.tileCount).toBe(4)
+
+        // Copy → a blueprint ghost carrying the tiles, previewed over the source.
+        await tapIn(page, 'select-actions', 'Copy')
+        await expect.poll(async () => (await getState(page)).paint.kind).toBe('blueprint')
+        expect(await tileCount(page)).toBe(4) // originals stay
+
+        // Nudge it clear of the source patch and commit — the patch duplicates.
+        for (let i = 0; i < 3; i++) await tapIn(page, 'paint-dpad', 'Right')
+        await tapIn(page, 'paint-dpad', 'Place')
+        await expect.poll(() => tileCount(page)).toBe(8)
+    })
+
+    test('Cut on a tile selection previews in place — Place restores the patch', async ({
+        page,
+    }) => {
+        test.slow()
+
+        await gotoWithQuickbar(page)
+        await layPatch(page, TILE_A)
+
+        await tapRail(page, 'Select')
+        await dragOneFinger(page, BOX_A_FROM, BOX_A_TO)
+        await expect.poll(async () => (await getState(page)).marquee.tileCount).toBe(4)
+
+        // Cut removes the originals and holds them as a ghost over the source
+        // tiles — committing without moving lays them right back.
+        await tapIn(page, 'select-actions', 'Cut')
+        await expect.poll(async () => (await getState(page)).paint.kind).toBe('blueprint')
+        await expect.poll(() => tileCount(page)).toBe(0)
+
+        await tapIn(page, 'paint-dpad', 'Place')
+        await expect.poll(() => tileCount(page)).toBe(4)
     })
 })
