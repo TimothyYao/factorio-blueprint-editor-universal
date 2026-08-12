@@ -47,6 +47,13 @@ interface ToolbarButton {
     modes?: EditorMode[]
     /** Extra show condition beyond mode (e.g. Select needs a non-empty blueprint). */
     when?: (editor: Editor) => boolean
+    /**
+     * Permanently parked in the ⋯ overflow, never in the rail — for rare,
+     * deliberate actions (blueprint management). Keeps the rail short and
+     * *stable*: the everyday cells sit in the same places across modes
+     * (muscle memory) instead of shifting as mode-gating frees rows.
+     */
+    parked?: boolean
 }
 
 // Rail (left gutter). Priority order: the buttons that fit stay in the rail; the
@@ -134,11 +141,12 @@ const BUTTONS: ToolbarButton[] = [
         className: 'wire-green',
     },
     // Blueprint-level / management actions — global; keyboard-only otherwise, so
-    // unreachable on touch (see issue #26). Low priority → live in the ⋯ overflow.
-    { action: 'copyBlueprint', glyph: '📋', label: 'Copy BP' },
-    { action: 'appendBlueprint', glyph: '📥', label: 'Paste BP' },
-    { action: 'takePicture', glyph: '📷', label: 'Export' },
-    { action: 'clear', glyph: '🆕', label: 'New' },
+    // unreachable on touch (see issue #26). Rare and deliberate, so they live
+    // *permanently* in the ⋯ overflow (`parked`), never occupying rail cells.
+    { action: 'copyBlueprint', glyph: '📋', label: 'Copy BP', parked: true },
+    { action: 'appendBlueprint', glyph: '📥', label: 'Paste BP', parked: true },
+    { action: 'takePicture', glyph: '📷', label: 'Export', parked: true },
+    { action: 'clear', glyph: '🆕', label: 'New', parked: true },
 ]
 
 // PAINT d-pad: nudge arrows + green Place (gamepad layout), shown while holding a
@@ -352,24 +360,35 @@ export function initActionToolbar(editor: Editor, handlers: Record<string, () =>
                 (!b.spec.when || b.spec.when(editor))
         )
 
-        // Multi-column grid: 2 columns in portrait, 3 in landscape — matching
-        // the corner-button block above (index.styl gives #buttons the same
-        // column template), so the whole left edge reads as one aligned
-        // lattice instead of a tall single-file stack. As many priority
-        // buttons as fit the height stay in the rail; the rest collapse into
-        // the ⋯ overflow so nothing falls below the viewport. The ⋯ takes the
-        // last grid cell when present.
-        const columns = window.innerWidth > window.innerHeight ? 3 : 2
+        // Single-file in portrait — a second column cramps the Pixel-7-class
+        // width too much (feedback on the lattice round); 3 columns in
+        // landscape. The corner Github/Settings/Library block above is one
+        // 3-wide row either way (index.styl), so the vertical cost of the
+        // non-action chrome is a single row. As many priority buttons as fit
+        // the height stay in the rail; the rest collapse into the ⋯ overflow
+        // so nothing falls below the viewport. The ⋯ takes the last grid cell
+        // when present.
+        const columns = window.innerWidth > window.innerHeight ? 3 : 1
         const rows = Math.max(1, Math.floor((window.innerHeight - top - MARGIN) / BTN))
         const capacity = rows * columns
-        const overflowNeeded = live.length > capacity
-        const inRail = overflowNeeded ? capacity - 1 : live.length
+
+        // Parked buttons go straight to the overflow; the rest compete for
+        // rail cells in priority order. Whenever *anything* overflows, the ⋯
+        // needs a grid cell of its own.
+        const railCandidates = live.filter(b => !b.spec.parked)
+        const parked = live.filter(b => b.spec.parked)
+        const overflowNeeded = parked.length > 0 || railCandidates.length > capacity
+        const inRail = overflowNeeded
+            ? Math.min(railCandidates.length, capacity - 1)
+            : railCandidates.length
 
         primary.style.gridTemplateColumns = `repeat(${columns}, ${BTN}px)`
-        primary.replaceChildren(...live.slice(0, inRail).map(b => b.button))
+        primary.replaceChildren(...railCandidates.slice(0, inRail).map(b => b.button))
         if (overflowNeeded) {
             primary.appendChild(moreBtn)
-            overflow.replaceChildren(...live.slice(inRail).map(b => b.button))
+            overflow.replaceChildren(
+                ...[...railCandidates.slice(inRail), ...parked].map(b => b.button)
+            )
         } else {
             overflow.replaceChildren()
             closeOverflow()
