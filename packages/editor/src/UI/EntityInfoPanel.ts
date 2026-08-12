@@ -343,7 +343,10 @@ export class EntityInfoPanel extends Panel {
             entity.type === 'decider-combinator' ||
             entity.type === 'selector-combinator'
         const isConstant = entity.type === 'constant-combinator'
-        const hasEnableCond = entity.circuitCondition !== undefined
+        // A stored condition only takes effect while circuit_enabled is on —
+        // the editor keeps the condition across an unchecked box (so re-enabling
+        // restores it), and showing it then would misreport the entity as gated.
+        const hasEnableCond = entity.circuitEnabled && entity.circuitCondition !== undefined
         const modeLines = entity.circuitModeSummary
         const networks = entity.circuitNetworks
         if (
@@ -638,9 +641,10 @@ export function buildEntityInfo(entity: Entity): EntityInfoData {
     }
 
     // Circuit summary, textual (the canvas panel's icon-rich rendering is the
-    // richer sibling; the sheet upgrades later).
+    // richer sibling; the sheet upgrades later). Same circuit_enabled gate as
+    // the panel — a stored-but-disabled condition is not in effect.
     data.circuit.push(...entity.circuitModeSummary)
-    if (entity.circuitCondition !== undefined) {
+    if (entity.circuitEnabled && entity.circuitCondition !== undefined) {
         const c = entity.circuitCondition
         data.circuit.push(
             `Enabled if ${c.first_signal?.name ?? '?'} ${c.comparator ?? '<'} ${

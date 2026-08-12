@@ -36,7 +36,9 @@ export class ConstantCombinatorEditor extends Editor {
             if (i >= 0 && i < SLOTS) this.m_filters[i] = { ...f }
         }
 
-        const x = 16
+        // Right of the preview thumbnail at (12, 45)–(126, 159) — the grid used
+        // to start at x=16 and drew straight over it.
+        const x = 140
         const y = 50
         for (let i = 0; i < SLOTS; i++) {
             const slot = new Slot<number>()

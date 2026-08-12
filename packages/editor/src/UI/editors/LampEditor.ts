@@ -18,8 +18,11 @@ const COLOR_MODES = ['mapping', 'RGB', 'packed'] as const
  */
 export class LampEditor extends Editor {
     public constructor(entity: Entity) {
-        super(446, 320, entity)
+        super(446, 290, entity)
 
+        // Lamp-specific rows live in the right column (x ≥ 140), clear of the
+        // preview thumbnail at (12, 45)–(126, 159); the circuit-condition block
+        // goes below the preview like every other editor.
         this.addLabel(140, 48, 'Color:')
         const swatches = new ColorSwatches(this.m_Entity.trainStopColor, color => {
             this.m_Entity.trainStopColor = color
@@ -34,11 +37,8 @@ export class LampEditor extends Editor {
         })
         this.addChild(this.registerControl('alwaysOn', alwaysOn))
 
-        this.addLabel(12, 110, 'Circuit network')
-        this.addCircuitCondition(12, 130)
-
         const useColors = new Checkbox(this.m_Entity.lampUseColors, 'Use colors')
-        useColors.position.set(140, 232)
+        useColors.position.set(140, 104)
         useColors.on('changed', () => {
             this.m_Entity.lampUseColors = useColors.checked
             refreshModeRow()
@@ -56,7 +56,7 @@ export class LampEditor extends Editor {
             },
             70
         )
-        modeButton.position.set(140, 258)
+        modeButton.position.set(140, 130)
         this.addChild(this.registerControl('colorMode', modeButton))
 
         const red = new SignalSlot(this.m_Entity.lampRedSignal, s => {
@@ -71,16 +71,19 @@ export class LampEditor extends Editor {
         const rgb = new SignalSlot(this.m_Entity.lampRgbSignal, s => {
             this.m_Entity.lampRgbSignal = s
         })
-        red.position.set(220, 252)
-        green.position.set(260, 252)
-        blue.position.set(300, 252)
-        rgb.position.set(220, 252)
+        red.position.set(220, 130)
+        green.position.set(260, 130)
+        blue.position.set(300, 130)
+        rgb.position.set(220, 130)
         this.addChild(
             this.registerControl('redSignal', red),
             this.registerControl('greenSignal', green),
             this.registerControl('blueSignal', blue),
             this.registerControl('rgbSignal', rgb)
         )
+
+        this.addLabel(12, 170, 'Circuit network')
+        this.addCircuitCondition(12, 190)
 
         const refreshModeRow = (): void => {
             const use = this.m_Entity.lampUseColors
