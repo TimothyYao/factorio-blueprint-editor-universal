@@ -8,6 +8,7 @@ import {
 } from '../types'
 import FD, {
     ColorWithAlpha,
+    getColor,
     getHeatBuffer,
     getEnergySource,
     getCircuitConnector,
@@ -2356,7 +2357,16 @@ function draw_train_stop(e: TrainStopPrototype): (data: IDrawData) => readonly S
     return (data: IDrawData) => {
         const dir = util.getDirName(data.dir)
         let ta = util.duplicate(e.top_animations[dir].layers[1])
-        ta = setProperty(ta, 'tint', data.trainStopColor ? data.trainStopColor : e.color)
+        // A blueprint colour carries Factorio's serialization alpha (a ≈ 0.5),
+        // but the game's runtime-tint shader doesn't fade the mask by it — our
+        // pipeline does (applyTint uses a as sprite alpha), which washed a
+        // chosen colour out next to the prototype default (whose a is 1). So:
+        // the chosen RGB at the prototype colour's strength.
+        const proto = getColor(e.color)
+        const tint = data.trainStopColor
+            ? { ...data.trainStopColor, a: proto ? proto.a : 1 }
+            : e.color
+        ta = setProperty(ta, 'tint', tint)
         return [
             e.rail_overlay_animations[dir],
             ...e.animations[dir].layers,

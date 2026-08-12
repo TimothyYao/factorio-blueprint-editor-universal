@@ -159,8 +159,16 @@ export class EntitySprite extends Sprite {
             modules: entity.modules,
         })
 
-        const entityColor =
+        const rawEntityColor =
             entity instanceof Entity ? entity.trainStopColor : (entity as IEntityData).entityColor
+        // The train stop's draw function tints its colour-mask layer itself
+        // (`draw_train_stop`'s duplicated top-animation layer), matching how the
+        // game applies runtime tints per layer. For it, the blanket every-layer
+        // tint below would wash the *whole* building in the colour — and since
+        // entity colours carry a ≈ 0.5, render it semi-transparent too. Keep the
+        // blanket only for entities with no mask handling of their own (rolling
+        // stock), where a whole-sprite wash is the best approximation we have.
+        const entityColor = entity.type === 'train-stop' ? undefined : rawEntityColor
 
         if ((spriteData as any) === SPRITE_GENERATION_FAILED || spriteData.length === 0) {
             const fdEntity = FD.entities[entity.name]

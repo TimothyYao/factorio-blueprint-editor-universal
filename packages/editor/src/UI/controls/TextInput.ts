@@ -80,6 +80,18 @@ class OriginalTextInput extends Container {
             outline: 'none',
             transformOrigin: '0 0',
             lineHeight: '1',
+            // The website sets `user-select: none` on <html> (canvas app — nothing
+            // to select) and inputs inherit it, which kills the caret and, on some
+            // mobile browsers, focus itself — tap the field and no keyboard pops
+            // (#56). Inputs are the one place selection is the whole point.
+            userSelect: 'text',
+            webkitUserSelect: 'text',
+            // No double-tap-to-zoom delay on the field; plain taps only.
+            touchAction: 'manipulation',
+            // Above the mobile DOM chrome (action rail / bottom clusters, z ≤ 22)
+            // but below the toasts (z ≥ 100): the input overlays a *dialog*, which
+            // canvas-side already renders above everything but notifications.
+            zIndex: '50',
             ...options.input,
         }
 
@@ -404,7 +416,13 @@ class OriginalTextInput extends Container {
         const canvas_bounds = this._renderer.canvas.getBoundingClientRect()
         const matrix = this.worldTransform.clone()
 
-        matrix.scale(this._renderer.resolution, this._renderer.resolution)
+        // Map renderer logical px → CSS px. Upstream pixi-text-input predates
+        // PixiJS v8, where `renderer.width/height` were *physical* pixels and so
+        // needed a `matrix.scale(resolution, resolution)` first; in v8 they are
+        // logical (screen) pixels already, so that extra scale shifted the input
+        // by ×DPR — off-screen and unfocusable on any high-DPI device (#56).
+        // With `autoDensity` this ratio is 1; it still matters if the canvas is
+        // ever CSS-scaled away from its logical size.
         matrix.scale(
             canvas_bounds.width / this._renderer.width,
             canvas_bounds.height / this._renderer.height
@@ -478,7 +496,11 @@ export class TextInput extends OriginalTextInput {
             input: {
                 fontFamily: styles.controls.textbox.fontFamily,
                 fontWeight: styles.controls.textbox.fontWeight,
-                fontSize: `${styles.controls.textbox.fontSize}`,
+                // Explicit unit — the bare number was invalid CSS, silently
+                // ignored, so fields always rendered at the browser default
+                // (16px). Pin that size on purpose: iOS auto-zooms the page on
+                // focusing any input whose font-size is below 16px (#56).
+                fontSize: '16px',
                 width: `${width}px`,
                 color: `black`,
             },
@@ -498,6 +520,8 @@ export class TextInput extends OriginalTextInput {
         })
         if (numericOnly) {
             this.restrict = '0123456789'
+            // Digit-only OS keyboard on touch; desktop is unaffected.
+            this.htmlInput.inputMode = 'numeric'
         }
         this.maxLength = maxLength
         this.text = text

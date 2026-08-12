@@ -232,6 +232,36 @@ pipelines at once made touch taps double-act via the browser's synthetic
   `PaintTileContainer.brushSize`. Covered by `e2e/touchTiles.spec.ts` via new
   `?test` fields (`paint.tileSize`, `blueprint.tileCount`).
 
+- ✅ **Station names are typeable on touch** (issue #56) — the train-stop
+  editor's station-name / trains-limit fields are DOM `<input>`s overlaid on the
+  canvas (`UI/controls/TextInput.ts`) — the one editor UI that is _not_
+  canvas-drawn, because free text needs the OS keyboard. The overlay was broken
+  on every high-DPI device: the CSS transform double-applied the device pixel
+  ratio (pixi-text-input math predating PixiJS v8, where `renderer.width` went
+  from physical to logical px), landing the input off-screen — a tap focused
+  `<body>`, so no caret and no virtual keyboard — and it inherited
+  `user-select: none` from `<html>`. Fixed at the seam: the transform now maps
+  logical→CSS px only; inputs opt back into `user-select: text` +
+  `touch-action: manipulation`; the font-size is pinned at `16px` (it was
+  invalid unitless CSS, silently falling back to the browser default — and
+  anything under 16px triggers iOS focus-zoom); and the numeric variant
+  requests the digit keyboard via `inputmode=numeric`. The train-stop fields
+  were the last `TextInput` consumers — chest counts and circuit numbers had
+  already moved to the canvas `NumericKeypad` (#44), which stays the right
+  call for pure-numeric entry. e2e in `e2e/trainStop.spec.ts` (an in-viewport
+  ratchet pinning the off-screen regression, plus a real tap → focus → type →
+  entity round-trip on both projects) via a new `entityTrainStop` `?test` probe.
+- ✅ **Train stop: full 2.0 editor, touch-first** — the editor grew the whole
+  post-2.0 surface (priority, the sign colour — a one-tap preset swatch row
+  with ✕ reset, live on the sprite — + the circuit pane: enable condition,
+  send-to/read-from train, the four flag+signal outputs) built from the circuit
+  editors' touch-first blocks — `Checkbox` fires on pointerdown, `SignalSlot`
+  goes through the full-size picker and long-press-clears, priority uses the
+  canvas `NumericField` keypad. Design record in `docs/circuit-editing.md`;
+  probe-driven touch e2e in `e2e/trainStop.spec.ts`. Side effect: every routed
+  editor now holds a clearable slot, so `clearSlots.spec.ts`'s "hint absent"
+  negative case is extinct (the test now asserts the hint on the train stop).
+
 ## Not done / next
 
 - 🚧 **Mobile panel layout v2** (issue #89, the phased plan; screen-space map in
@@ -432,6 +462,15 @@ pipelines at once made touch taps double-act via the browser's synthetic
 - ⬜ **Pinch in desktop mode** — desktop currently ignores touch entirely, so a
   touch-laptop in desktop mode can't pinch. Out of scope for now (we don't care
   about touch-on-desktop yet); revisit if needed.
+- ⬜ **Toasts can swallow taps aimed at an open dialog** — the toast stack is
+  bottom-right with `pointer-events: auto` per toast (tap-to-dismiss); on a
+  phone several stacked toasts reach the lower rows of a centred canvas dialog,
+  and until they expire (5s) a tap meant for a control under one lands on the
+  toast instead. Surfaced by the train-stop editor's flag checkboxes
+  (`trainStop.spec.ts` clears toasts before tapping as a workaround). Fix idea:
+  on mobile, anchor toasts in the reserved top band (out of the reach zone and
+  clear of dialogs, which clamp to the safe area below it) — needs #89's layout
+  authority to reserve/route correctly.
 - ✅ **Tiles in selections (marquee)** — the marquee now sees tiles, resolved
   like the game: the box selects **entities**, and only when it holds none does
   it fall back to the **tiles** underneath (either/or, never mixed). The rail
