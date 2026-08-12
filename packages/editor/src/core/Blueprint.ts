@@ -92,6 +92,7 @@ export interface BlueprintEvents {
     'create-entity': [entity: Entity]
     'remove-entity': []
     'create-tile': [tile: Tile]
+    'remove-tile': []
 }
 
 /** Blueprint base class */
@@ -523,7 +524,25 @@ class Blueprint extends EventEmitter<BlueprintEvents> {
 
         if (newValue) {
             this.emit('create-tile', newValue)
+        } else if (oldValue) {
+            // Pure removal (a same-cell repaint destroys the old tile but emits
+            // create-tile above). Consumers that gate on "does the blueprint have
+            // tiles" — the rail's Select-tiles button — need to hear about it.
+            this.emit('remove-tile')
         }
+    }
+
+    /**
+     * All tiles whose (center) position falls inside the area — the tile
+     * counterpart of `entityPositionGrid.getEntitiesInArea`, taking the same
+     * center+extent shape. Tiles are 1×1 and keyed by their `x.5,y.5` center,
+     * so a strict half-extent test against the integer-aligned box is exact.
+     * A linear scan of the tile map: fine at blueprint scale, no index needed.
+     */
+    public getTilesInArea(area: { x: number; y: number; w: number; h: number }): Tile[] {
+        return this.tiles.filter(
+            t => Math.abs(t.x - area.x) < area.w / 2 && Math.abs(t.y - area.y) < area.h / 2
+        )
     }
 
     private get nextEntityNumber(): number {

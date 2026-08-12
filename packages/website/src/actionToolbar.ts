@@ -65,12 +65,23 @@ const BUTTONS: ToolbarButton[] = [
     { action: 'showRates', glyph: '⚖', label: 'Rates' },
     // Touch marquee (#21): arm a box-select. Only when idle/inspecting and there's
     // something to select; the drag + held-selection controls live in SELECT_*.
+    // The box resolves game-like: entities win, tiles only when it holds none.
     {
         action: 'marquee',
         glyph: '▦',
         label: 'Select',
         modes: [EM.NONE, EM.EDIT],
         when: e => !e.blueprintEmpty,
+    },
+    // Tiles-flavoured box-select: collects the tiles even where entities sit on
+    // top of them — the case the regular Select's entities-win rule can't reach.
+    // Only offered while the blueprint actually holds tiles.
+    {
+        action: 'marqueeTiles',
+        glyph: '▨',
+        label: 'Select tiles',
+        modes: [EM.NONE, EM.EDIT],
+        when: e => e.blueprintHasTiles,
     },
     // Cursor actions — only where they do something. Rotate works on a held
     // ghost, an edited entity, and a *single*-entity selection (group rotation
@@ -191,12 +202,15 @@ const PAINT_DPAD: ToolbarButton[] = [
 
 // SELECT d-pad: nudge the *held selection* in place (moves the real entities,
 // preserving wiring — #21 polish). Pure 4-arrow d-pad (empty centre); finishing
-// is the Cancel in the action row below.
+// is the Cancel in the action row below. In-place nudge is entity-only (tiles
+// have no group-move path), so the arrows hide for a tile selection — Copy /
+// Cut / Delete in the action row are the tile operations.
+const nudgeable = (e: Editor): boolean => e.marqueeCount > 0
 const SELECT_DPAD: ToolbarButton[] = [
-    { action: 'nudgeSelUp', glyph: '▲', label: 'Up', row: 1, col: 2 },
-    { action: 'nudgeSelLeft', glyph: '◀', label: 'Left', row: 2, col: 1 },
-    { action: 'nudgeSelRight', glyph: '▶', label: 'Right', row: 2, col: 3 },
-    { action: 'nudgeSelDown', glyph: '▼', label: 'Down', row: 3, col: 2 },
+    { action: 'nudgeSelUp', glyph: '▲', label: 'Up', row: 1, col: 2, when: nudgeable },
+    { action: 'nudgeSelLeft', glyph: '◀', label: 'Left', row: 2, col: 1, when: nudgeable },
+    { action: 'nudgeSelRight', glyph: '▶', label: 'Right', row: 2, col: 3, when: nudgeable },
+    { action: 'nudgeSelDown', glyph: '▼', label: 'Down', row: 3, col: 2, when: nudgeable },
 ]
 
 // SELECT action row: what to do with the held selection. Copy → paste ghost
@@ -245,6 +259,7 @@ export function initActionToolbar(editor: Editor, handlers: Record<string, () =>
         'red-wire': () => editor.togglePaintItem('red-wire'),
         'green-wire': () => editor.togglePaintItem('green-wire'),
         marquee: () => editor.armMarquee(),
+        marqueeTiles: () => editor.armMarquee(true),
         copyMarquee: () => editor.copyMarquee(),
         cutMarquee: () => editor.cutMarquee(),
         deleteMarquee: () => editor.deleteMarquee(),
