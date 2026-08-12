@@ -205,6 +205,16 @@ export interface FbeTestHook {
     /** Number of circuit-network highlight boxes currently shown (#49 hover highlight). */
     networkHighlightCount: () => number
     /**
+     * Count rendered pixels of the marquee's two overlay visuals — the blue drag
+     * rectangle and the green per-tile selection highlight — by extracting the
+     * overlay container in isolation. Backs the e2e guards that the rectangle
+     * *disappears* once a selection is held (it used to linger frozen) and that
+     * a held tile selection actually shows its highlight. Counts opaque stroke
+     * pixels only (the highlight's translucent fill premultiplies too dim to
+     * match reliably).
+     */
+    marqueeOverlayPixels: () => { box: number; highlight: number }
+    /**
      * Logical slot contents for the clear-a-slot specs — `null` for an empty slot.
      * Read *through the entity*, so a cleared slot has to have actually been
      * written back to the blueprint (not merely blanked in the dialog).
@@ -385,6 +395,31 @@ export function installTestHook(win: Window = window): void {
             return { red, green, copper }
         },
         networkHighlightCount: () => G.BPC.overlayContainer.networkHighlightCount,
+        marqueeOverlayPixels: () => {
+            // Extraction of a fully-empty container can throw on zero bounds —
+            // report "nothing drawn" instead, which is exactly what that means.
+            try {
+                const ex = (
+                    G.app.renderer as unknown as {
+                        extract: { pixels: (t: unknown) => { pixels: Uint8Array } | Uint8Array }
+                    }
+                ).extract.pixels(G.BPC.overlayContainer)
+                const px: Uint8Array = 'pixels' in ex ? ex.pixels : ex
+                let box = 0
+                let highlight = 0
+                for (let i = 0; i < px.length; i += 4) {
+                    if (px[i + 3] < 100) continue // opaque strokes only
+                    const r = px[i]
+                    const g = px[i + 1]
+                    const b = px[i + 2]
+                    if (colorNear(r, g, b, 0x3b9eff)) box++
+                    if (colorNear(r, g, b, 0x00d400)) highlight++
+                }
+                return { box, highlight }
+            } catch {
+                return { box: 0, highlight: 0 }
+            }
+        },
         // `Entity.modules` is a *sparse* array (`new Array(moduleSlots)` with only
         // filled stacks assigned), and `map` skips holes — which would serialize
         // across CDP as `undefined` rather than the `null` an empty slot means.

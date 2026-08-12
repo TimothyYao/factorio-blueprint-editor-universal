@@ -1052,8 +1052,12 @@ export class BlueprintContainer extends Container {
                 const m = EntityContainer.mappings.get(e.entityNumber)
                 if (m) m.cursorBox = 'copy'
             }
-            // Tiles get no per-item highlight (they have no container mapping the
-            // way entities do) — the selection rectangle itself is the feedback.
+            // Tiles get their own highlight (no container mapping to hang a
+            // cursor box on) — live during the drag, and the held selection's
+            // visual once the rectangle hides on release.
+            this.overlayContainer.updateTileSelectionHighlight(
+                this.marqueeTiles.map(t => ({ x: t.x, y: t.y }))
+            )
         }
         this.marqueeUpdateFn(startPos.x, startPos.y)
         this.gridData.on('update32', this.marqueeUpdateFn, this)
@@ -1069,9 +1073,10 @@ export class BlueprintContainer extends Container {
             this.gridData.off('update32', this.marqueeUpdateFn, this)
             this.marqueeUpdateFn = undefined
         }
-        // Stop the rectangle from following later grid updates (a tap would
-        // otherwise redraw it), but keep it visible as the held selection.
-        this.overlayContainer.freezeSelectionArea()
+        // The rectangle is drag feedback only: once the selection is held, what's
+        // *selected* is shown by the entity cursor boxes / the tile highlight, so
+        // the box goes away instead of lingering frozen over the canvas.
+        this.overlayContainer.hideSelectionArea()
         if (this.marqueeEntities.length === 0 && this.marqueeTiles.length === 0) {
             this.cancelMarquee()
             return
@@ -1171,6 +1176,7 @@ export class BlueprintContainer extends Container {
 
     private clearMarqueeVisuals(): void {
         this.overlayContainer.hideSelectionArea()
+        this.overlayContainer.hideTileSelectionHighlight()
         for (const e of this.marqueeEntities) {
             const m = EntityContainer.mappings.get(e.entityNumber)
             if (m) m.cursorBox = undefined
@@ -1182,14 +1188,14 @@ export class BlueprintContainer extends Container {
     /**
      * Nudge the held selection one tile in place (the SELECT-mode d-pad). Moves
      * the actual entities, preserving their wiring (unlike cut/paste) — see
-     * `Blueprint.moveEntitiesBy`. The frozen selection box follows so it stays
-     * around the entities.
+     * `Blueprint.moveEntitiesBy`. The per-entity cursor boxes follow the moved
+     * entities (`EntityContainer.refreshCursorBox`), which is the held
+     * selection's visual — the drag rectangle is gone by the time we're here.
      */
     public nudgeSelection(offset: IPoint): void {
         if (this.mode !== EditorMode.SELECT || this.marqueeEntities.length === 0) return
         const brokenBefore = this.countOverReach()
         if (this.bp.moveEntitiesBy(this.marqueeEntities, offset)) {
-            this.overlayContainer.shiftSelectionArea(offset.x, offset.y)
             this.warnNewOverReach(brokenBefore)
         }
     }

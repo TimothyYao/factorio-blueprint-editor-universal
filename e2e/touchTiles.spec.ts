@@ -173,6 +173,17 @@ async function tapRail(page: Page, title: string): Promise<void> {
 const tapIn = (page: Page, cluster: string, title: string): Promise<void> =>
     page.locator(`#${cluster} button[title="${title}"]`).click({ force: true })
 
+// Pixel counts of the marquee's overlay visuals (blue drag rectangle / green
+// tile highlight), via the `?test` probe — the canvas is opaque to the DOM.
+const overlayPixels = (page: Page): Promise<{ box: number; highlight: number }> =>
+    page.evaluate(() =>
+        (
+            window as unknown as {
+                __FBE_TEST__: { marqueeOverlayPixels: () => { box: number; highlight: number } }
+            }
+        ).__FBE_TEST__.marqueeOverlayPixels()
+    )
+
 // Lay a 2×2 landfill patch at `at` with the slot-1 brush, then drop the cursor
 // (rail Cancel) so the marquee buttons (modes NONE/EDIT) come back.
 async function layPatch(page: Page, at: { x: number; y: number }): Promise<void> {
@@ -222,6 +233,9 @@ test.describe('touch marquee: tiles in selections', () => {
         await dragOneFinger(page, BOX_BOTH_FROM, BOX_BOTH_TO)
         await expect.poll(async () => (await getState(page)).marquee.count).toBe(1)
         expect((await getState(page)).marquee.tileCount).toBe(0)
+        // The blue rectangle is drag feedback only — once the selection is held
+        // it must be gone (it used to linger frozen over the canvas).
+        expect((await overlayPixels(page)).box).toBe(0)
         await tapIn(page, 'select-actions', 'Cancel')
 
         // A box over the patch only: no entities inside → the tiles are selected,
@@ -232,11 +246,16 @@ test.describe('touch marquee: tiles in selections', () => {
         expect((await getState(page)).marquee.count).toBe(0)
         await expect(page.locator('#select-dpad button[title="Up"]')).toBeHidden()
         await expect(page.locator('#select-actions button[title="Delete"]')).toBeVisible()
+        // A held tile selection shows its per-tile highlight, not the rectangle.
+        const held = await overlayPixels(page)
+        expect(held.box).toBe(0)
+        expect(held.highlight).toBeGreaterThan(0)
 
-        // Delete removes the selected tiles and nothing else.
+        // Delete removes the selected tiles and nothing else — highlight included.
         await tapIn(page, 'select-actions', 'Delete')
         await expect.poll(() => tileCount(page)).toBe(0)
         expect((await getState(page)).blueprint.entityCount).toBe(1)
+        expect((await overlayPixels(page)).highlight).toBe(0)
     })
 
     test('Select tiles collects the tiles even under an entity', async ({ page }) => {
@@ -262,6 +281,7 @@ test.describe('touch marquee: tiles in selections', () => {
         await dragOneFinger(page, BOX_A_FROM, BOX_A_TO)
         await expect.poll(async () => (await getState(page)).marquee.tileCount).toBe(4)
         expect((await getState(page)).marquee.count).toBe(0)
+        expect((await overlayPixels(page)).highlight).toBeGreaterThan(0)
 
         // Deleting the tile selection leaves the belt alone.
         await tapIn(page, 'select-actions', 'Delete')

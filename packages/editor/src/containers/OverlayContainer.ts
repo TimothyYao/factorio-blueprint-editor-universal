@@ -36,6 +36,13 @@ export class OverlayContainer extends Container {
     private readonly cursorBoxes = new Container()
     private readonly undergroundLines = new Container()
     private readonly selectionArea = new Graphics()
+    /**
+     * Per-tile highlight for a marquee tile selection — the tile counterpart of
+     * the per-entity cursor boxes (tiles have no container mapping to hang a
+     * cursor box on). Sits *under* the selection rectangle so the blue box stays
+     * readable while the drag is still growing it.
+     */
+    private readonly tileSelectionHighlight = new Graphics()
     /** Crosshair marking a held paint ghost's center — the anchor touch taps/drags position. */
     private readonly paintCenterMarker = new Graphics()
     private copyCursorBox: Container
@@ -50,6 +57,7 @@ export class OverlayContainer extends Container {
             this.networkBoxes,
             this.cursorBoxes,
             this.undergroundLines,
+            this.tileSelectionHighlight,
             this.selectionArea,
             this.paintCenterMarker
         )
@@ -603,19 +611,27 @@ export class OverlayContainer extends Container {
     }
 
     /**
-     * Stop the selection rectangle from tracking further grid updates, but leave
-     * it drawn. Used by the touch marquee: when the drag ends the box should
-     * freeze in place (a later tap moves the grid cursor and would otherwise
-     * redraw it) while the held selection awaits a Copy/Cut/Delete choice.
+     * (Re)draw the marquee tile highlight: a translucent fill + opaque outline
+     * per covered cell, in the desktop copy-selection green so "selected" reads
+     * the same across input modes. Redrawn on every box update while the drag
+     * grows, and left showing while the selection is *held* — once the rectangle
+     * hides on release, this (like the entities' cursor boxes) IS the held
+     * selection's visual. `positions` are tile centers (`x.5,y.5`, the tile-hash
+     * convention). Cleared via `hideTileSelectionHighlight`.
      */
-    public freezeSelectionArea(): void {
-        this.bpc.gridData.off('update', this.selectionAreaUpdateFn, this)
+    public updateTileSelectionHighlight(positions: IPoint[]): void {
+        this.tileSelectionHighlight.clear()
+        if (positions.length === 0) return
+        for (const p of positions) {
+            this.tileSelectionHighlight.rect((p.x - 0.5) * 32, (p.y - 0.5) * 32, 32, 32)
+        }
+        this.tileSelectionHighlight
+            .fill({ color: 0x00d400, alpha: 0.2 })
+            .stroke({ width: 1.5 / this.bpc.getViewportScale(), color: 0x00d400 })
     }
 
-    /** Shift the frozen selection box by a tile offset (follows in-place nudges). */
-    public shiftSelectionArea(dxTiles: number, dyTiles: number): void {
-        this.selectionArea.position.x += dxTiles * 32
-        this.selectionArea.position.y += dyTiles * 32
+    public hideTileSelectionHighlight(): void {
+        this.tileSelectionHighlight.clear()
     }
 
     /**

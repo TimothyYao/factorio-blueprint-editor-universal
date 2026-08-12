@@ -379,7 +379,9 @@ pipelines at once made touch taps double-act via the browser's synthetic
   move-in-place; the ghost is then the same paste ghost the placement work (#30)
   makes drag/nudge/center-placeable, closing the cut/copy/paste loop on touch.
   Reuses the desktop selection rectangle + `getEntitiesInArea` + cursor-box
-  highlight; `OverlayContainer.freezeSelectionArea()` pins the box on release.
+  highlight. _(Originally the box stayed frozen on release; the tiles round
+  changed that — the rectangle is drag feedback only and hides once the
+  selection is held, whose visual is the cursor boxes / tile highlight.)_
   While the box is drawn/held the hover/info panel is suppressed (it would
   obscure the box), and a second finger mid-draw cleanly **abandons** the box so
   pinch/zoom can't strand it. Seams: `BlueprintContainer`
@@ -443,11 +445,16 @@ pipelines at once made touch taps double-act via the browser's synthetic
   them under the entity sprites, lays them via `createTiles` on place and
   clears them on right-click mine. `Editor.appendBlueprint` passes tiles
   through too, so **pasted blueprint strings keep their landfill/concrete**
-  (previously dropped silently). Scoped out on purpose: the entity-only nudge
-  d-pad hides for a tile selection (no group-move path for tiles); a
+  (previously dropped silently). Selection visuals: selected tiles get a
+  **per-tile highlight** (`OverlayContainer.updateTileSelectionHighlight`,
+  translucent fill + outline per cell in the desktop copy-select green — tiles
+  have no container mapping to hang a cursor box on), live during the drag;
+  and the blue **rectangle now hides on release** for _all_ selections (it
+  used to stay frozen over the canvas) — once held, the cursor boxes / tile
+  highlight are the selection's visual. Scoped out on purpose: the entity-only
+  nudge d-pad hides for a tile selection (no group-move path for tiles); a
   tile-carrying ghost can't flip/rotate (those re-spawn from entity copies —
-  `canFlipOrRotateByCopying` gates them off); tiles get no per-tile highlight
-  (only entities have container mappings — the selection box is the feedback);
+  `canFlipOrRotateByCopying` gates them off);
   and desktop's modifier+drag COPY/DELETE modes remain entity-only. Seams:
   `Blueprint.getTilesInArea` + tile events, `BlueprintContainer`
   (`armMarquee(tilesOnly)`, either/or `marqueeUpdateFn`, `marqueeTiles` through
