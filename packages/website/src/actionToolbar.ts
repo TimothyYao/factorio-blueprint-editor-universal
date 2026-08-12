@@ -143,9 +143,30 @@ const BUTTONS: ToolbarButton[] = [
 
 // PAINT d-pad: nudge arrows + green Place (gamepad layout), shown while holding a
 // paint ghost. `row`/`col` place each in the 3×3 grid explicitly (named grid
-// areas are brittle through the Stylus pipeline).
+// areas are brittle through the Stylus pipeline). The corners carry tile-brush
+// extras (gated via `when` — makeCluster hides them for entity/wire cursors):
+// Size − / + drive the same registry actions as the [ / ] keys (the brush was
+// stuck at 2×2 on touch), and Erase fires `mine` — desktop's right-click — which
+// in PAINT mode removes the tiles under the ghost footprint, so tap-to-position
+// then Erase is the touch way to collect laid tiles (brush size = eraser size).
 const PAINT_DPAD: ToolbarButton[] = [
+    {
+        action: 'decreaseTileBuildingArea',
+        glyph: '−',
+        label: 'Size -',
+        row: 1,
+        col: 1,
+        when: e => e.cursorIsTile,
+    },
     { action: 'moveEntityUp', glyph: '▲', label: 'Up', row: 1, col: 2 },
+    {
+        action: 'increaseTileBuildingArea',
+        glyph: '+',
+        label: 'Size +',
+        row: 1,
+        col: 3,
+        when: e => e.cursorIsTile,
+    },
     { action: 'moveEntityLeft', glyph: '◀', label: 'Left', row: 2, col: 1 },
     {
         action: 'confirmPlacement',
@@ -157,6 +178,15 @@ const PAINT_DPAD: ToolbarButton[] = [
     },
     { action: 'moveEntityRight', glyph: '▶', label: 'Right', row: 2, col: 3 },
     { action: 'moveEntityDown', glyph: '▼', label: 'Down', row: 3, col: 2 },
+    {
+        action: 'mine',
+        glyph: '⌫',
+        label: 'Erase',
+        row: 3,
+        col: 1,
+        className: 'delete',
+        when: e => e.cursorIsTile,
+    },
 ]
 
 // SELECT d-pad: nudge the *held selection* in place (moves the real entities,
@@ -294,17 +324,34 @@ export function initActionToolbar(editor: Editor, handlers: Record<string, () =>
 
     document.body.appendChild(rail)
 
-    /** Build a fixed bottom cluster element from specs (id drives its CSS). */
-    const makeCluster = (id: string, specs: ToolbarButton[], withLabel: boolean): HTMLElement => {
+    /**
+     * Build a fixed bottom cluster element from specs (id drives its CSS).
+     * Returns the element plus a `refresh` that re-evaluates each button's
+     * `when` gate (e.g. the paint d-pad's tile-only Size/Erase corners) —
+     * cheap, so updateContextual just runs it for every cluster on each mode
+     * emit. Buttons place themselves via explicit `row`/`col`, so hiding a
+     * gated one leaves the grid layout intact.
+     */
+    const makeCluster = (
+        id: string,
+        specs: ToolbarButton[],
+        withLabel: boolean
+    ): { el: HTMLElement; refresh: () => void } => {
         const el = document.createElement('div')
         el.id = id
-        for (const spec of specs) {
+        const entries = specs.map(spec => {
             const button = makeButton(spec, withLabel)
             button.addEventListener('click', () => run(spec.action))
             el.appendChild(button)
-        }
+            return { spec, button }
+        })
         document.body.appendChild(el)
-        return el
+        const refresh = (): void => {
+            for (const { spec, button } of entries) {
+                button.classList.toggle('gated-off', !!spec.when && !spec.when(editor))
+            }
+        }
+        return { el, refresh }
     }
 
     // Contextual bottom clusters, one shown at a time by mode (see updateContextual).
@@ -312,14 +359,18 @@ export function initActionToolbar(editor: Editor, handlers: Record<string, () =>
     const selectDpad = makeCluster('select-dpad', SELECT_DPAD, false)
     const selectActions = makeCluster('select-actions', SELECT_ACTIONS, true)
     const editBar = makeCluster('edit-bar', EDIT_ACTIONS, true)
+    const clusters = [paintDpad, selectDpad, selectActions, editBar]
 
     const updateContextual = (): void => {
         const mobile = inputMode.mode === 'mobile'
         const mode = editor.mode
-        paintDpad.classList.toggle('visible', mobile && mode === EditorMode.PAINT)
-        selectDpad.classList.toggle('visible', mobile && mode === EditorMode.SELECT)
-        selectActions.classList.toggle('visible', mobile && mode === EditorMode.SELECT)
-        editBar.classList.toggle('visible', mobile && mode === EditorMode.EDIT)
+        // Re-gate before showing: spawnPaintContainer re-emits PAINT on every
+        // cursor swap, so an entity→tile switch lands here with the right cursor.
+        for (const c of clusters) c.refresh()
+        paintDpad.el.classList.toggle('visible', mobile && mode === EditorMode.PAINT)
+        selectDpad.el.classList.toggle('visible', mobile && mode === EditorMode.SELECT)
+        selectActions.el.classList.toggle('visible', mobile && mode === EditorMode.SELECT)
+        editBar.el.classList.toggle('visible', mobile && mode === EditorMode.EDIT)
     }
 
     moreBtn.addEventListener('click', () => overflow.classList.toggle('open'))

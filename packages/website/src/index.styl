@@ -1160,6 +1160,15 @@ body.mobile
         background: #2f9e3f
         &:active
             background: #37b94a
+    button.delete
+        background: #5a3320
+        &:active
+            background: #c8641e
+    // Buttons whose `when` gate is off (e.g. the tile-only Size/Erase corners
+    // while holding an entity ghost). display:none keeps the 3×3 grid intact —
+    // every d-pad button carries explicit row/col.
+    button.gated-off
+        display: none
 
 #paint-dpad
     bottom: 12px
