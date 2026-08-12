@@ -148,6 +148,18 @@ export class Editor {
     }
 
     /**
+     * Whether the held cursor is a *tile* brush (landfill, concrete, …). Gates
+     * the paint d-pad's tile-only controls — brush Size − / + (the keyboard's
+     * [ / ] ratchet) and Erase (desktop's right-click mine) — which are
+     * meaningless for an entity or wire cursor. Re-evaluated on every mode
+     * emit; `spawnPaintContainer` re-emits PAINT on each cursor swap, so an
+     * entity→tile switch refreshes the gate without leaving PAINT.
+     */
+    public get cursorIsTile(): boolean {
+        return G.BPC.mode === EditorMode.PAINT && G.BPC.paintContainer instanceof PaintTileContainer
+    }
+
+    /**
      * Put `itemName` on the cursor as a paint ghost, or drop it if it's already
      * held — the same toggle the (desktop-only) wires panel's slots implement.
      * Backs the action rail's wire buttons (#89): wires aren't inventory items,

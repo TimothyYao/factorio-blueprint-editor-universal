@@ -49,6 +49,15 @@ export class PaintTileContainer extends PaintContainer {
         return Tile.getItemName(this.name)
     }
 
+    /**
+     * Edge length (in tiles) of the square brush — the value the [ / ] ratchet
+     * and the mobile d-pad's Size buttons drive. Read by the `?test` hook so
+     * e2e can assert a size change actually took.
+     */
+    public get brushSize(): number {
+        return PaintTileContainer.size
+    }
+
     public increaseSize(): void {
         if (PaintTileContainer.size === 20) return
         PaintTileContainer.size += 1
