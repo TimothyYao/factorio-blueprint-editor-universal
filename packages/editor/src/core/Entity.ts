@@ -1807,6 +1807,28 @@ export class Entity extends EventEmitter<EntityEvents> {
                 .commit()
         }
 
+        // PASTE ROOT-LEVEL SETTINGS — the fields the editors write *outside*
+        // control_behavior (which the block above can't carry). Routed through
+        // the setters so the events fire and e.g. a pasted colour re-tints the
+        // sprite immediately. canPasteSettings guarantees a shared type.
+        if (this.type === 'lamp' || this.type === 'train-stop') {
+            this.trainStopColor = sourceEntity.trainStopColor
+        }
+        if (this.type === 'lamp') {
+            this.lampAlwaysOn = sourceEntity.lampAlwaysOn
+        }
+        if (this.type === 'train-stop') {
+            this.station = sourceEntity.station
+            this.manualTrainsLimit = sourceEntity.manualTrainsLimit
+            this.trainStopPriority = sourceEntity.trainStopPriority
+        }
+        if (this.type === 'display-panel') {
+            this.displayPanelText = sourceEntity.displayPanelText
+            this.displayPanelIcon = sourceEntity.displayPanelIcon
+            this.displayPanelAlwaysShow = sourceEntity.displayPanelAlwaysShow
+            this.displayPanelShowInChart = sourceEntity.displayPanelShowInChart
+        }
+
         this.m_BP.history.commitTransaction()
 
         /*
@@ -1822,10 +1844,6 @@ export class Entity extends EventEmitter<EntityEvents> {
             Locomotive:
                 Schedule
                 Color
-
-            TrainStop:
-                Color
-                Name
 
             TrainStop<->Locomotive:
                 Color

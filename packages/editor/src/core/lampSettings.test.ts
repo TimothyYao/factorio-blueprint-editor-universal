@@ -87,6 +87,30 @@ describe.skipIf(!have)('lamp settings', () => {
         expect(raw(e).color).toBeUndefined()
     })
 
+    it('paste settings carries the root-level colour and always_on', () => {
+        // Copy-config → paste-config copies control_behavior wholesale, but the
+        // colour and always_on live at the entity root — they used to be
+        // silently dropped by a paste.
+        const bp = new Blueprint()
+        const source = bp.createEntity({
+            name: 'small-lamp',
+            position: { x: 0.5, y: 0.5 },
+        } as IEntity)
+        const target = bp.createEntity({
+            name: 'small-lamp',
+            position: { x: 2.5, y: 0.5 },
+        } as IEntity)
+        source.trainStopColor = { r: 1, g: 0, b: 0, a: 0.5 }
+        source.lampAlwaysOn = true
+        source.lampUseColors = true
+
+        target.pasteSettings(source)
+
+        expect(raw(target).color).toEqual({ r: 1, g: 0, b: 0, a: 0.5 })
+        expect(raw(target).always_on).toBe(true)
+        expect(raw(target).control_behavior.use_colors).toBe(true)
+    })
+
     it('the generic enable condition works on a lamp too', () => {
         // The lamp editor embeds the shared CircuitCondition component, which
         // writes through the same entity-agnostic mutators as pumps/belts.

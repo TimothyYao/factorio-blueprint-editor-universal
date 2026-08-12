@@ -171,6 +171,32 @@ describe.skipIf(!have)('train stop settings', () => {
         })
     })
 
+    describe('paste settings', () => {
+        it('carries station name, limit, priority and colour (root-level fields)', () => {
+            const bp = new Blueprint()
+            const source = bp.createEntity({
+                name: 'train-stop',
+                position: { x: 1, y: 1 },
+                station: 'Iron Pickup',
+            } as IEntity)
+            const target = bp.createEntity({
+                name: 'train-stop',
+                position: { x: 7, y: 1 },
+                station: 'Old name',
+            } as IEntity)
+            source.manualTrainsLimit = 3
+            source.trainStopPriority = 120
+            source.trainStopColor = { r: 0.2, g: 0.8, b: 0.2, a: 0.5 }
+
+            target.pasteSettings(source)
+
+            expect(raw(target).station).toBe('Iron Pickup')
+            expect(raw(target).manual_trains_limit).toBe(3)
+            expect(raw(target).priority).toBe(120)
+            expect(raw(target).color).toEqual({ r: 0.2, g: 0.8, b: 0.2, a: 0.5 })
+        })
+    })
+
     describe('summary + preserved siblings', () => {
         it('reports the enabled flags in the circuit summary', () => {
             const e = makeStop()

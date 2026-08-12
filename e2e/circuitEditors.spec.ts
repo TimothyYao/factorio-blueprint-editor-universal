@@ -197,13 +197,27 @@ test.describe('read-mode editing', () => {
         await tapUntil(page, 'readRobotStats', 'roboport', cb => cb?.read_robot_stats === true)
     })
 
-    test('provider chest: circuit mode is editable at all', async ({ page }) => {
+    test('provider chest: circuit mode is editable — and skips "set requests"', async ({
+        page,
+    }) => {
         // Providers used to open no editor — the mode row is why one opens now.
+        // They have no requests, so the cycle goes straight from the
+        // send-contents default to none (define value 2), never offering 1.
         await openEditor(page, 'passive-provider-chest')
         await tapUntil(
             page,
             'circuitMode',
             'passive-provider-chest',
+            cb => cb?.circuit_mode_of_operation === 2
+        )
+    })
+
+    test('requester chest: circuit mode offers set requests', async ({ page }) => {
+        await openEditor(page, 'requester-chest')
+        await tapUntil(
+            page,
+            'circuitMode',
+            'requester-chest',
             cb => cb?.circuit_mode_of_operation === 1
         )
     })

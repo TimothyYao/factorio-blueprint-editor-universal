@@ -58,11 +58,18 @@ export class ChestEditor extends Editor {
 
         // What the wired chest does with the circuit network: broadcast its
         // contents (the default, omitted from the export), have its requests
-        // set from signals, or nothing. One enum for every logistic mode —
-        // the game greys invalid choices, we let it validate on import.
+        // set from signals, or nothing. "Set requests" only exists for chests
+        // that *have* requests — requester/buffer — so the cycle skips it for
+        // storage and provider chests (the labels still map to the full enum,
+        // so 'none' keeps its define value 2).
+        const canSetRequests =
+            this.m_Entity.logisticMode === 'requester' || this.m_Entity.logisticMode === 'buffer'
+        const availableModes = canSetRequests
+            ? (CHEST_CIRCUIT_MODES as unknown as (typeof CHEST_CIRCUIT_MODES)[number][])
+            : CHEST_CIRCUIT_MODES.filter(m => m !== 'set requests')
         this.addLabel(140, circuitY + 10, 'Circuit:')
         const circuitMode = new CycleButton<(typeof CHEST_CIRCUIT_MODES)[number]>(
-            CHEST_CIRCUIT_MODES as unknown as (typeof CHEST_CIRCUIT_MODES)[number][],
+            availableModes,
             CHEST_CIRCUIT_MODES[this.m_Entity.chestCircuitMode] ?? 'send contents',
             v => {
                 this.m_Entity.chestCircuitMode = CHEST_CIRCUIT_MODES.indexOf(v)
