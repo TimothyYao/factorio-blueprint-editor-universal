@@ -1,39 +1,12 @@
-import { Graphics, Text } from 'pixi.js'
 import { Entity } from '../../core/Entity'
 import { ISignal } from '../../types'
-import { ColorWithAlpha } from '../../core/factorioData'
 import { Checkbox } from '../controls/Checkbox'
 import { TextInput } from '../controls/TextInput'
 import { NumericField } from '../controls/NumericField'
-import { Slot } from '../controls/Slot'
 import { SignalSlot } from './components/SignalSlot'
+import { ColorSwatches } from './components/ColorSwatches'
 import { Editor } from './Editor'
-import { styles } from '../style'
 import G from '../../common/globals'
-
-/**
- * Swatch palette for the station sign colour — an approximation of the game's
- * colour-picker preset row. Factorio accepts any float RGB, so these don't
- * need to byte-match the game's presets; `a: 0.5` mirrors how the game
- * serializes entity colours. Absence of `color` = the prototype default, so
- * the row ends with a reset swatch rather than a "default colour" guess.
- */
-const COLOR_PRESETS: ColorWithAlpha[] = [
-    { r: 1, g: 0, b: 0, a: 0.5 }, // red
-    { r: 1, g: 0.55, b: 0.1, a: 0.5 }, // orange
-    { r: 1, g: 0.9, b: 0.1, a: 0.5 }, // yellow
-    { r: 0.2, g: 0.8, b: 0.2, a: 0.5 }, // green
-    { r: 0.2, g: 0.8, b: 0.9, a: 0.5 }, // cyan
-    { r: 0.25, g: 0.45, b: 0.9, a: 0.5 }, // blue
-    { r: 0.9, g: 0.4, b: 0.75, a: 0.5 }, // pink
-    { r: 1, g: 1, b: 1, a: 0.5 }, // white
-]
-
-const toHex = (c: ColorWithAlpha): number =>
-    (Math.round(c.r * 255) << 16) | (Math.round(c.g * 255) << 8) | Math.round(c.b * 255)
-
-const sameColor = (a: ColorWithAlpha | undefined, b: ColorWithAlpha | undefined): boolean =>
-    (!a && !b) || (!!a && !!b && a.r === b.r && a.g === b.g && a.b === b.b && a.a === b.a)
 
 /**
  * Train Stop Editor — the full post-2.0 configuration surface: station name,
@@ -47,12 +20,6 @@ const sameColor = (a: ColorWithAlpha | undefined, b: ColorWithAlpha | undefined)
  * long-press-clears via the picker).
  */
 export class TrainStopEditor extends Editor {
-    /** Named controls the `trainStopControlPos` e2e probe can locate on screen. */
-    private readonly m_controls: Record<
-        string,
-        { getBounds(): { rectangle: { x: number; y: number; width: number; height: number } } }
-    >
-
     public constructor(entity: Entity) {
         super(446, 390, entity)
 
@@ -91,35 +58,14 @@ export class TrainStopEditor extends Editor {
         this.addChild(priorityField)
 
         // Colour of the station sign: one tap per swatch, live on the sprite
-        // (`EntityContainer` rebuilds on the `color` event). The active swatch
-        // shows via the Button's built-in pressed highlight; ✕ resets to the
+        // (`EntityContainer` rebuilds on the `color` event). ✕ resets to the
         // prototype default (removes `color` from the export, like the game).
         this.addLabel(140, 166, 'Color:')
-        const swatches: { slot: Slot<undefined>; color: ColorWithAlpha | undefined }[] = []
-        const addSwatch = (i: number, color: ColorWithAlpha | undefined): Slot<undefined> => {
-            const slot = new Slot<undefined>(22, 22)
-            if (color) {
-                slot.content = new Graphics().rect(-7, -7, 14, 14).fill(toHex(color))
-            } else {
-                const x = new Text({ text: '✕', style: styles.dialog.label })
-                x.anchor.set(0.5)
-                slot.content = x
-            }
-            slot.position.set(210 + i * 24, 158)
-            slot.on('pointerdown', () => {
-                this.m_Entity.trainStopColor = color
-            })
-            this.addChild(slot)
-            swatches.push({ slot, color })
-            return slot
-        }
-        COLOR_PRESETS.forEach((c, i) => addSwatch(i, c))
-        const resetSwatch = addSwatch(COLOR_PRESETS.length, undefined)
-        const refreshSwatches = (): void => {
-            const current = this.m_Entity.trainStopColor
-            for (const s of swatches) s.slot.active = sameColor(s.color, current)
-        }
-        refreshSwatches()
+        const swatches = new ColorSwatches(this.m_Entity.trainStopColor, color => {
+            this.m_Entity.trainStopColor = color
+        })
+        swatches.position.set(210, 158)
+        this.addChild(swatches)
 
         this.addLabel(12, 196, 'Circuit network')
         this.addCircuitCondition(12, 216)
@@ -256,7 +202,9 @@ export class TrainStopEditor extends Editor {
             priorityField.value = this.m_Entity.trainStopPriority
         })
 
-        this.onEntityChange('color', refreshSwatches)
+        this.onEntityChange('color', () => {
+            swatches.value = this.m_Entity.trainStopColor
+        })
 
         // Every circuit mutation lands as one `controlBehavior` event (undo/redo
         // and paste-settings included), so one refresh syncs the whole pane —
@@ -276,30 +224,19 @@ export class TrainStopEditor extends Editor {
         })
 
         // e2e probe targets — the canvas has no DOM to query, so the spec asks
-        // for these controls' on-screen centres by name (`trainStopControlPos`).
-        this.m_controls = {
-            priority: priorityField,
-            colorRed: swatches[0].slot,
-            colorReset: resetSwatch,
-            sendToTrain,
-            readFromTrain,
-            readStoppedTrain: readStopped,
-            stoppedSignal,
-            setTrainsLimit: setLimit,
-            limitSignal,
-            readTrainsCount: readCount,
-            countSignal,
-            setPriority,
-            prioritySignal,
-        }
-    }
-
-    /** On-screen centre (canvas-relative CSS px) of a named control, for e2e. */
-    public controlPosition(name: string): { x: number; y: number } | null {
-        const control = this.m_controls[name]
-        if (!control) return null
-        const r = control.getBounds().rectangle
-        if (r.width === 0 || r.height === 0) return null
-        return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
+        // for these controls' on-screen centres by name (`editorControlPos`).
+        this.registerControl('priority', priorityField)
+        this.registerControl('colorRed', swatches.firstSwatch)
+        this.registerControl('colorReset', swatches.resetSwatch)
+        this.registerControl('sendToTrain', sendToTrain)
+        this.registerControl('readFromTrain', readFromTrain)
+        this.registerControl('readStoppedTrain', readStopped)
+        this.registerControl('stoppedSignal', stoppedSignal)
+        this.registerControl('setTrainsLimit', setLimit)
+        this.registerControl('limitSignal', limitSignal)
+        this.registerControl('readTrainsCount', readCount)
+        this.registerControl('countSignal', countSignal)
+        this.registerControl('setPriority', setPriority)
+        this.registerControl('prioritySignal', prioritySignal)
     }
 }

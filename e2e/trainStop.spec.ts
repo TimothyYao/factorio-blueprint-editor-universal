@@ -45,7 +45,7 @@ interface TrainStopState {
 interface TrainStopHook {
     openEntityEditor: (name: string) => boolean
     entityTrainStop: (name: string) => TrainStopState | null
-    trainStopControlPos: (control: string) => { x: number; y: number } | null
+    editorControlPos: (control: string) => { x: number; y: number } | null
 }
 
 async function waitForAppReady(page: Page): Promise<void> {
@@ -75,11 +75,11 @@ async function canvasOrigin(page: Page): Promise<{ x: number; y: number }> {
     return { x: box?.x ?? 0, y: box?.y ?? 0 }
 }
 
-/** Tap/click an on-canvas control located by the `trainStopControlPos` probe. */
+/** Tap/click an on-canvas control located by the `editorControlPos` probe. */
 async function tapControl(page: Page, control: string): Promise<void> {
     const pos = await page.evaluate(
         name =>
-            (window as unknown as { __FBE_TEST__: TrainStopHook }).__FBE_TEST__.trainStopControlPos(
+            (window as unknown as { __FBE_TEST__: TrainStopHook }).__FBE_TEST__.editorControlPos(
                 name
             ),
         control
@@ -176,7 +176,7 @@ test.describe('train-stop editor text fields', () => {
 
 test.describe('train-stop 2.0 circuit settings', () => {
     // The circuit pane is canvas-drawn (unlike the DOM text fields above), so
-    // these press the real checkboxes via the `trainStopControlPos` probe and
+    // these press the real checkboxes via the `editorControlPos` probe and
     // read the result back through the entity — the same construction-plus-
     // committed-state depth the other circuit editors get; the serialized
     // shapes themselves are pinned by core/trainStopSettings.test.ts.

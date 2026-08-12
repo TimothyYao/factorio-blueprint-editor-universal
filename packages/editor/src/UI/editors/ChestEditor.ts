@@ -3,7 +3,11 @@ import { Entity } from '../../core/Entity'
 import { styles } from '../style'
 import { NumericField } from '../controls/NumericField'
 import { Checkbox } from '../controls/Checkbox'
+import { CycleButton } from '../controls/CycleButton'
 import { Editor } from './Editor'
+
+/** `circuit_mode_of_operation` labels, index-aligned with the define (0/1/2). */
+const CHEST_CIRCUIT_MODES = ['send contents', 'set requests', 'none'] as const
 
 /**
  * Logistic chest editor — the request list for requester/buffer chests and the
@@ -28,27 +32,49 @@ export class ChestEditor extends Editor {
     private m_Filter: number
 
     public constructor(entity: Entity) {
+        const hasFilters = entity.filterSlots > 0
         const rows = Math.ceil(entity.filterSlots / 6)
-        const filterAreaHeight = rows * 38 + Math.min(0, rows - 1) * 2
+        const filterAreaHeight = hasFilters ? rows * 38 + Math.min(0, rows - 1) * 2 : 0
         const isRequester = entity.logisticMode === 'requester'
-        const hasCount = entity.logisticMode !== 'storage'
+        const hasCount = hasFilters && entity.logisticMode !== 'storage'
         const requesterCheckboxHeight = isRequester ? 23 + 6 : 0
         const countAreaHeight = hasCount ? 32 + 6 : 0
+        const circuitY = 45 + filterAreaHeight + requesterCheckboxHeight + countAreaHeight + 6
 
-        super(
-            446,
-            Math.max(171, 45 + filterAreaHeight + requesterCheckboxHeight + countAreaHeight + 12),
-            entity
-        )
+        super(446, Math.max(171, circuitY + 32 + 12), entity)
 
         this.m_Amount = hasCount
         this.m_Filter = -1
 
         let yOffset = 45
 
-        this.addLabel(140, 56, `Filter${this.m_Entity.filterSlots === 1 ? '' : 's'}:`)
-        const filters = this.addFilters(208, yOffset, this.m_Amount)
+        if (hasFilters) {
+            this.addLabel(140, 56, `Filter${this.m_Entity.filterSlots === 1 ? '' : 's'}:`)
+        }
+        // Providers request nothing (filterSlots 0) and used to open no editor
+        // at all — the circuit mode below is what makes one worth opening now.
+        const filters = hasFilters ? this.addFilters(208, yOffset, this.m_Amount) : undefined
         yOffset += filterAreaHeight
+
+        // What the wired chest does with the circuit network: broadcast its
+        // contents (the default, omitted from the export), have its requests
+        // set from signals, or nothing. One enum for every logistic mode —
+        // the game greys invalid choices, we let it validate on import.
+        this.addLabel(140, circuitY + 10, 'Circuit:')
+        const circuitMode = new CycleButton<(typeof CHEST_CIRCUIT_MODES)[number]>(
+            CHEST_CIRCUIT_MODES as unknown as (typeof CHEST_CIRCUIT_MODES)[number][],
+            CHEST_CIRCUIT_MODES[this.m_Entity.chestCircuitMode] ?? 'send contents',
+            v => {
+                this.m_Entity.chestCircuitMode = CHEST_CIRCUIT_MODES.indexOf(v)
+            },
+            110
+        )
+        circuitMode.position.set(208, circuitY)
+        this.addChild(this.registerControl('circuitMode', circuitMode))
+        this.onEntityChange('controlBehavior', () => {
+            circuitMode.value =
+                CHEST_CIRCUIT_MODES[this.m_Entity.chestCircuitMode] ?? 'send contents'
+        })
 
         // A storage chest has no counts, so the rest of the form doesn't apply.
         if (!this.m_Amount) return

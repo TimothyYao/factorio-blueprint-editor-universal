@@ -8,11 +8,21 @@ issue **#31**.
 
 ## Status
 
-| Area                                                                                                                      | State                                                                  |
-| ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| **Read / inspect** (info panel + combinator overlay)                                                                      | ✅ shipped — #36                                                       |
-| **Edit** (combinator + enable-condition editors, signal picker, network ids)                                              | ✅ shipped — #44                                                       |
-| Decider 2.0 multi-condition/output, selector per-op params, per-operand red/green network toggles, constant multi-section | ⏳ deferred (each reads/writes its primary clause, so nothing is lost) |
+| Area                                                                                                                                                       | State            |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| **Read / inspect** (info panel + combinator overlay)                                                                                                       | ✅ shipped — #36 |
+| **Edit** (combinator + enable-condition editors, signal picker, network ids)                                                                               | ✅ shipped — #44 |
+| **Train stop** — full 2.0 surface (priority, colour, circuit pane)                                                                                         | ✅ shipped — #92 |
+| **Decider 2.0 multi-condition/multi-output** with per-operand red/green network filters                                                                    | ✅ shipped       |
+| **Lamp / roboport / display-panel / provider-chest editors**, inserter read mode, chest circuit mode                                                       | ✅ shipped       |
+| Selector per-op params; constant multi-section + `is_on` + slots past 18; arithmetic operand networks; display-panel conditional messages (`parameters[]`) | ⏳ deferred      |
+
+> **Historical note (fixed):** this table used to claim the deferred decider
+> edited "its primary clause, so nothing is lost". That was wrong — the old
+> editor _committed_ 1-element `conditions`/`outputs` arrays, deleting every
+> other clause of a multi-clause 2.0 combinator on any edit. The full-form
+> editor's working model (`core/deciderClauses.ts`) writes the complete lists
+> back on every commit, and `deciderClauses.test.ts` pins that invariant.
 
 ## Mod-safety architecture (the load-bearing decision)
 
@@ -73,6 +83,42 @@ Editors: `ArithmeticCombinatorEditor`, `DeciderCombinatorEditor`,
 `ConstantCombinatorEditor`, `SelectorCombinatorEditor` and a shared
 `CircuitConditionEditor` (pumps/belts); `InserterEditor`/`MiningEditor` embed
 the circuit condition via `Editor.addCircuitCondition`.
+
+`DeciderCombinatorEditor` is the **full 2.0 form**: dynamic condition rows
+(per-row AND/OR chaining, per-operand red/green **`NetworkToggle`** filters)
+and output rows (copy-count networks, or a fixed value via `NumericField`).
+The working model is the complete clause lists (`core/deciderClauses.ts` —
+framework-free, unit-tested; also lifts a pre-2.0 flat condition into an
+editable row), and row add/remove rebuilds the fixed-height dialog
+(commit → close → reopen).
+
+The read-mode arc (roboport / display-panel / inserter / logistic chests):
+
+- **`LampEditor`** — static colour (shared `ColorSwatches` row + ✕ reset),
+  `always_on`, enable condition, and `use_colors` with its three modes
+  (mapping / RGB-component signals / packed-RGB signal; slots show per mode).
+- **`RoboportEditor`** — `read_items_mode` (none / logistics / missing
+  requests) and `read_robot_stats` + the five stat output signals (nothing
+  seeded — absent = the game's built-in default).
+- **`DisplayPanelEditor`** — root text (DOM `TextInput`, #56), icon (renders
+  on the sprite immediately via the `displayPanel` event), `always_show`,
+  `show_in_chart`. The per-condition message list (`parameters[]`) is
+  deferred.
+- **`InserterEditor`** grew `circuit_read_hand_contents` + the hold/pulse
+  cycle. NB the define trap: inserter `hand_read_mode` is hold=0/pulse=1 —
+  _opposite_ to the belt's `content_read_mode` — and the info-panel summary
+  used the belt mapping for both, reporting inserters inverted (fixed).
+- **`ChestEditor`** carries `circuit_mode_of_operation` (send contents / set
+  requests / none) for **every** logistic container — providers, which
+  request nothing, open a circuit-only editor now instead of none.
+
+`TrainStopEditor` carries the full post-2.0 train-stop surface — see the
+paragraph below.
+
+**Validation:** `npm run test:circuits` runs the circuit-arc unit suites
+(clause model + every setter file) and the four Playwright specs
+(`circuitEditors` / `circuit-editing` / `trainStop` / `clearSlots`) on both
+projects — the one command to green before touching any of this.
 
 `TrainStopEditor` carries the full post-2.0 train-stop surface: station name +
 manual limit (DOM `TextInput`, #56), **priority** (root-level 0–255,

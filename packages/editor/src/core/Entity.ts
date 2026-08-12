@@ -43,6 +43,14 @@ import {
     UndergroundBeltPrototype,
 } from 'factorio:prototype'
 
+/** The roboport's five robot-stat output-signal fields, by raw name. */
+export type RoboportStatSignalKey =
+    | 'available_logistic_output_signal'
+    | 'total_logistic_output_signal'
+    | 'available_construction_output_signal'
+    | 'total_construction_output_signal'
+    | 'roboport_count_output_signal'
+
 export interface IFilter {
     /** Slot index (1 based ... not 0 like arrays) */
     index: number
@@ -72,8 +80,12 @@ export interface EntityEvents {
     station: []
     manualTrainsLimit: []
     trainStopPriority: []
-    /** The entity's root-level `color` changed (train stop sign / locomotive). */
+    /** The entity's root-level `color` changed (train stop sign / lamp / locomotive). */
     color: []
+    /** The lamp's root-level `always_on` changed. */
+    alwaysOn: []
+    /** A display panel's root-level text/icon/flags changed (icon renders on the sprite). */
+    displayPanel: []
     /** The entity's circuit/control_behavior config changed wholesale (e.g. paste settings). */
     controlBehavior: []
 }
@@ -895,11 +907,16 @@ export class Entity extends EventEmitter<EntityEvents> {
         const cb = this.m_rawEntity.control_behavior
         if (!cb) return []
         const lines: string[] = []
+        // NB: the two read-mode defines are numbered oppositely — belt
+        // content_read_mode is pulse=0/hold=1, inserter hand_read_mode is
+        // hold=0/pulse=1 (this used to share the belt mapping, reporting
+        // inserters inverted).
         const mode = (m: number | undefined): string => (m === 1 ? 'hold' : 'pulse')
+        const handMode = (m: number | undefined): string => (m === 1 ? 'pulse' : 'hold')
         switch (this.type) {
             case 'inserter':
                 if (cb.circuit_read_hand_contents)
-                    lines.push(`Reads hand contents (${mode(cb.circuit_hand_read_mode)})`)
+                    lines.push(`Reads hand contents (${handMode(cb.circuit_hand_read_mode)})`)
                 if (cb.circuit_set_filters) lines.push('Sets filters from circuit')
                 if (cb.circuit_set_stack_size)
                     lines.push(
@@ -933,7 +950,10 @@ export class Entity extends EventEmitter<EntityEvents> {
                 if (cb.circuit_read_resources) lines.push('Reads resources')
                 break
             case 'roboport':
-                if (cb.read_logistics) lines.push('Reads logistics contents')
+                // read_logistics is the pre-2.0 flag; read_items_mode replaces it.
+                if (cb.read_logistics || cb.read_items_mode === 1)
+                    lines.push('Reads logistics contents')
+                if (cb.read_items_mode === 2) lines.push('Reads missing requests')
                 if (cb.read_robot_stats) lines.push('Reads robot stats')
                 break
             case 'accumulator':
@@ -1092,9 +1112,10 @@ export class Entity extends EventEmitter<EntityEvents> {
     }
 
     /**
-     * The stop's sign colour — root-level `color`, undefined = the prototype
-     * default (the renderer falls back to `e.color` when tinting, and the game
-     * omits the field entirely for an untouched stop).
+     * The entity's root-level `color` (train-stop sign, lamp, locomotive) —
+     * undefined = the prototype default (the renderer falls back to `e.color`
+     * when tinting, and the game omits the field entirely when untouched).
+     * Named for its first consumer; the lamp editor writes through it too.
      */
     public get trainStopColor(): ColorWithAlpha | undefined {
         return this.m_rawEntity.color
@@ -1315,6 +1336,226 @@ export class Entity extends EventEmitter<EntityEvents> {
         this.mutateControlBehavior(cb => {
             cb.priority_signal = signal
         }, 'Change priority signal')
+    }
+
+    // ── Lamp (post-2.0) ─────────────────────────────────────────────────────
+    // Root-level `always_on` plus the circuit colour config. Like everywhere
+    // else, defaults store `undefined` so the export matches the game's
+    // omit-the-default convention (`always_on` false, `use_colors` false,
+    // `color_mode` 0 = colour mapping).
+
+    public get lampAlwaysOn(): boolean {
+        return !!this.m_rawEntity.always_on
+    }
+
+    public set lampAlwaysOn(on: boolean) {
+        const value = on || undefined
+        if (this.m_rawEntity.always_on === value) return
+
+        this.m_BP.history
+            .updateValue(this.m_rawEntity, 'always_on', value, 'Toggle always on')
+            .onDone(() => this.emit('alwaysOn'))
+            .commit()
+    }
+
+    /** Let the circuit network drive the lamp's colour. */
+    public get lampUseColors(): boolean {
+        return !!this.m_rawEntity.control_behavior?.use_colors
+    }
+
+    public set lampUseColors(use: boolean) {
+        this.mutateControlBehavior(cb => {
+            cb.use_colors = use || undefined
+        }, 'Toggle use colors')
+    }
+
+    /** 0 = colour mapping (default, omitted), 1 = RGB components, 2 = packed RGB. */
+    public get lampColorMode(): number {
+        return this.m_rawEntity.control_behavior?.color_mode ?? 0
+    }
+
+    public set lampColorMode(mode: number) {
+        this.mutateControlBehavior(cb => {
+            cb.color_mode = mode || undefined
+        }, 'Change lamp color mode')
+    }
+
+    public get lampRedSignal(): ISignal | undefined {
+        return this.m_rawEntity.control_behavior?.red_signal
+    }
+
+    public set lampRedSignal(signal: ISignal | undefined) {
+        this.mutateControlBehavior(cb => {
+            cb.red_signal = signal
+        }, 'Change red signal')
+    }
+
+    public get lampGreenSignal(): ISignal | undefined {
+        return this.m_rawEntity.control_behavior?.green_signal
+    }
+
+    public set lampGreenSignal(signal: ISignal | undefined) {
+        this.mutateControlBehavior(cb => {
+            cb.green_signal = signal
+        }, 'Change green signal')
+    }
+
+    public get lampBlueSignal(): ISignal | undefined {
+        return this.m_rawEntity.control_behavior?.blue_signal
+    }
+
+    public set lampBlueSignal(signal: ISignal | undefined) {
+        this.mutateControlBehavior(cb => {
+            cb.blue_signal = signal
+        }, 'Change blue signal')
+    }
+
+    public get lampRgbSignal(): ISignal | undefined {
+        return this.m_rawEntity.control_behavior?.rgb_signal
+    }
+
+    public set lampRgbSignal(signal: ISignal | undefined) {
+        this.mutateControlBehavior(cb => {
+            cb.rgb_signal = signal
+        }, 'Change RGB signal')
+    }
+
+    // ── Inserter circuit read mode ──────────────────────────────────────────
+    // NB: the inserter's `hand_read_mode` define is hold=0 / pulse=1 — the
+    // *opposite* of the belt's `content_read_mode` (pulse=0 / hold=1). The
+    // game's UI defaults to pulse, so an export with reading enabled usually
+    // carries an explicit `circuit_hand_read_mode: 1`.
+
+    public get inserterReadHandContents(): boolean {
+        return !!this.m_rawEntity.control_behavior?.circuit_read_hand_contents
+    }
+
+    public set inserterReadHandContents(read: boolean) {
+        this.mutateControlBehavior(cb => {
+            cb.circuit_read_hand_contents = read || undefined
+            // Enabling seeds the game's UI default (pulse = 1); hold (0) is the
+            // define default and stays omitted.
+            if (read && cb.circuit_hand_read_mode === undefined) {
+                cb.circuit_hand_read_mode = 1
+            }
+        }, 'Toggle read hand contents')
+    }
+
+    /** 0 = hold (define default, omitted), 1 = pulse. */
+    public get inserterHandReadMode(): number {
+        return this.m_rawEntity.control_behavior?.circuit_hand_read_mode ?? 0
+    }
+
+    public set inserterHandReadMode(mode: number) {
+        this.mutateControlBehavior(cb => {
+            cb.circuit_hand_read_mode = mode || undefined
+        }, 'Change hand read mode')
+    }
+
+    // ── Roboport (post-2.0) ─────────────────────────────────────────────────
+
+    /** 0 = none (default, omitted), 1 = logistics, 2 = missing requests. */
+    public get roboportReadItemsMode(): number {
+        return this.m_rawEntity.control_behavior?.read_items_mode ?? 0
+    }
+
+    public set roboportReadItemsMode(mode: number) {
+        this.mutateControlBehavior(cb => {
+            cb.read_items_mode = mode || undefined
+        }, 'Change roboport read mode')
+    }
+
+    public get roboportReadRobotStats(): boolean {
+        return !!this.m_rawEntity.control_behavior?.read_robot_stats
+    }
+
+    public set roboportReadRobotStats(read: boolean) {
+        this.mutateControlBehavior(cb => {
+            cb.read_robot_stats = read || undefined
+        }, 'Toggle read robot stats')
+    }
+
+    /**
+     * The five robot-stat output signals, addressed by their raw field name.
+     * No defaults are seeded on enable — unlike the train stop's letter
+     * signals, the game keeps these implicit until the user picks one, and an
+     * absent field means "the built-in default" at import time.
+     */
+    public getRoboportStatSignal(key: RoboportStatSignalKey): ISignal | undefined {
+        return this.m_rawEntity.control_behavior?.[key]
+    }
+
+    public setRoboportStatSignal(key: RoboportStatSignalKey, signal: ISignal | undefined): void {
+        this.mutateControlBehavior(cb => {
+            cb[key] = signal
+        }, 'Change roboport signal')
+    }
+
+    // ── Display panel (post-2.0) ────────────────────────────────────────────
+    // Root-level text/icon/flags. The per-condition message list
+    // (`control_behavior.parameters[]`) is deferred — the static message is
+    // the common case.
+
+    public get displayPanelText(): string {
+        return this.m_rawEntity.text ?? ''
+    }
+
+    public set displayPanelText(text: string) {
+        const value = text || undefined
+        if (this.m_rawEntity.text === value) return
+
+        this.m_BP.history
+            .updateValue(this.m_rawEntity, 'text', value, 'Change panel text')
+            .onDone(() => this.emit('displayPanel'))
+            .commit()
+    }
+
+    public set displayPanelIcon(icon: ISignal | undefined) {
+        this.m_BP.history
+            .updateValue(this.m_rawEntity, 'icon', icon, 'Change panel icon')
+            .onDone(() => this.emit('displayPanel'))
+            .commit()
+    }
+
+    public get displayPanelAlwaysShow(): boolean {
+        return !!this.m_rawEntity.always_show
+    }
+
+    public set displayPanelAlwaysShow(show: boolean) {
+        const value = show || undefined
+        if (this.m_rawEntity.always_show === value) return
+
+        this.m_BP.history
+            .updateValue(this.m_rawEntity, 'always_show', value, 'Toggle always show')
+            .onDone(() => this.emit('displayPanel'))
+            .commit()
+    }
+
+    public get displayPanelShowInChart(): boolean {
+        return !!this.m_rawEntity.show_in_chart
+    }
+
+    public set displayPanelShowInChart(show: boolean) {
+        const value = show || undefined
+        if (this.m_rawEntity.show_in_chart === value) return
+
+        this.m_BP.history
+            .updateValue(this.m_rawEntity, 'show_in_chart', value, 'Toggle show in chart')
+            .onDone(() => this.emit('displayPanel'))
+            .commit()
+    }
+
+    // ── Logistic container circuit mode ─────────────────────────────────────
+
+    /** 0 = send contents (default, omitted), 1 = set requests, 2 = none. */
+    public get chestCircuitMode(): number {
+        return this.m_rawEntity.control_behavior?.circuit_mode_of_operation ?? 0
+    }
+
+    public set chestCircuitMode(mode: number) {
+        this.mutateControlBehavior(cb => {
+            cb.circuit_mode_of_operation = mode || undefined
+        }, 'Change chest circuit mode')
     }
 
     public get selectorCombinatorSelectMax(): boolean {

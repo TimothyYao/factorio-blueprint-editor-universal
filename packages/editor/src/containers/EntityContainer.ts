@@ -123,6 +123,9 @@ export class EntityContainer {
         this.m_Entity.on('splitterOutputPriority', this.redrawEntityInfo, this)
         this.m_Entity.on('controlBehavior', this.redrawEntityInfo, this)
         this.m_Entity.on('color', onColorChange)
+        // The panel's icon is part of the sprite build, so an icon pick shows
+        // in-world immediately (text/flags ride along harmlessly).
+        this.m_Entity.on('displayPanel', onColorChange)
 
         this.m_Entity.on('destroy', onEntityDestroy)
 
@@ -138,6 +141,7 @@ export class EntityContainer {
             this.m_Entity.off('splitterOutputPriority', this.redrawEntityInfo, this)
             this.m_Entity.off('controlBehavior', this.redrawEntityInfo, this)
             this.m_Entity.off('color', onColorChange)
+            this.m_Entity.off('displayPanel', onColorChange)
 
             this.m_Entity.off('destroy', onEntityDestroy)
         })
