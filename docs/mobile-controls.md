@@ -323,6 +323,19 @@ pipelines at once made touch taps double-act via the browser's synthetic
       dismisses via the drawer's DOM ✕ on mobile and asserts drawer-not-panel
       per mode. **Phase 2 is complete** — both status readouts are DOM on
       mobile; modal dialogs stay Pixi within the safe area by design.
+    - ✅ **Rail refinements** (feedback rounds): the corner
+      Github/Settings/Library block is **one 3-wide row** of flush squares
+      under the logo (a single 44px row instead of the old three-tall stack),
+      with the rail single-file below in portrait (a second rail column
+      cramps a Pixel-7-class width; landscape stays 3-col). The **management
+      actions (Copy BP / Paste BP / Export / New) are permanently parked in
+      the ⋯ overflow** (`parked` on `ToolbarButton`) — rare and deliberate,
+      they no longer occupy rail cells, so the everyday rail is short and its
+      cells sit in the same places across modes. Deliberately **no priority
+      inversion** toward the bottom: the default grip is right thumb at the
+      bottom (canvas work) with the left hand free for the rail, so
+      top-anchored is right. Ratchet in `actionToolbar.spec.ts` (parked
+      buttons overflow-only; ⋯ always present).
     - ✅ **Phase 3 — DOM icon seam** (`website/src/packIcons.ts`): any DOM
       element marked `data-pack-icon="<id>"` upgrades to a real game icon,
       rendered as a CSS background crop of the pack's `browser/icons.webp`

@@ -112,6 +112,19 @@ test.describe('action toolbar', () => {
             }
             // Select needs something to select — hidden on an empty blueprint.
             await expect(toolbar.locator('button[title="Select"]')).toHaveCount(0)
+
+            // Management actions are permanently parked in the ⋯ overflow —
+            // never rail cells — so the everyday rail stays short and its
+            // cells stable across modes.
+            for (const title of ['Copy BP', 'Paste BP', 'Export', 'New']) {
+                await expect(toolbar.locator(`.rail-primary button[title="${title}"]`)).toHaveCount(
+                    0
+                )
+                await expect(
+                    toolbar.locator(`.rail-overflow button[title="${title}"]`)
+                ).toHaveCount(1)
+            }
+            await expect(toolbar.locator('button.rail-more')).toBeVisible()
         })
 
         test('wire buttons toggle a wire cursor; the bottom wires panel is retired', async ({

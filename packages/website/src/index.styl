@@ -171,11 +171,16 @@ body.mobile
                 width: 22px
                 height: 22px
 
-    // Fold the corner buttons (Github / Settings) into the top of the action
-    // bar: flush dark squares directly under the logo, visually continuous with
-    // the rail below (the dark body shows through the inset gutter).
+    // Fold the corner buttons (Github / Settings / Library) into one 3-wide
+    // row of flush dark squares directly under the logo — a single 44px row
+    // instead of the old three-tall stack, so the non-action chrome costs
+    // almost no vertical space and the rail starts right below the logo band.
+    // (It's wider than the portrait rail column below, like the logo is —
+    // chrome floats over the full-bleed world, so nothing collides.)
     #buttons
         top: 52px
+        display: grid
+        grid-template-columns: repeat(3, 44px)
         .github-button
         .settings-button
             display: flex
