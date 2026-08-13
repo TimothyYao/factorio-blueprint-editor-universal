@@ -497,18 +497,23 @@ test.describe('logistic chest requests', () => {
         expect(slot).not.toBeNull()
     })
 
-    test('a provider chest still opens no editor', async ({ page }) => {
-        // Providers are logistic containers too, but request nothing — routing is
-        // gated on filterSlots so they must not get an empty dialog.
+    test('a provider chest opens a circuit-only editor with no clear hint', async ({ page }) => {
+        // Providers request nothing but do carry the circuit mode-of-operation,
+        // so they open the chest editor now (they used to open none). With no
+        // filter slots there is nothing clearable — which also makes this the
+        // clear-hint's negative case again (the train stop stopped being one
+        // when it grew signal slots).
         await page.goto(`/?test&source=${encodeURIComponent(CHEST_BP)}`)
         await waitForAppReady(page)
+
+        expect(await readClearHint(page, 'passive-provider-chest')).toBeNull()
 
         const opened = await page.evaluate(() =>
             (
                 window as unknown as { __FBE_TEST__: { openEntityEditor: (n: string) => boolean } }
             ).__FBE_TEST__.openEntityEditor('passive-provider-chest')
         )
-        expect(opened).toBe(false)
+        expect(opened).toBe(true)
     })
 
     test('long-press clears a chest filter', async ({ page }) => {

@@ -16,6 +16,7 @@
         "test:watch": "vitest",
         "test:e2e": "playwright test",
         "test:e2e:ui": "playwright test --ui",
+        "test:circuits": "vitest run packages/editor/src/core/deciderClauses.test.ts packages/editor/src/core/lampSettings.test.ts packages/editor/src/core/circuitReadModes.test.ts packages/editor/src/core/trainStopSettings.test.ts packages/editor/src/core/logisticChestFilters.test.ts && playwright test --reporter=line circuitEditors.spec.ts circuit-editing.spec.ts trainStop.spec.ts clearSlots.spec.ts",
         "test:e2e:host": "bash e2e/run-e2e.sh",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",

@@ -10,7 +10,6 @@ import { Modules } from '../UI/editors/components/Modules'
 import { Filters } from '../UI/editors/components/Filters'
 import { Recipe } from '../UI/editors/components/Recipe'
 import { Editor } from '../UI/editors/Editor'
-import { TrainStopEditor } from '../UI/editors/TrainStopEditor'
 import { Entity } from '../core/Entity'
 
 /**
@@ -314,12 +313,33 @@ export interface FbeTestHook {
         prioritySignal: string | null
     } | null
     /**
-     * On-screen centre of a named control in the *open* train-stop editor
-     * (canvas-relative CSS px) — the circuit checkboxes/slots are canvas-drawn,
-     * so the spec has no other way to press one for real. Null when no
-     * train-stop editor is open or the name is unknown.
+     * On-screen centre of a named control in the topmost *open* entity editor
+     * (canvas-relative CSS px) — editor controls are canvas-drawn, so specs
+     * have no other way to press one for real. Editors opt controls in via
+     * `Editor.registerControl`; null when no editor is open or the name is
+     * unknown to it.
      */
-    trainStopControlPos: (control: string) => { x: number; y: number } | null
+    editorControlPos: (control: string) => { x: number; y: number } | null
+    /**
+     * The entity's raw `control_behavior` (deep copy) — the generic committed-
+     * state read for circuit-editing specs: a tapped control only counts once
+     * its write landed here. Null when the entity is absent; an entity with no
+     * circuit config yet returns null too (the object is created on demand).
+     */
+    entityControlBehavior: (name: string) => Record<string, unknown> | null
+    /** Inserter root fields — `use_filters` gates whether its filters apply in-game. */
+    entityInserter: (name: string) => {
+        useFilters: boolean
+        filterMode: string
+        filters: (string | null)[]
+    } | null
+    /** Display-panel root fields (text/icon/flags live outside control_behavior). */
+    entityDisplayPanel: (name: string) => {
+        text: string
+        alwaysShow: boolean
+        showInChart: boolean
+        icon: string | null
+    } | null
     /** Quickbar slot contents, `null` for an unassigned slot. */
     quickbarItems: () => (string | null)[]
     /** On-screen centre of quickbar slot `index`, or null if it isn't rendered. */
@@ -536,9 +556,32 @@ export function installTestHook(win: Window = window): void {
                 prioritySignal: e.prioritySignal?.name ?? null,
             }
         },
-        trainStopControlPos: control => {
-            const editor = Dialog.openDialogs.findLast(d => d instanceof TrainStopEditor)
-            return editor instanceof TrainStopEditor ? editor.controlPosition(control) : null
+        editorControlPos: control => {
+            const editor = Dialog.openDialogs.findLast(d => d instanceof Editor)
+            return editor instanceof Editor ? editor.controlPosition(control) : null
+        },
+        entityControlBehavior: name => {
+            const cb = findEntity(name)?.rawEntity.control_behavior
+            return cb ? (JSON.parse(JSON.stringify(cb)) as Record<string, unknown>) : null
+        },
+        entityInserter: name => {
+            const e = findEntity(name)
+            if (!e) return null
+            return {
+                useFilters: e.inserterUseFilters,
+                filterMode: e.filterMode,
+                filters: Array.from(e.filters ?? [], f => f?.name ?? null),
+            }
+        },
+        entityDisplayPanel: name => {
+            const e = findEntity(name)
+            if (!e) return null
+            return {
+                text: e.displayPanelText,
+                alwaysShow: e.displayPanelAlwaysShow,
+                showInChart: e.displayPanelShowInChart,
+                icon: e.displayPanelIcon?.name ?? null,
+            }
         },
         quickbarItems: () =>
             G.UI.quickbarPanel.serialize().map(itemName => itemName ?? null) as (string | null)[],

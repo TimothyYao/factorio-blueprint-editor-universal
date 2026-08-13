@@ -406,7 +406,11 @@ export interface IEntity {
         circuit_set_filters?: boolean
         /** only present if entity is of type inserter or transport-belt */
         circuit_read_hand_contents?: boolean
-        /** 0 = pulse, 1 = hold, only present if entity is of type inserter and circuit_read_hand_contents is true */
+        /**
+         * 0 = hold, 1 = pulse (NB: numbered opposite to the belt's
+         * content_read_mode), only present if entity is of type inserter and
+         * circuit_read_hand_contents is true
+         */
         circuit_hand_read_mode?: defines.control_behavior.inserter.hand_read_mode
         /** only present if entity is of type inserter and override_stack_size is not set */
         circuit_set_stack_size?: boolean

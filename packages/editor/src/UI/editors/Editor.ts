@@ -1,4 +1,4 @@
-import { Text } from 'pixi.js'
+import { Container, Text } from 'pixi.js'
 import EventEmitter from 'eventemitter3'
 import { Entity, EntityEvents } from '../../core/Entity'
 import { inputMode, type InputMode } from '../../common/input'
@@ -33,6 +33,14 @@ export abstract class Editor extends Dialog {
 
     /** The clear-a-slot hint, created on the first declareClearableSlots() call. */
     private m_clearHint?: Text
+
+    /**
+     * Controls the `editorControlPos` e2e probe can locate by name — the canvas
+     * has no DOM to query, so specs press real controls via these positions.
+     * Editors opt controls in with `registerControl`; names only need to be
+     * unique within one editor.
+     */
+    private readonly m_namedControls = new Map<string, Container>()
 
     /**
      * Base Constructor for Editors
@@ -176,6 +184,21 @@ export abstract class Editor extends Dialog {
      */
     public get clearHintText(): string | null {
         return this.m_clearHint?.text ?? null
+    }
+
+    /** Name a control for the e2e probe (chainable at call sites via return). */
+    protected registerControl<C extends Container>(name: string, control: C): C {
+        this.m_namedControls.set(name, control)
+        return control
+    }
+
+    /** On-screen centre (canvas-relative CSS px) of a named control, for e2e. */
+    public controlPosition(name: string): { x: number; y: number } | null {
+        const control = this.m_namedControls.get(name)
+        if (!control) return null
+        const r = control.getBounds().rectangle
+        if (r.width === 0 || r.height === 0) return null
+        return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
     }
 
     protected onEntityChange<T extends EventEmitter.EventNames<EntityEvents>>(

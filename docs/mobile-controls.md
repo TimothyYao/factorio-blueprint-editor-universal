@@ -262,6 +262,18 @@ pipelines at once made touch taps double-act via the browser's synthetic
   editor now holds a clearable slot, so `clearSlots.spec.ts`'s "hint absent"
   negative case is extinct (the test now asserts the hint on the train stop).
 
+- ✅ **Circuit editors: the read-mode arc + full 2.0 decider** — lamps,
+  roboports, display panels and provider chests open (touch-first) editors at
+  all now; inserters gained read-hand-contents (hold/pulse), chests the
+  circuit mode-of-operation; and the decider combinator grew the full 2.0
+  multi-condition/multi-output form with per-operand red/green `NetworkToggle`
+  filters — which also fixed silent **data loss** (the old editor committed
+  1-element clause arrays, deleting the rest of a multi-clause combinator on
+  any edit). Design record in `docs/circuit-editing.md`; validate the whole
+  arc with **`npm run test:circuits`**. e2e drives real canvas taps via the
+  generalized `editorControlPos`/`entityControlBehavior` probes
+  (`Editor.registerControl` — TrainStopEditor's bespoke probe generalized).
+
 ## Not done / next
 
 - 🚧 **Mobile panel layout v2** (issue #89, the phased plan; screen-space map in

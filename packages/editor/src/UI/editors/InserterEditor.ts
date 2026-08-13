@@ -1,7 +1,12 @@
 import { Entity } from '../../core/Entity'
 import { Switch } from '../controls/Switch'
 import { Enable } from '../controls/Enable'
+import { Checkbox } from '../controls/Checkbox'
+import { CycleButton } from '../controls/CycleButton'
 import { Editor } from './Editor'
+
+/** `hand_read_mode` labels, index-aligned with the define: hold = 0, pulse = 1. */
+const HAND_READ_MODES = ['hold', 'pulse'] as const
 
 /** Inserter Editor */
 export class InserterEditor extends Editor {
@@ -11,21 +16,46 @@ export class InserterEditor extends Editor {
         if (this.m_Entity.filterSlots > 0) {
             const filterMode = this.m_Entity.filterMode
 
+            // Post-2.0, every inserter has filter slots but only filters while
+            // root-level `use_filters` is on — filters exported without the
+            // flag are inert in the game, so the slots the editor shows have
+            // to be gated by the same checkbox the game's dialog uses.
+            const useFilters = new Checkbox(this.m_Entity.inserterUseFilters, 'Use filters')
+            useFilters.position.set(140, 45)
+            useFilters.on('changed', () => {
+                this.m_Entity.inserterUseFilters = useFilters.checked
+            })
+            this.addChild(this.registerControl('useFilters', useFilters))
+
             const filterModeWhitelist = new Enable(filterMode === 'whitelist', 'Whitelist')
-            filterModeWhitelist.position.set(140, 45)
+            filterModeWhitelist.position.set(140, 73)
             this.addChild(filterModeWhitelist)
 
             const filterModeSwitch = new Switch(['whitelist', 'blacklist'], filterMode)
-            filterModeSwitch.position.set(210, 45)
+            filterModeSwitch.position.set(210, 73)
             this.addChild(filterModeSwitch)
 
             const filterModeBlacklist = new Enable(filterMode === 'blacklist', 'Blacklist')
-            filterModeBlacklist.position.set(260, 45)
+            filterModeBlacklist.position.set(260, 73)
             this.addChild(filterModeBlacklist)
 
             // Add Filters
-            this.addLabel(140, 56 + 25, `Filter${this.m_Entity.filterSlots === 1 ? '' : 's'}:`)
-            this.addFilters(208, 70)
+            const filtersLabel = this.addLabel(
+                140,
+                109,
+                `Filter${this.m_Entity.filterSlots === 1 ? '' : 's'}:`
+            )
+            const filters = this.addFilters(208, 98)
+
+            const refreshFilterBlock = (): void => {
+                const show = this.m_Entity.inserterUseFilters
+                filterModeWhitelist.visible = show
+                filterModeSwitch.visible = show
+                filterModeBlacklist.visible = show
+                filtersLabel.visible = show
+                filters.visible = show
+            }
+            refreshFilterBlock()
 
             // Events
             filterModeWhitelist.on('changed', () => {
@@ -45,9 +75,47 @@ export class InserterEditor extends Editor {
                 filterModeWhitelist.active = filterMode === 'whitelist'
                 filterModeBlacklist.active = filterMode === 'blacklist'
             })
+
+            this.onEntityChange('useFilters', () => {
+                useFilters.checked = this.m_Entity.inserterUseFilters
+                refreshFilterBlock()
+            })
         }
 
         this.addLabel(12, 170, 'Circuit network')
         this.addCircuitCondition(12, 190)
+
+        // Read the held item onto the network. The mode cycle only shows while
+        // reading is on; enabling seeds pulse (the game's UI default — NB the
+        // define is hold=0/pulse=1, opposite to the belt's).
+        const readHand = new Checkbox(this.m_Entity.inserterReadHandContents, 'Read hand contents')
+        readHand.position.set(230, 190)
+        readHand.on('changed', () => {
+            this.m_Entity.inserterReadHandContents = readHand.checked
+            refreshMode()
+        })
+        this.addChild(this.registerControl('readHandContents', readHand))
+
+        const readModeButton = new CycleButton<(typeof HAND_READ_MODES)[number]>(
+            HAND_READ_MODES as unknown as (typeof HAND_READ_MODES)[number][],
+            HAND_READ_MODES[this.m_Entity.inserterHandReadMode] ?? 'hold',
+            v => {
+                this.m_Entity.inserterHandReadMode = HAND_READ_MODES.indexOf(v)
+            },
+            60
+        )
+        readModeButton.position.set(254, 216)
+        this.addChild(this.registerControl('handReadMode', readModeButton))
+
+        const refreshMode = (): void => {
+            readModeButton.visible = this.m_Entity.inserterReadHandContents
+        }
+        refreshMode()
+
+        this.onEntityChange('controlBehavior', () => {
+            readHand.checked = this.m_Entity.inserterReadHandContents
+            readModeButton.value = HAND_READ_MODES[this.m_Entity.inserterHandReadMode] ?? 'hold'
+            refreshMode()
+        })
     }
 }

@@ -9,6 +9,9 @@ import { SplitterEditor } from './SplitterEditor'
 import { ChestEditor } from './ChestEditor'
 import { TempEditor } from './TempEditor'
 import { TrainStopEditor } from './TrainStopEditor'
+import { LampEditor } from './LampEditor'
+import { RoboportEditor } from './RoboportEditor'
+import { DisplayPanelEditor } from './DisplayPanelEditor'
 import { ArithmeticCombinatorEditor } from './ArithmeticCombinatorEditor'
 import { DeciderCombinatorEditor } from './DeciderCombinatorEditor'
 import { ConstantCombinatorEditor } from './ConstantCombinatorEditor'
@@ -30,6 +33,9 @@ export type EditorKind =
     | 'chest'
     | 'temp'
     | 'trainstop'
+    | 'lamp'
+    | 'roboport'
+    | 'display-panel'
     | 'arithmetic-combinator'
     | 'decider-combinator'
     | 'constant-combinator'
@@ -43,6 +49,10 @@ export function editorKindFor(entity: Entity): EditorKind | undefined {
     switch (entity.type) {
         case 'arithmetic-combinator':
             return 'arithmetic-combinator'
+        case 'roboport':
+            return 'roboport'
+        case 'display-panel':
+            return 'display-panel'
         case 'decider-combinator':
             return 'decider-combinator'
         case 'constant-combinator':
@@ -56,13 +66,16 @@ export function editorKindFor(entity: Entity): EditorKind | undefined {
         case 'offshore-pump':
         case 'transport-belt':
             return 'circuit-condition'
+        case 'lamp':
+            return 'lamp'
         // Logistic containers: storage chests filter one item, requester/buffer
-        // chests hold a request list. Providers are the same *type* but request
-        // nothing, and report `filterSlots === 0` — gating on that keeps them
-        // opening no editor rather than a dialog with an empty slot grid. By type,
-        // so modded logistic containers are covered too.
+        // chests hold a request list, and *all* of them (providers included,
+        // which request nothing and used to open no editor) carry the circuit
+        // mode-of-operation — so every logistic container opens the chest
+        // editor now; it sizes itself to the slots the mode actually has. By
+        // type, so modded logistic containers are covered too.
         case 'logistic-container':
-            return entity.filterSlots > 0 ? 'chest' : undefined
+            return 'chest'
     }
     switch (entity.name) {
         case 'assembling-machine-1':
@@ -160,6 +173,12 @@ export function createEditor(entity: Entity): Editor {
             return new TempEditor(entity)
         case 'trainstop':
             return new TrainStopEditor(entity)
+        case 'lamp':
+            return new LampEditor(entity)
+        case 'roboport':
+            return new RoboportEditor(entity)
+        case 'display-panel':
+            return new DisplayPanelEditor(entity)
         case 'arithmetic-combinator':
             return new ArithmeticCombinatorEditor(entity)
         case 'decider-combinator':
