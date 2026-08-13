@@ -327,6 +327,12 @@ export interface FbeTestHook {
      * circuit config yet returns null too (the object is created on demand).
      */
     entityControlBehavior: (name: string) => Record<string, unknown> | null
+    /** Inserter root fields — `use_filters` gates whether its filters apply in-game. */
+    entityInserter: (name: string) => {
+        useFilters: boolean
+        filterMode: string
+        filters: (string | null)[]
+    } | null
     /** Display-panel root fields (text/icon/flags live outside control_behavior). */
     entityDisplayPanel: (name: string) => {
         text: string
@@ -557,6 +563,15 @@ export function installTestHook(win: Window = window): void {
         entityControlBehavior: name => {
             const cb = findEntity(name)?.rawEntity.control_behavior
             return cb ? (JSON.parse(JSON.stringify(cb)) as Record<string, unknown>) : null
+        },
+        entityInserter: name => {
+            const e = findEntity(name)
+            if (!e) return null
+            return {
+                useFilters: e.inserterUseFilters,
+                filterMode: e.filterMode,
+                filters: Array.from(e.filters ?? [], f => f?.name ?? null),
+            }
         },
         entityDisplayPanel: name => {
             const e = findEntity(name)

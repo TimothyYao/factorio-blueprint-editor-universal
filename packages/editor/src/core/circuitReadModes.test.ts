@@ -58,6 +58,37 @@ describe.skipIf(!have)('inserter read mode', () => {
     })
 })
 
+describe.skipIf(!have)('inserter use_filters', () => {
+    beforeAll(() => loadData(readPackData('vanilla-2.0')))
+
+    it('stores true, clears back to absent, and pastes across inserters', () => {
+        // Post-2.0 every inserter has filter slots, but filters exported
+        // without root-level use_filters are inert in the game — the flag is
+        // the control that makes them count.
+        const e = make('fast-inserter')
+        expect(e.inserterUseFilters).toBe(false)
+
+        e.inserterUseFilters = true
+        expect(raw(e).use_filters).toBe(true)
+
+        e.inserterUseFilters = false
+        expect(raw(e).use_filters).toBeUndefined()
+
+        const bp = new Blueprint()
+        const source = bp.createEntity({
+            name: 'fast-inserter',
+            position: { x: 0.5, y: 0.5 },
+            use_filters: true,
+        } as IEntity)
+        const target = bp.createEntity({
+            name: 'fast-inserter',
+            position: { x: 2.5, y: 0.5 },
+        } as IEntity)
+        target.pasteSettings(source)
+        expect(raw(target).use_filters).toBe(true)
+    })
+})
+
 describe.skipIf(!have)('roboport circuit settings', () => {
     beforeAll(() => loadData(readPackData('vanilla-2.0')))
 

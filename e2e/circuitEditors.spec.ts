@@ -184,6 +184,35 @@ test.describe('read-mode editing', () => {
         })
     })
 
+    test('inserter: the Use filters toggle commits root-level use_filters', async ({ page }) => {
+        // The flag that makes an inserter's filters apply in-game (post 2.0);
+        // it lives at the entity root, so assert via the inserter probe.
+        const readInserter = (): Promise<{ useFilters: boolean } | null> =>
+            page.evaluate(() =>
+                (
+                    window as unknown as {
+                        __FBE_TEST__: {
+                            entityInserter: (n: string) => { useFilters: boolean } | null
+                        }
+                    }
+                ).__FBE_TEST__.entityInserter('fast-inserter')
+            )
+        await openEditor(page, 'fast-inserter')
+        expect((await readInserter()).useFilters).toBe(false)
+
+        for (let attempt = 0; ; attempt++) {
+            await tapControl(page, 'useFilters')
+            try {
+                await expect
+                    .poll(async () => (await readInserter()).useFilters, { timeout: 2_000 })
+                    .toBe(true)
+                return
+            } catch (e) {
+                if (attempt >= 2) throw e
+            }
+        }
+    })
+
     test('lamp: use colors + colour mode commit', async ({ page }) => {
         await openEditor(page, 'small-lamp')
         await tapUntil(page, 'useColors', 'small-lamp', cb => cb?.use_colors === true)

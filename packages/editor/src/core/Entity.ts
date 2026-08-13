@@ -84,6 +84,8 @@ export interface EntityEvents {
     color: []
     /** The lamp's root-level `always_on` changed. */
     alwaysOn: []
+    /** The inserter's root-level `use_filters` changed. */
+    useFilters: []
     /** A display panel's root-level text/icon/flags changed (icon renders on the sprite). */
     displayPanel: []
     /** The entity's circuit/control_behavior config changed wholesale (e.g. paste settings). */
@@ -1420,6 +1422,26 @@ export class Entity extends EventEmitter<EntityEvents> {
         }, 'Change RGB signal')
     }
 
+    /**
+     * Post-2.0, every inserter carries filter slots (`filter_count` on the
+     * prototype) but only actually filters while root-level `use_filters` is
+     * on — filters exported without it are inert in the game. The editor's
+     * "Use filters" checkbox writes this; false stores as absent.
+     */
+    public get inserterUseFilters(): boolean {
+        return !!this.m_rawEntity.use_filters
+    }
+
+    public set inserterUseFilters(use: boolean) {
+        const value = use || undefined
+        if (this.m_rawEntity.use_filters === value) return
+
+        this.m_BP.history
+            .updateValue(this.m_rawEntity, 'use_filters', value, 'Toggle use filters')
+            .onDone(() => this.emit('useFilters'))
+            .commit()
+    }
+
     // ── Inserter circuit read mode ──────────────────────────────────────────
     // NB: the inserter's `hand_read_mode` define is hold=0 / pulse=1 — the
     // *opposite* of the belt's `content_read_mode` (pulse=0 / hold=1). The
@@ -1788,6 +1810,12 @@ export class Entity extends EventEmitter<EntityEvents> {
         // PASTE REQUESTER CHEST SETTINGS
         if (this.name === 'requester-chest' && sourceEntity.name === 'requester-chest') {
             this.requestFromBufferChest = sourceEntity.requestFromBufferChest
+        }
+
+        // PASTE USE FILTERS (inserters; the flag that makes the filters above
+        // actually apply in-game, post 2.0)
+        if (this.type === 'inserter' && sourceEntity.type === 'inserter') {
+            this.inserterUseFilters = sourceEntity.inserterUseFilters
         }
 
         // PASTE CIRCUIT / CONTROL_BEHAVIOR (combinator conditions, constant-combinator

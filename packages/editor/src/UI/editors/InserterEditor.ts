@@ -16,21 +16,46 @@ export class InserterEditor extends Editor {
         if (this.m_Entity.filterSlots > 0) {
             const filterMode = this.m_Entity.filterMode
 
+            // Post-2.0, every inserter has filter slots but only filters while
+            // root-level `use_filters` is on — filters exported without the
+            // flag are inert in the game, so the slots the editor shows have
+            // to be gated by the same checkbox the game's dialog uses.
+            const useFilters = new Checkbox(this.m_Entity.inserterUseFilters, 'Use filters')
+            useFilters.position.set(140, 45)
+            useFilters.on('changed', () => {
+                this.m_Entity.inserterUseFilters = useFilters.checked
+            })
+            this.addChild(this.registerControl('useFilters', useFilters))
+
             const filterModeWhitelist = new Enable(filterMode === 'whitelist', 'Whitelist')
-            filterModeWhitelist.position.set(140, 45)
+            filterModeWhitelist.position.set(140, 73)
             this.addChild(filterModeWhitelist)
 
             const filterModeSwitch = new Switch(['whitelist', 'blacklist'], filterMode)
-            filterModeSwitch.position.set(210, 45)
+            filterModeSwitch.position.set(210, 73)
             this.addChild(filterModeSwitch)
 
             const filterModeBlacklist = new Enable(filterMode === 'blacklist', 'Blacklist')
-            filterModeBlacklist.position.set(260, 45)
+            filterModeBlacklist.position.set(260, 73)
             this.addChild(filterModeBlacklist)
 
             // Add Filters
-            this.addLabel(140, 56 + 25, `Filter${this.m_Entity.filterSlots === 1 ? '' : 's'}:`)
-            this.addFilters(208, 70)
+            const filtersLabel = this.addLabel(
+                140,
+                109,
+                `Filter${this.m_Entity.filterSlots === 1 ? '' : 's'}:`
+            )
+            const filters = this.addFilters(208, 98)
+
+            const refreshFilterBlock = (): void => {
+                const show = this.m_Entity.inserterUseFilters
+                filterModeWhitelist.visible = show
+                filterModeSwitch.visible = show
+                filterModeBlacklist.visible = show
+                filtersLabel.visible = show
+                filters.visible = show
+            }
+            refreshFilterBlock()
 
             // Events
             filterModeWhitelist.on('changed', () => {
@@ -49,6 +74,11 @@ export class InserterEditor extends Editor {
                 filterModeSwitch.value = filterMode
                 filterModeWhitelist.active = filterMode === 'whitelist'
                 filterModeBlacklist.active = filterMode === 'blacklist'
+            })
+
+            this.onEntityChange('useFilters', () => {
+                useFilters.checked = this.m_Entity.inserterUseFilters
+                refreshFilterBlock()
             })
         }
 
