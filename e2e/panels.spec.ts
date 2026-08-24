@@ -286,3 +286,58 @@ test.describe('top band (#89 Phase 1)', () => {
         expect(sb!.y + sb!.height).toBeLessThanOrEqual(viewport.height - 80)
     })
 })
+
+// The storyboard's sample blueprint (all-vanilla entities): an assembler with
+// the processing-unit recipe — an entity that both feeds the info sheet AND
+// routes to an editor dialog, which CHEST_BP's plain wooden chest does not.
+const ASSEMBLER_BP =
+    '0eJyd0tuKgzAQgOF3mWuFrYdu66sspcQ42x2IE0nGUhHffUcLpdDj7o2QxHx/Ahmhdj12gVigGoEEW6iu5hJwpkanc84Mvpc0Gm5qf9KFI4ZInqEq19m22G7LvMhW+SpLgKznCNXXCJEObNwsy9ChKksgATbtPDIxYls74kPaGvtDjGkOkwLc4Amq1bRLAFlICM/eMhj23Lc1Bv3huZRA56Nung85goIfCQz61UJAS8uBuuAtxjhv7JlE6zeV7I+V8raCDq0Ez2RTS8H290P5v65TXodMczRssXmWKS6ZbxMlJY4YRBceXGT2G9LCeaW4I5YX8TGWL1j+GltfMAmGY+eDpPoE5RG5eU1+vk0W75Kbt8nyPrmbpl8tsiv1'
+
+test.describe('modal layering (#89)', () => {
+    test('Pixi dialogs eclipse the DOM readouts; both restore on close', async ({ page }) => {
+        // Mobile-only: desktop's readouts are Pixi siblings of the dialogs, so
+        // UIContainer's child order already arbitrates — the DOM sheet/drawer
+        // (and thus the cross-technology stacking problem) only exist on touch.
+        test.skip(!isMobileProject(), 'mobile-only: the DOM readouts only present on touch')
+
+        await page.goto(`/?test&source=${encodeURIComponent(ASSEMBLER_BP)}`)
+        await waitForAppReady(page)
+        await expect
+            .poll(async () => (await readTestState(page)).blueprint.entityCount, {
+                timeout: 30_000,
+            })
+            .toBeGreaterThan(0)
+
+        // Bring up both passive readouts: tap-select info + the rates toggle.
+        const hook = (fn: string, arg?: string): Promise<unknown> =>
+            page.evaluate(
+                ([f, a]) => {
+                    const w = window as unknown as {
+                        __FBE_TEST__: Record<string, (arg?: string) => unknown>
+                    }
+                    return w.__FBE_TEST__[f](a)
+                },
+                [fn, arg]
+            )
+        expect(await hook('showEntityInfo', 'assembling-machine-3')).toBe(true)
+        await hook('toggleRatesPanel')
+
+        const sheet = page.locator('#entity-info-sheet')
+        const drawer = page.locator('#rates-drawer')
+        await expect(sheet).toBeVisible()
+        await expect(drawer).toBeVisible()
+
+        // A dialog opens → both readouts yield (DOM composites above the
+        // canvas, so hiding them is the only way the dialog's controls — the
+        // recipe/module slots this ratchet exists for — stay reachable).
+        expect(await hook('openEntityEditor', 'assembling-machine-3')).toBe(true)
+        await expect(sheet).toBeHidden()
+        await expect(drawer).toBeHidden()
+
+        // Dialog closes → the readouts restore themselves: selection and the
+        // rates toggle live in the editor and were never cleared.
+        await hook('closeDialogs')
+        await expect(sheet).toBeVisible()
+        await expect(drawer).toBeVisible()
+    })
+})

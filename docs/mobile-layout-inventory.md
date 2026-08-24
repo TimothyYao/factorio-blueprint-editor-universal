@@ -106,15 +106,54 @@ transient.
 **✅ Two opposite "action" surfaces.** Resolved by the above — touch actions now
 live in one place (the left rail), and the bottom Pixi quickbar is gone.
 
-**🟡 Centered modals stack by luck.** Pixi dialogs/inventory (centered) and the
-DOM info-panel (centered, z100) share the middle; they rarely coexist. (Unchanged
-— low priority.)
+**✅ Modals vs. the DOM readouts.** Phase 2's split — passive readouts in DOM,
+modal dialogs in Pixi — created a cross-technology stack with no arbiter: the
+browser composites DOM above the canvas no matter what, so the entity-info
+sheet sat **on top of** a centered entity editor (in landscape, directly over
+its recipe/module slots, eating their taps — storyboard state "editor + info").
+Resolved by the **layering contract** (below): `Dialog` mirrors its open count
+over `fbe:dialogs`, and while any dialog is open the website hides the sheet
+and the rates drawer (`body.fbe-dialog-open`); both restore themselves on
+close since their state (selection, rates toggle) lives in the editor and is
+never cleared. Guarded by the "modal layering" ratchet in `e2e/panels.spec.ts`.
+
+**🟡 Centered DOM overlays vs. Pixi dialogs.** The DOM info-panel and library
+panel (both centered, z100) can still sit over a centered Pixi dialog; they
+rarely coexist (both are explicitly toggled, and per the contract below they
+rank _above_ modals as active overlays). Unchanged — low priority; the full
+answer, if iteration is ever needed here, is migrating the Pixi dialogs to DOM
+wholesale rather than more coexistence rules.
 
 **✅ Inventory group-tab overflow (Space Age).** The tab row + item grid are
 **clipped to the dialog** (Pixi masks) and scroll (◀ ▶ tabs / ▲ ▼ items), with
 viewport-gated hit-testing. The body width is now **responsive** so the tab scroll
 only engages when tabs truly can't fit, and a **Recents tab** + **long-press
 preview** (Confirm / Pin-Unpin) make the selector touch-usable.
+
+## The layering contract (mobile)
+
+The mixed DOM/Pixi stack needs an explicit rank order, because the browser's
+compositor (DOM always above canvas) does not match the UX intent (a modal
+should eclipse a readout). From bottom to top:
+
+1. **The world** — the full-bleed canvas; renders through every band.
+2. **Passive DOM readouts** — entity-info sheet, rates drawer. Yield to
+   everything above: they hide while any Pixi dialog is open, via
+   `fbe:dialogs` → `body.fbe-dialog-open` (the editor announces from
+   `Dialog`'s ctor/`close()`; the website toggles the class; CSS does the
+   hiding). Their logical state stays in the editor, so they restore on close.
+3. **Pixi modal dialogs** — entity editors, inventory, item preview. Centered
+   in `G.safeArea`; win the surface over readouts _by the readouts yielding_,
+   since no z-index can put canvas content above DOM.
+4. **Active DOM overlays** — info-panel, library panel (z100), the contextual
+   clusters (z21). Explicitly toggled, genuinely above modals.
+5. **Transient chrome** — toasts. Pass over anything, briefly.
+
+**The rule for new UI:** any new DOM overlay must declare its tier. A passive
+readout must subscribe to the `fbe-dialog-open` gate (or live inside an
+element that does); anything interactive that may coexist with a Pixi dialog
+must either rank above it deliberately (tier 4) or reserve its own band via
+`setViewportInsets`.
 
 ## Root cause
 

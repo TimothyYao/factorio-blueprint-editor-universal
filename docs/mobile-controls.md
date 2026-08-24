@@ -358,6 +358,16 @@ pipelines at once made touch taps double-act via the browser's synthetic
       editor actions (undo, rotate, …) have no game sprite and keep their
       glyphs by design; Phase 2's DOM panels are the seam's bigger consumer.
       e2e canary in `actionToolbar.spec.ts` (polls the upgraded background).
+    - ✅ **Modal layering contract**: Phase 2's DOM readouts painted _over_
+      the Pixi entity editors (DOM always composites above the canvas — in
+      landscape the info sheet covered the recipe/module slots, blocking
+      recipe changes, with no way to dismiss it). Now `Dialog` mirrors its
+      open count over `fbe:dialogs` and the readouts yield while any dialog
+      is open (`body.fbe-dialog-open`), restoring themselves on close. The
+      full rank order lives in `mobile-layout-inventory.md` ("The layering
+      contract"). Ratchet: "modal layering" in `panels.spec.ts`. The fallback
+      if this ever needs iteration is migrating dialogs to DOM wholesale, not
+      more coexistence rules.
     - ⬜ **Phase 4 — e2e bounds-disjointness ratchets**
 - 🚧 **Touch placement: preview + confirm (Slice 1 done)** — desktop previews a
   placement by hovering (ghost shows orientation/validity before you click);

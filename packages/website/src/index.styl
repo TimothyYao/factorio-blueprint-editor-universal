@@ -544,6 +544,17 @@ body.mobile
         color: #b5b5b5
         font-size: 12px
 
+// Layering contract (#89): while any Pixi dialog is open (entity editor,
+// inventory — the editor mirrors the count over `fbe:dialogs`, see index.ts),
+// the passive DOM readouts yield — the browser composites DOM above the
+// canvas, so this is the only way a canvas dialog can win the surface. The
+// `body` element in the selector out-ranks `#….visible`, and the readouts'
+// own state is untouched, so they restore themselves when the dialog closes.
+body.fbe-dialog-open
+    #entity-info-sheet,
+    #rates-drawer
+        display: none
+
 // Library panel — DOM overlay (like #info-panel) listing the active pack's tree.
 #library-panel
     display: none
