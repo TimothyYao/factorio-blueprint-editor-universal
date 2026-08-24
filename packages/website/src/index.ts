@@ -199,6 +199,15 @@ editor
         // Mobile presentations of the status readouts (#89 Phase 2).
         initEntityInfoSheet()
         initRatesDrawer()
+        // Layering contract: DOM always composites above the canvas, so a Pixi
+        // dialog (entity editor, inventory) can never paint over the readouts —
+        // instead they yield while any dialog is open. The editor mirrors its
+        // open-dialog count over `fbe:dialogs`; the body class hides the sheet
+        // and drawer via CSS, and their state restores itself on close (the
+        // selection and the rates toggle live in the editor, untouched).
+        window.addEventListener('fbe:dialogs', e => {
+            document.body.classList.toggle('fbe-dialog-open', (e as CustomEvent<number>).detail > 0)
+        })
 
         // Opt-in e2e probe for on-canvas state that the DOM can't expose.
         if (new URLSearchParams(window.location.search).has('test')) {

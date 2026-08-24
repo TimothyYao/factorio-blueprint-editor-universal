@@ -35,6 +35,21 @@ export abstract class Dialog extends Panel {
         }
 
         Dialog.s_openDialogs.push(this)
+        Dialog.announce()
+    }
+
+    /**
+     * Mirror the open-dialog count to the DOM (`fbe:dialogs`, same bridge
+     * pattern as `fbe:entityinfo`/`fbe:rates`). The browser composites DOM
+     * above the canvas no matter what, so a canvas dialog can never out-stack
+     * the website's DOM readouts (entity-info sheet, rates drawer) — the
+     * website listens and hides them while any dialog is open instead. See
+     * the layering contract in docs/mobile-layout-inventory.md.
+     */
+    private static announce(): void {
+        window.dispatchEvent(
+            new CustomEvent('fbe:dialogs', { detail: Dialog.s_openDialogs.length })
+        )
     }
 
     /** Closes last open dialog */
@@ -92,6 +107,7 @@ export abstract class Dialog extends Panel {
     /** Close Dialog */
     public close(): void {
         Dialog.s_openDialogs = Dialog.s_openDialogs.filter(d => d !== this)
+        Dialog.announce()
 
         this.emit('close')
         this.destroy()
