@@ -121,7 +121,7 @@ const loadingScreen = {
 }
 
 console.log(
-    '\n%cLooking for the source?\nhttps://github.com/Teoxoy/factorio-blueprint-editor\n',
+    '\n%cLooking for the source?\nhttps://github.com/TimothyYao/factorio-blueprint-editor-universal\n',
     'color: #1f79aa; font-weight: bold'
 )
 

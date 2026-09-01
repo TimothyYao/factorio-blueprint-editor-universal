@@ -2,13 +2,24 @@
 
 First of all, thanks for your interest in helping out! 😃
 
+This repo is **`TimothyYao/factorio-blueprint-editor-universal`**, a fork of
+[`trisiak/factorio-blueprint-editor`](https://github.com/trisiak/factorio-blueprint-editor),
+itself a fork of
+[`Teoxoy/factorio-blueprint-editor`](https://github.com/Teoxoy/factorio-blueprint-editor).
+Open issues and PRs **here**, not against either upstream, unless you
+intentionally want to contribute there.
+
+GitHub Pages for this fork (URL, workflows, and the one-time repo settings that
+cannot be flipped from code) is documented in
+[`docs/github-pages.md`](./docs/github-pages.md).
+
 # Submitting an Issue
 
 Before you submit an issue, please search the issue tracker, maybe an issue for your problem already exists and the discussion might inform you of workarounds readily available.
 
 We want to fix all the issues as soon as possible and a minimal reproduction scenario allows us to quickly confirm a bug (or point out a coding problem) as well as confirm that we are fixing the right problem.
 
-You can file new issues by selecting from our [new issue templates](https://github.com/Teoxoy/factorio-blueprint-editor/issues/new/choose) and filling out the issue template.
+You can file new issues by selecting from our [new issue templates](https://github.com/TimothyYao/factorio-blueprint-editor-universal/issues/new/choose) and filling out the issue template.
 
 # Submitting a Pull Request
 

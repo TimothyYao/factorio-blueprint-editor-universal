@@ -5,6 +5,11 @@ name: Deploy production site
 # dedicated data plane (`trisiak/factorio-pack-data`), which this deploy points
 # at via VITE_DATA_URL. PR previews live under `pr-preview/` on the same branch
 # and point at the same data plane.
+#
+# This fork's project-site URL is
+# https://timothyyao.github.io/factorio-blueprint-editor-universal/
+# (PUBLIC_BASE = /<repo>/). Enabling Pages itself is a repo setting — see
+# docs/github-pages.md.
 
 on:
   push:
@@ -35,7 +40,10 @@ jobs:
 
       - run: npm run build:website
         env:
-          PUBLIC_BASE: /factorio-blueprint-editor/
+          # Project-site path is /<repo>/ — this fork's repo is
+          # factorio-blueprint-editor-universal, not the parent's
+          # factorio-blueprint-editor. See docs/github-pages.md.
+          PUBLIC_BASE: /${{ github.event.repository.name }}/
           # Pack data (per-pack data.json + *.basis atlas + packs.json manifest)
           # comes from the dedicated data plane, not from this repo — nothing
           # game-derived is committed here or baked into dist/. GitHub Pages

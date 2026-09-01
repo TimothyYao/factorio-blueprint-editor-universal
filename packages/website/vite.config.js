@@ -22,9 +22,10 @@ export default defineConfig(({ command, mode }) => {
             rewrite: path => path.replace(/^\/data/, ''),
         }
     }
-    // Sub-path deploys (e.g. GitHub Pages at /factorio-blueprint-editor/, or a
-    // per-PR preview under /pr-preview/pr-N/) set PUBLIC_BASE. Defaults to '/'
-    // so a root-path deploy and local dev are unchanged.
+    // Sub-path deploys (e.g. GitHub Pages at
+    // /factorio-blueprint-editor-universal/, or a per-PR preview under
+    // /pr-preview/pr-N/) set PUBLIC_BASE. Defaults to '/' so a root-path
+    // deploy and local dev are unchanged.
     let base = process.env.PUBLIC_BASE ?? '/'
     if (!base.endsWith('/')) base += '/'
 

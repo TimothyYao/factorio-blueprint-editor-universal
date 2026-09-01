@@ -80,7 +80,8 @@ function bits(): Promise<FirebaseBits> {
  * a popup genuinely can't open.
  *
  * This inverts the earlier redirect-first choice, and the reason is structural to
- * this deployment. The app is served from `trisiak.github.io` while the auth
+ * this deployment. The app is served from the GitHub Pages host
+ * (`<user>.github.io` — this fork is `timothyyao.github.io`) while the auth
  * handler lives on `authDomain` (`*.firebaseapp.com`) — a *different* origin. The
  * redirect flow stashes its result in storage keyed to that authDomain origin and
  * then reads it back through a cross-origin iframe; under Chrome 115+'s

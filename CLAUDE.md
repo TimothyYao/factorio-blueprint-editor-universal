@@ -10,15 +10,21 @@ A feature-rich **Factorio Blueprint Editor** — a browser app that renders and
 edits Factorio blueprints. Rendering is done with **PixiJS 8** on a canvas;
 there is no React/Vue/framework — UI is hand-built.
 
-> **This is a fork.** Upstream is
-> [`Teoxoy/factorio-blueprint-editor`](https://github.com/Teoxoy/factorio-blueprint-editor),
-> hosted at https://fbe.teoxoy.com. This fork is **not** expected to merge back
-> upstream — treat it as an independent line of development (mobile/touch + e2e
-> are this fork's focus, not necessarily upstream's). It deploys on its own via
-> **GitHub Pages** (the `gh-pages` branch, base path `/factorio-blueprint-editor/`,
-> i.e. `https://trisiak.github.io/factorio-blueprint-editor/`); see
-> `.github/workflows/pages-*.yml`. Don't assume changes here go to teoxoy.com,
-> and don't open upstream PRs.
+> **This is a fork of a fork.** Immediate parent is
+> [`trisiak/factorio-blueprint-editor`](https://github.com/trisiak/factorio-blueprint-editor)
+> (https://trisiak.github.io/factorio-blueprint-editor/), itself a fork of
+> [`Teoxoy/factorio-blueprint-editor`](https://github.com/Teoxoy/factorio-blueprint-editor)
+> (https://fbe.teoxoy.com). This line is **not** expected to merge back to either
+> upstream — treat it as independent (mobile/touch + e2e came from the parent
+> fork; they remain the priority here). It deploys on its own via **GitHub
+> Pages** (the `gh-pages` branch, base path
+> `/factorio-blueprint-editor-universal/`, i.e.
+> `https://timothyyao.github.io/factorio-blueprint-editor-universal/`); see
+> `.github/workflows/pages-*.yml` and **`docs/github-pages.md`**. Don't assume
+> changes here go to teoxoy.com or the parent fork, and don't open PRs against
+> either unless asked. The pack-data plane stays
+> [`trisiak/factorio-pack-data`](https://github.com/trisiak/factorio-pack-data)
+> — this repo does not republish it.
 
 ### Current focus areas
 
@@ -101,7 +107,9 @@ exporter is a separate Rust tool and is **not** a JS workspace.
       published from the same data plane, alongside the editor tier.
 - `functions/corsproxy.js` — Cloudflare Pages Function for URL blueprint import.
   **Does not run on GitHub Pages**; paste-string import + editing do.
-- `e2e/` — Playwright specs. `docs/` — design/tracking docs.
+- `e2e/` — Playwright specs. `docs/` — design/tracking docs
+  (`docs/github-pages.md` is this fork's Pages URL + the one-time GitHub
+  settings).
 
 ## Commands
 
