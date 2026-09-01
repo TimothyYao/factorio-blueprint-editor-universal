@@ -3,7 +3,9 @@ name: PR preview
 # Builds a per-PR preview (app code only — the pack data comes from the shared
 # data plane via VITE_DATA_URL, same as production) and publishes it to
 # `pr-preview/pr-<N>/` on the `gh-pages` branch, then comments the URL on the PR.
-# On close, the preview is removed.
+# On close, the preview is removed. PUBLIC_BASE is /<this-repo>/pr-preview/… so
+# this fork's site (factorio-blueprint-editor-universal) does not inherit the
+# parent path. See docs/github-pages.md.
 
 on:
   pull_request:
@@ -34,7 +36,7 @@ jobs:
       - run: npm run build:website
         if: github.event.action != 'closed'
         env:
-          PUBLIC_BASE: /factorio-blueprint-editor/pr-preview/pr-${{ github.event.number }}/
+          PUBLIC_BASE: /${{ github.event.repository.name }}/pr-preview/pr-${{ github.event.number }}/
           # Same pack data as production: the dedicated data plane, served
           # cross-origin with `Access-Control-Allow-Origin: *`. The editor
           # appends the active pack id at runtime, so a preview fetches

@@ -1,32 +1,38 @@
 <img src="./.github/logo.svg" width="100%" align="right">
 
-# factorio-blueprint-editor
+# factorio-blueprint-editor-universal
 
-> **This is an independent fork.** It lives separately from its upstream source,
-> [`Teoxoy/factorio-blueprint-editor`](https://github.com/Teoxoy/factorio-blueprint-editor)
-> (hosted at fbe.teoxoy.com), and is not expected to merge back. Everything below —
-> badges, hosted-demo links, and feature notes — describes **upstream** and may be
-> outdated or not apply to this fork. This fork deploys on its own via GitHub Pages.
+> **This is a fork of a fork.** Immediate parent is
+> [`trisiak/factorio-blueprint-editor`](https://github.com/trisiak/factorio-blueprint-editor)
+> (hosted at https://trisiak.github.io/factorio-blueprint-editor/), itself a fork
+> of [`Teoxoy/factorio-blueprint-editor`](https://github.com/Teoxoy/factorio-blueprint-editor)
+> (hosted at https://fbe.teoxoy.com). This line of development is **not** expected
+> to merge back to either upstream. It deploys on its own via GitHub Pages at
+> https://timothyyao.github.io/factorio-blueprint-editor-universal/.
+> Pages setup (including the one-time GitHub settings this repo cannot flip from
+> code) is in [`docs/github-pages.md`](./docs/github-pages.md).
 
-[![Website](https://img.shields.io/website-up-down-brightgreen-red/https/fbe.teoxoy.com.svg?style=flat-square)](https://fbe.teoxoy.com)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Ftimothyyao.github.io%2Ffactorio-blueprint-editor-universal%2F&style=flat-square)](https://timothyyao.github.io/factorio-blueprint-editor-universal/)
 [![Discord](https://img.shields.io/discord/540738973413408809.svg?style=flat-square&color=7289da&logo=discord&logoColor=white)](https://discord.gg/c5eXyBU)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg?style=flat-square)](./CONTRIBUTING.md)
-&nbsp;&nbsp;_Badges are clickable!_
+&nbsp;&nbsp;_Badges are clickable!_ Discord is the original project's community.
 
 A feature-rich [Factorio](https://www.factorio.com) Blueprint Editor. You can now edit your blueprints in the browser!
 
 ![Preview](./.github/preview.png)
 
-Sample blueprint: https://fbe.teoxoy.com/?source=https://pastebin.com/uc4n81GP
+Sample blueprint: https://timothyyao.github.io/factorio-blueprint-editor-universal/?source=https://pastebin.com/uc4n81GP
 
-Example blueprint book: https://fbe.teoxoy.com/?source=https://pastebin.com/Xp9u7NaA&index=1
+Example blueprint book: https://timothyyao.github.io/factorio-blueprint-editor-universal/?source=https://pastebin.com/Xp9u7NaA&index=1
+
+URL imports (`?source=https://…`) need a CORS proxy that **does not run** on GitHub Pages; paste a blueprint string or use `?source=<bpstring>` instead. See [`docs/github-pages.md`](./docs/github-pages.md).
 
 # Features
 
 - rendering and editing blueprints
 - history (undo/redo)
 - copy and delete selections
-- import blueprints and books from multiple sources (direct bp string, pastebin, hastebin, gist, gitlab, factorioprints, factorio.school, google docs)
+- import blueprints and books from a pasted bp string (URL imports need a CORS proxy and do not run on this GitHub Pages deploy)
 - generating blueprint images
 - oil outpost generator
 - customizable keybinds

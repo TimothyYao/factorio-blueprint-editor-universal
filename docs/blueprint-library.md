@@ -227,7 +227,8 @@ loaded).
   `RemoteLibraryDoc` over the Firestore doc.
 
     > **Why popup-first (not redirect).** This static deployment serves the app
-    > from `trisiak.github.io` while the auth handler lives on a _different_ origin
+    > from the GitHub Pages host (`<user>.github.io`; this fork is
+    > `timothyyao.github.io`) while the auth handler lives on a _different_ origin
     > (`authDomain` = `*.firebaseapp.com`). The redirect flow stores its result
     > under that authDomain origin and reads it back through a cross-origin iframe;
     > Chrome 115+'s **third-party storage partitioning** partitions that iframe's
@@ -359,7 +360,8 @@ default 8080, which collides with the vite dev/preview server). Build with
    `VITE_FIREBASE_*` repo variables.
 2. **Authentication → Sign-in method → enable Google.**
 3. **Authentication → Settings → Authorized domains →** add the Pages origin
-   (`trisiak.github.io`) so the popup (and redirect-fallback) sign-in is allowed.
+   (`timothyyao.github.io` for this fork; `trisiak.github.io` on the parent)
+   so the popup (and redirect-fallback) sign-in is allowed.
 4. **Firestore →** create the database, then deploy the rules:
    `firebase deploy --only firestore:rules` (from `firestore.rules`).
 

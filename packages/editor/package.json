@@ -6,10 +6,10 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "git://github.com/Teoxoy/factorio-blueprint-editor.git"
+        "url": "git://github.com/TimothyYao/factorio-blueprint-editor-universal.git"
     },
-    "bugs": "https://github.com/Teoxoy/factorio-blueprint-editor/issues",
-    "homepage": "https://github.com/Teoxoy/factorio-blueprint-editor",
+    "bugs": "https://github.com/TimothyYao/factorio-blueprint-editor-universal/issues",
+    "homepage": "https://timothyyao.github.io/factorio-blueprint-editor-universal/",
     "module": "./src/index.ts",
     "dependencies": {
         "ajv": "8.17.1",
