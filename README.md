@@ -25,7 +25,7 @@ Sample blueprint: https://timothyyao.github.io/factorio-blueprint-editor-univers
 
 Example blueprint book: https://timothyyao.github.io/factorio-blueprint-editor-universal/?source=https://pastebin.com/Xp9u7NaA&index=1
 
-URL imports (`?source=https://…`) need a CORS proxy that **does not run** on GitHub Pages; paste a blueprint string or use `?source=<bpstring>` instead. See [`docs/github-pages.md`](./docs/github-pages.md).
+URL imports (`?source=https://…`) fetch the host directly from the browser, so they work on GitHub Pages for hosts that send CORS headers (pastebin, gist, Google Docs, factorioprints). Hosts that don't (e.g. gitlab raw) fall back to a `/corsproxy` that GitHub Pages does not provide — for those, paste the blueprint string or use `?source=<bpstring>`. See [`docs/github-pages.md`](./docs/github-pages.md).
 
 # Features
 

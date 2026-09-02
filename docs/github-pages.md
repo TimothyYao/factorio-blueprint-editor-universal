@@ -33,8 +33,12 @@ parent's `/factorio-blueprint-editor/` path.
   it.
 
 Both keep `VITE_DATA_URL=https://trisiak.github.io/factorio-pack-data`. Cloudflare
-Pages Functions (`functions/corsproxy.js`) do **not** run here, so URL-based
-blueprint import stays inert; paste-string and `?source=<bpstring>` still work.
+Pages Functions (`functions/corsproxy.js`) do **not** run here, but URL-based
+blueprint import works anyway for hosts that send CORS headers (pastebin raw,
+the gist API, Google Docs exports, factorioprints) — the loader fetches those
+directly from the browser and only falls back to `/corsproxy` when the direct
+fetch is CORS-blocked (e.g. gitlab raw), which stays inert on this deploy.
+Paste-string and `?source=<bpstring>` work regardless.
 
 ## What you must configure in GitHub (cannot be done from code)
 

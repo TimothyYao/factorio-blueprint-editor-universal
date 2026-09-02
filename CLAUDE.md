@@ -105,8 +105,12 @@ exporter is a separate Rust tool and is **not** a JS workspace.
       (see its `docs/data-plane.md` for the shared data-plane design, and the
       exporter README's "Browser artifact" section for how it's produced). It is
       published from the same data plane, alongside the editor tier.
-- `functions/corsproxy.js` — Cloudflare Pages Function for URL blueprint import.
-  **Does not run on GitHub Pages**; paste-string import + editing do.
+- `functions/corsproxy.js` — Cloudflare Pages Function backing URL blueprint
+  import as a **fallback only**: the loader (`bpString.ts`) fetches the host
+  directly first, which works on GitHub Pages for CORS-friendly hosts
+  (pastebin, gist, Google Docs, factorioprints). The proxy — needed for
+  CORS-less hosts like gitlab raw — **does not run on GitHub Pages**;
+  paste-string import + editing always do.
 - `e2e/` — Playwright specs. `docs/` — design/tracking docs
   (`docs/github-pages.md` is this fork's Pages URL + the one-time GitHub
   settings).
