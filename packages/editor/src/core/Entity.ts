@@ -2107,4 +2107,17 @@ export class Entity extends EventEmitter<EntityEvents> {
             // ...this.m_BP.wireConnections.serializeConnectionData(this.entityNumber, _entNrWhitelist),
         })
     }
+
+    /**
+     * Snapshot for a paint ghost (Q-pick / copy). Drops identity (entity number,
+     * world position) so the cursor can carry recipe, modules, filters, combinator
+     * conditions, inserter pickup/drop, orientation, and the blueprint `mirror`
+     * bit — everything `createEntityInfo` / `getParts` need to show alt-mode.
+     */
+    public cloneForPaint(): IEntity {
+        const clone = this.serialize()
+        delete clone.entity_number
+        clone.position = { x: 0, y: 0 }
+        return clone
+    }
 }

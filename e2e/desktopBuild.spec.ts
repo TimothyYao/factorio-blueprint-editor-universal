@@ -100,4 +100,77 @@ test.describe('desktop build / mine', () => {
             contentType: 'image/png',
         })
     })
+
+    test('Q-pick and copy ghosts keep recipe / fluid alt-mode', async ({ page }) => {
+        await page.goto('/?test')
+        await waitForLoaded(page)
+
+        const created = await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__: {
+                    createPlacedEntity: (d: {
+                        name: string
+                        recipe?: string
+                        mirror?: boolean
+                        direction?: number
+                    }) => boolean
+                    centerView: () => void
+                }
+            }
+            const ok = w.__FBE_TEST__.createPlacedEntity({
+                name: 'chemical-plant',
+                recipe: 'advanced-oil-processing',
+                direction: 4,
+                mirror: true,
+            })
+            w.__FBE_TEST__.centerView()
+            return ok
+        })
+        expect(created).toBe(true)
+
+        const pipette = await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__: { pipetteNamed: (n: string) => boolean }
+            }
+            return w.__FBE_TEST__.pipetteNamed('chemical-plant')
+        })
+        expect(pipette).toBe(true)
+
+        await page.mouse.move(320, 360)
+        const paint = async () =>
+            page.evaluate(() => {
+                const w = window as unknown as {
+                    __FBE_TEST__: {
+                        getState: () => {
+                            paint: {
+                                recipe: string | null
+                                overlayInfoCount: number
+                                mirrored: boolean | null
+                                direction: number | null
+                                kind: string | null
+                            }
+                        }
+                    }
+                }
+                return w.__FBE_TEST__.getState().paint
+            })
+
+        await expect.poll(async () => (await paint()).recipe).toBe('advanced-oil-processing')
+        await expect.poll(async () => (await paint()).overlayInfoCount).toBeGreaterThan(0)
+        expect((await paint()).mirrored).toBe(true)
+        expect((await paint()).direction).toBe(4)
+
+        // Copy (paste ghost of the placed plant) also keeps the overlay.
+        await page.keyboard.press('Escape')
+        const copied = await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__: { spawnPasteGhost: () => boolean }
+            }
+            return w.__FBE_TEST__.spawnPasteGhost()
+        })
+        expect(copied).toBe(true)
+        await page.mouse.move(320, 360)
+        await expect.poll(async () => (await paint()).kind).toBe('blueprint')
+        await expect.poll(async () => (await paint()).overlayInfoCount).toBeGreaterThan(0)
+    })
 })
