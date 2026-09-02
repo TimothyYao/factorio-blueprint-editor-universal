@@ -34,6 +34,13 @@ import FD, {
 } from './factorioData'
 import { Blueprint } from './Blueprint'
 import { getBeltWireConnectionIndex } from './spriteDataBuilder'
+import {
+    constrainToPossibleDirections,
+    flipDirection,
+    flipPoint,
+    flipSwapsSplitterPriority,
+    entityUsesMirroring,
+} from './flip'
 import U from './generators/util'
 import {
     EntityWithOwnerPrototype,
@@ -66,6 +73,8 @@ export interface EntityEvents {
     destroy: []
     position: [newValue: IPoint, oldValue: IPoint]
     direction: []
+    /** Blueprint `mirror` bit (sprite / fluid-box flip). */
+    mirror: []
     directionType: []
     recipe: [recipe: string]
     modules: [modules: (string | undefined)[]]
@@ -270,6 +279,19 @@ export class Entity extends EventEmitter<EntityEvents> {
                 this.m_BP.entityPositionGrid.setTileData(this)
                 this.emit('direction')
             })
+            .commit()
+    }
+
+    /** Blueprint `mirror` — omitted from the export when false. */
+    public get mirror(): boolean {
+        return !!this.m_rawEntity.mirror
+    }
+    public set mirror(value: boolean) {
+        const next = value ? true : undefined
+        if (this.m_rawEntity.mirror === next) return
+        this.m_BP.history
+            .updateValue(this.m_rawEntity, 'mirror', next, 'Flip entity')
+            .onDone(() => this.emit('mirror'))
             .commit()
     }
 
@@ -1649,23 +1671,7 @@ export class Entity extends EventEmitter<EntityEvents> {
     }
 
     private constrainDirection(direction: number): number {
-        const pr = this.possibleRotations
-        const canRotate = pr.length !== 0
-
-        if (canRotate) {
-            if (!pr.includes(direction)) {
-                if (direction === 8 && pr.includes(0)) {
-                    return 0
-                } else if (direction === 12 && pr.includes(4)) {
-                    return 4
-                } else {
-                    return this.direction
-                }
-            }
-        } else {
-            return 0
-        }
-        return direction
+        return constrainToPossibleDirections(this.direction, direction, this.possibleRotations)
     }
 
     private changePriority(priority?: FilterPriority): FilterPriority | undefined {
@@ -1684,31 +1690,29 @@ export class Entity extends EventEmitter<EntityEvents> {
         if (non_flip_entities.includes(this.type))
             throw new IllegalFlipError(`${this.name} cannot be flipped`)
 
-        const axisDir = vertical ? 12 : 8
-        const direction = this.constrainDirection((axisDir * 2 - this.direction) % 16)
+        const direction = this.constrainDirection(flipDirection(this.direction, vertical))
 
         let input_priority = this.m_rawEntity.input_priority
         let output_priority = this.m_rawEntity.output_priority
 
-        if (
-            (vertical && (direction === 4 || direction === 8)) ||
-            (!vertical && (direction === 0 || direction === 12))
-        ) {
+        if (flipSwapsSplitterPriority(direction, vertical)) {
             input_priority = this.changePriority(input_priority)
             output_priority = this.changePriority(output_priority)
         }
 
-        const position = vertical
-            ? { x: this.m_rawEntity.position.x, y: -this.m_rawEntity.position.y }
-            : { x: -this.m_rawEntity.position.x, y: this.m_rawEntity.position.y }
+        const position = flipPoint(this.m_rawEntity.position, vertical)
+        const usesMirror = entityUsesMirroring(this.entityData)
+        const mirror = usesMirror ? !this.mirror : this.mirror
         const updatedRawEntity = {
             ...this.m_rawEntity,
             direction,
             position,
             input_priority,
             output_priority,
+            mirror: mirror || undefined,
         }
         if (direction === 0) delete updatedRawEntity.direction
+        if (!mirror) delete updatedRawEntity.mirror
 
         return new Entity(updatedRawEntity, this.m_BP)
     }
@@ -1727,6 +1731,49 @@ export class Entity extends EventEmitter<EntityEvents> {
                 ? 2
                 : 1
         return pr[(pr.indexOf(this.direction) + step * (ccw ? 3 : 1)) % pr.length]
+    }
+
+    /**
+     * Flip this entity in place (hovered / selected). Position stays; facing
+     * and splitter lane-priority remapped. Train stops / rail signals throw
+     * — the game refuses to flip those too.
+     */
+    public flip(vertical = false): void {
+        const non_flip_entities: EntityWithOwnerPrototype['type'][] = [
+            'train-stop',
+            'rail-chain-signal',
+            'rail-signal',
+        ]
+        if (non_flip_entities.includes(this.type)) {
+            throw new IllegalFlipError(`${this.name} cannot be flipped`)
+        }
+
+        const newDir = this.constrainDirection(flipDirection(this.direction, vertical))
+        const swapPriority = flipSwapsSplitterPriority(newDir, vertical)
+        const newIn = swapPriority
+            ? this.changePriority(this.m_rawEntity.input_priority)
+            : this.m_rawEntity.input_priority
+        const newOut = swapPriority
+            ? this.changePriority(this.m_rawEntity.output_priority)
+            : this.m_rawEntity.output_priority
+        const usesMirror = entityUsesMirroring(this.entityData)
+        const newMirror = usesMirror ? !this.mirror : this.mirror
+
+        if (
+            newDir === this.direction &&
+            newIn === this.m_rawEntity.input_priority &&
+            newOut === this.m_rawEntity.output_priority &&
+            newMirror === this.mirror
+        ) {
+            return
+        }
+
+        this.m_BP.history.startTransaction('Flip entity')
+        this.direction = newDir
+        this.splitterInputPriority = newIn
+        this.splitterOutputPriority = newOut
+        if (usesMirror) this.mirror = newMirror
+        this.m_BP.history.commitTransaction()
     }
 
     public rotate(ccw = false, rotateOpposingUB = false): void {
@@ -1982,7 +2029,13 @@ export class Entity extends EventEmitter<EntityEvents> {
         const isLoaderInputting = () => this.directionType === 'input'
         const getBeltConnectionIndex = () =>
             getBeltWireConnectionIndex(this.m_BP.entityPositionGrid, this.position, direction)
-        const cc = getCircuitConnector(e, direction, isLoaderInputting, getBeltConnectionIndex)
+        const cc = getCircuitConnector(
+            e,
+            direction,
+            isLoaderInputting,
+            getBeltConnectionIndex,
+            this.mirror
+        )
         if (cc) {
             return cc.points.wire[color]
         }

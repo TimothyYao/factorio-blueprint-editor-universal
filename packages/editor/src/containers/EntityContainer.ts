@@ -114,6 +114,7 @@ export class EntityContainer {
 
         this.m_Entity.on('recipe', onRecipeChange)
         this.m_Entity.on('direction', onDirectionChange)
+        this.m_Entity.on('mirror', onDirectionChange)
         this.m_Entity.on('directionType', onDirectionTypeChange)
         this.m_Entity.on('position', onPositionChange)
         this.m_Entity.on('modules', onModulesChange)
@@ -132,6 +133,7 @@ export class EntityContainer {
         G.BPC.on('destroyed', () => {
             this.m_Entity.off('recipe', onRecipeChange)
             this.m_Entity.off('direction', onDirectionChange)
+            this.m_Entity.off('mirror', onDirectionChange)
             this.m_Entity.off('directionType', onDirectionTypeChange)
             this.m_Entity.off('position', onPositionChange)
             this.m_Entity.off('modules', onModulesChange)

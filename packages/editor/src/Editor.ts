@@ -149,12 +149,17 @@ export class Editor {
     }
 
     /**
-     * Whether the held cursor can be flipped — true only while holding a *pasted
-     * blueprint* (a single held entity has no flip path). Gates the rail's Flip
-     * buttons so they only show when flipping does something.
+     * Whether flip (H/V, or the rail's Flip buttons) would do something right
+     * now: a held entity/blueprint ghost, a hovered entity, or a single-entity
+     * selection. Tile/wire brushes have no facing to flip.
      */
     public get cursorCanFlip(): boolean {
-        return G.BPC.mode === EditorMode.PAINT && !!G.BPC.paintContainer?.canFlipOrRotateByCopying()
+        if (G.BPC.mode === EditorMode.PAINT) {
+            return !!G.BPC.paintContainer?.canFlip()
+        }
+        if (G.BPC.mode === EditorMode.EDIT) return true
+        if (G.BPC.mode === EditorMode.SELECT) return G.BPC.marqueeCount === 1
+        return false
     }
 
     /**
@@ -327,7 +332,8 @@ export class Editor {
 
         // Tiles ride along too — the ghost renders and places them (a pasted
         // blueprint's landfill/concrete used to be silently dropped). Note a
-        // tile-carrying ghost can't flip/rotate (see canFlipOrRotateByCopying).
+        // tile-carrying ghost used to drop tiles on flip/rotate; those now
+        // remap via flippedTiles/rotatedTiles on the paint container.
         G.BPC.spawnPaintContainer(result, 0, bp.tiles.valuesArray())
     }
 
@@ -600,9 +606,10 @@ export class Editor {
             },
             flipHorizontal: {
                 trigger: {
-                    code: 'KeyF',
+                    // Factorio 2.0: H. (1.1 used F, which this editor keeps as
+                    // "focus / center viewport".)
+                    code: 'KeyH',
                 },
-                modifiers: { shift: true },
                 callbacks: {
                     onPress: () => {
                         G.BPC.flip(false)
@@ -612,8 +619,30 @@ export class Editor {
             },
             flipVertical: {
                 trigger: {
-                    code: 'KeyG',
+                    // Factorio 2.0: V. (1.1 used G, which this editor keeps as
+                    // the oil-outpost generator.)
+                    code: 'KeyV',
                 },
+                callbacks: {
+                    onPress: () => {
+                        G.BPC.flip(true)
+                        return true
+                    },
+                },
+            },
+            // Pre-2.0 aliases (this editor used these before matching the game).
+            flipHorizontalShiftF: {
+                trigger: { code: 'KeyF' },
+                modifiers: { shift: true },
+                callbacks: {
+                    onPress: () => {
+                        G.BPC.flip(false)
+                        return true
+                    },
+                },
+            },
+            flipVerticalShiftG: {
+                trigger: { code: 'KeyG' },
                 modifiers: { shift: true },
                 callbacks: {
                     onPress: () => {
