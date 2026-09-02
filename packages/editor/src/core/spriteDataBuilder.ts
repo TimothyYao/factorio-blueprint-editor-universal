@@ -724,6 +724,52 @@ function layersOf(s: SpriteData | Animation | undefined | null): readonly Sprite
     return layers.flatMap(l => layersOf(l as SpriteData))
 }
 
+/**
+ * Working visualisations Factorio draws on an *idle* assembling machine.
+ *
+ * The editor is a static view (no crafting animation), so this is the set we
+ * want on the canvas. A visualisation is idle-visible when:
+ *  - `always_draw` is set (otherwise it only appears while crafting)
+ *  - `draw_in_states` is absent or includes `"idle"` — Space Age's
+ *    electromagnetic plant puts the coils in an always-draw idle vis; the
+ *    warm-up / rotate / cool-down vises are also `always_draw` but gated to
+ *    those states, and stacking them would paint every pose at once
+ *  - not `enabled_by_name` (foundry pipe overlays, toggled by recipe)
+ *  - not `apply_recipe_tint` (recipe-coloured masks; we don't pass a recipe
+ *    tint into the sprite builder)
+ *
+ * Animation shape is the same polymorphism as everywhere else: a plain
+ * `animation`, or a per-direction `north_animation` / … field.
+ */
+function idleWorkingVisualisations(
+    gs:
+        | {
+              working_visualisations?: readonly Record<string, unknown>[]
+          }
+        | undefined,
+    dir: number
+): readonly SpriteData[] {
+    if (!gs?.working_visualisations) return []
+    const dirName = util.getDirName(dir)
+    const out: SpriteData[] = []
+    for (const vis of gs.working_visualisations) {
+        if (!vis.always_draw) continue
+        if (vis.enabled_by_name) continue
+        if (vis.apply_recipe_tint) continue
+        const states = vis.draw_in_states
+        if (Array.isArray(states) && !states.includes('idle')) continue
+        const anim = vis[`${dirName}_animation`] ?? vis.animation
+        if (!anim) continue
+        out.push(...layersOf(getAnimation(anim as Animation4Way, dir)))
+    }
+    return out
+}
+
+function spriteHasTexture(s: SpriteData): boolean {
+    const p = s as SpriteData & { filenames?: unknown; stripes?: unknown }
+    return !!(p.filename || p.filenames || p.stripes)
+}
+
 function generateGraphics(e: EntityWithOwnerPrototype): (data: IDrawData) => readonly SpriteData[] {
     switch (e.type) {
         case 'accumulator':
@@ -1031,47 +1077,56 @@ function draw_assembling_machine(
     e: AssemblingMachinePrototype
 ): (data: IDrawData) => readonly SpriteData[] {
     return (data: IDrawData) => {
-        if (e.graphics_set.always_draw_idle_animation) {
-            // idle_animation may be plain OR directional ({north,east,…}); SE's
-            // casting machine is directional, so passing it whole to layersOf
-            // dropped the body. getAnimation picks this direction (returns the
-            // animation unchanged when it's already plain), then layersOf flattens.
-            return layersOf(getAnimation(e.graphics_set.idle_animation as Animation4Way, data.dir))
-        } else {
-            const out = [...layersOf(getAnimation(e.graphics_set.animation, data.dir))]
+        const gs = e.graphics_set
+        // idle_animation may be plain OR directional ({north,east,…}); SE's
+        // casting machine is directional, so passing it whole to layersOf
+        // dropped the body. getAnimation picks this direction (returns the
+        // animation unchanged when it's already plain), then layersOf flattens.
+        //
+        // `always_draw_idle_animation` used to *return* the idle layers and
+        // skip everything else. The electromagnetic plant's coils live in an
+        // idle working visualisation on top of that base, and its pipe pictures
+        // are layered sprites — both were dropped by the early return.
+        const base = gs.always_draw_idle_animation
+            ? (gs.idle_animation as Animation4Way)
+            : gs.animation
+        const out: SpriteData[] = [
+            ...layersOf(getAnimation(base as Animation4Way, data.dir)),
+            ...idleWorkingVisualisations(gs, data.dir),
+        ]
 
-            const fbs = getFluidBoxes(
-                e,
-                data.assemblerHasFluidInputs || data.assemblerHasFluidOutputs
-            ).filter(
-                conn =>
-                    (data.assemblerHasFluidInputs && conn.production_type === 'input') ||
-                    (data.assemblerHasFluidOutputs && conn.production_type === 'output')
-            )
+        const fbs = getFluidBoxes(
+            e,
+            data.assemblerHasFluidInputs || data.assemblerHasFluidOutputs
+        ).filter(
+            conn =>
+                (data.assemblerHasFluidInputs && conn.production_type === 'input') ||
+                (data.assemblerHasFluidOutputs && conn.production_type === 'output')
+        )
 
-            for (const fb of fbs) {
-                if (!fb.pipe_picture) continue
+        for (const fb of fbs) {
+            if (!fb.pipe_picture) continue
 
-                for (const conn of fb.pipe_connections) {
-                    if (!(conn.connection_type === undefined || conn.connection_type === 'normal'))
-                        continue
+            for (const conn of fb.pipe_connections) {
+                if (!(conn.connection_type === undefined || conn.connection_type === 'normal'))
+                    continue
 
-                    const dir = (data.dir + conn.direction) % 16
-                    // pipe_picture can be a directional map {north, east, south, west}
-                    // or a single sprite object (e.g. foundry)
-                    const pipePic = fb.pipe_picture[util.getDirName(dir)] || fb.pipe_picture
-                    if (!pipePic || !pipePic.filename) continue
-                    out.push(
-                        addToShift(
-                            util.rotatePointBasedOnDir([0, -2], dir),
-                            util.duplicate(pipePic)
-                        )
-                    )
+                const dir = (data.dir + conn.direction) % 16
+                // pipe_picture can be a directional map {north, east, south, west},
+                // a single sprite (e.g. foundry's empty.png), or a {layers} wrapper
+                // (the electromagnetic plant). Flatten then shift each layer; the
+                // old `!filename` guard dropped the layered shape entirely.
+                const pipePic = fb.pipe_picture[util.getDirName(dir)] || fb.pipe_picture
+                if (!pipePic) continue
+                const shift = util.rotatePointBasedOnDir([0, -2], dir)
+                for (const layer of layersOf(pipePic as Animation)) {
+                    if (!spriteHasTexture(layer)) continue
+                    out.push(addToShift(shift, util.duplicate(layer)))
                 }
             }
-
-            return out
         }
+
+        return out
     }
 }
 function draw_asteroid_collector(
