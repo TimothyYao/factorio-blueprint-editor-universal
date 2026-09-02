@@ -28,9 +28,9 @@ const SA_ASSEMBLING_MACHINES =
 
 // Inserters in four facings + a long-handed + two recyclers (N and E) + a
 // mining drill (the overlay these arrows share, so a regression on drills
-// shows up here too). Generated with zlib raw-deflate → base64.
+// shows up here too). Generated with pako.deflate → base64.
 const SA_INSERTERS_AND_RECYCLER =
-    '0jdLhboMgEADgd7nfuFQGqLzKsjSot+0SxAboOmN899E1MyZV4y/gOL4cHCPU9ooXTy6CHoEidqAXMQbW1GhTjFxAH9FnHpuhsWlivO9vIaV8ow/UO9BS8UpUlRSnQqmCM0AXKRIG0G/jYzGc3bWr0YPOGTjT4YJO1KUP6cDdGuEH9OlFMhj+xmliTwQ/QPAFwaClVP5jV6yArwdAsQWWK6CYQdu7z+zLuBbbbBtX+xeWM/dhQtxxyq0ic77Cqpn9b+6zmPO9woojgjreiHL20KY8T03WkaP0hK0na7d/irzX9z5Nvw=='
+    '0eJyN0uFugyAQAOB3ud+4VAaovMqyNKi37RLEBug6Y3z30TUzJlXjL+A4vhwcI9T2ihdPLoIegSJ2oBcxBtbUaFOMXEAf0Wcem6GxaWK8728hpXyjD9Q70FLxSlSVFKdCqYIzQBcpEgbQb+NjMZzdtavRg84ZONPhgk7UpQ/pwN0a4Qf06UUyGP7GaWJPBD9A8AXBoKVU/mNXrICvB0CxBZYroJhB27vP7Mu4FttsG1f7F5Yz92FC3HHKrSJzvsKqmf1v7rOY873CiiOCOt6IcvbQpjxPTdaRo/SErSdrt3+KvNf3Pk2/+aDvZg=='
 
 // Errors from blocked external resources (pixi's jsdelivr basis-transcoder CDN
 // fallback, a blueprint host's firebase backend, etc.) are environment noise in
