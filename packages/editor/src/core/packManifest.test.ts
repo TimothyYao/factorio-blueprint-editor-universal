@@ -9,8 +9,8 @@ import { PackManifestEntry, canonicalPackId, canonicalPacks, graphicsOptions } f
  * the app.
  */
 const MANIFEST: PackManifestEntry[] = [
-    { id: 'vanilla-2.0', label: 'Vanilla 2.0', default: true },
-    { id: 'space-age', label: 'Space Age (2.0)' },
+    { id: 'vanilla-2.0', label: 'Vanilla 2.0' },
+    { id: 'space-age', label: 'Space Age (2.0)', default: true },
     { id: 'vanilla-2.0-slim', variantOf: 'vanilla-2.0', graphics: 'slim' },
     { id: 'space-age-slim', label: 'Space Age (slim)', variantOf: 'space-age', graphics: 'slim' },
 ]

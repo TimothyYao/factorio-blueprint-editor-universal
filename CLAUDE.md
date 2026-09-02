@@ -76,7 +76,7 @@ exporter is a separate Rust tool and is **not** a JS workspace.
       Space Age + Quality + Elevated Rails) and `space-exploration/` — each with
       its own `data.json` + `*.basis` atlas, plus a `packs.json` manifest at the
       root. The editor renders one pack at a time, chosen at runtime (`?pack=`
-      query > persisted choice > default `vanilla-2.0`); see `DATA_ROOT` /
+      query > persisted choice > default `space-age`); see `DATA_ROOT` /
       `DATA_PACK` / `setDataPack` in `editor/src/common/globals.ts` and the
       "Data Pack" selector in the website `settingsPane.ts`. The SA-aware
       rendering code is **backwards compatible** (defensive null-guards +

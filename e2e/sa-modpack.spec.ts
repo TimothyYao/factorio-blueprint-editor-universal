@@ -151,63 +151,16 @@ test.describe('data pack switching (UI)', () => {
     const dataPack = (page: Page) =>
         page.evaluate(() => window.localStorage.getItem('fbe:dataPack'))
 
-    test('switching to space-age via the dropdown persists + reloads', async ({ page }, ti) => {
+    test('switching to vanilla-2.0 via the dropdown persists + reloads', async ({ page }, ti) => {
         const { appErrors } = captureConsole(page)
         const fetched = watchDataFetch(page)
-        await page.goto('/') // no ?pack → default vanilla-2.0
+        await page.goto('/') // no ?pack → default space-age
         await waitForReady(page)
         expect(await dataPack(page)).toBeNull() // nothing persisted yet
-        expect(await packSelect(page).inputValue()).toBe('vanilla-2.0')
+        expect(await packSelect(page).inputValue()).toBe('space-age')
 
-        // Pick Space Age — this triggers setDataPack() → reload. Tolerate the
+        // Pick Vanilla — this triggers setDataPack() → reload. Tolerate the
         // navigation interrupting the action; assert on the post-reload state.
-        await Promise.all([
-            page.waitForResponse(r => packDataJsonFor('space-age').test(r.url()), {
-                timeout: 60_000,
-            }),
-            packSelect(page)
-                .selectOption({ label: 'Space Age (2.0)' })
-                .catch(() => undefined),
-        ])
-        await waitForReady(page)
-
-        expect(await dataPack(page)).toBe('space-age')
-        expect(await packSelect(page).inputValue()).toBe('space-age')
-        expect(fetched).toContain('space-age')
-        const shot = await page.screenshot()
-        await ti.attach('switched-to-space-age', { body: shot, contentType: 'image/png' })
-        expect(appErrors, appErrors.join('\n')).toHaveLength(0)
-    })
-
-    test('remembers the persisted pack across a plain reload (no ?pack)', async ({ page }) => {
-        const fetched = watchDataFetch(page)
-        // Persist the choice before any app code runs, then load without ?pack.
-        await page.addInitScript(() => window.localStorage.setItem('fbe:dataPack', 'space-age'))
-        await page.goto('/')
-        await waitForReady(page)
-        expect(fetched).toContain('space-age')
-        expect(fetched).not.toContain('vanilla-2.0')
-        expect(await packSelect(page).inputValue()).toBe('space-age')
-    })
-
-    test('round-trips vanilla → space-age → vanilla via the dropdown', async ({ page }) => {
-        const fetched = watchDataFetch(page)
-        await page.goto('/') // fresh: default vanilla, nothing persisted
-        await waitForReady(page)
-
-        // → space-age
-        await Promise.all([
-            page.waitForResponse(r => packDataJsonFor('space-age').test(r.url()), {
-                timeout: 60_000,
-            }),
-            packSelect(page)
-                .selectOption({ label: 'Space Age (2.0)' })
-                .catch(() => undefined),
-        ])
-        await waitForReady(page)
-        expect(await packSelect(page).inputValue()).toBe('space-age')
-
-        // → back to vanilla
         await Promise.all([
             page.waitForResponse(r => packDataJsonFor('vanilla-2.0').test(r.url()), {
                 timeout: 60_000,
@@ -221,20 +174,68 @@ test.describe('data pack switching (UI)', () => {
         expect(await dataPack(page)).toBe('vanilla-2.0')
         expect(await packSelect(page).inputValue()).toBe('vanilla-2.0')
         expect(fetched).toContain('vanilla-2.0')
+        const shot = await page.screenshot()
+        await ti.attach('switched-to-vanilla', { body: shot, contentType: 'image/png' })
+        expect(appErrors, appErrors.join('\n')).toHaveLength(0)
+    })
+
+    test('remembers the persisted pack across a plain reload (no ?pack)', async ({ page }) => {
+        const fetched = watchDataFetch(page)
+        // Persist a non-default choice before any app code runs, then load
+        // without ?pack so the stored value is the only thing that can win.
+        await page.addInitScript(() => window.localStorage.setItem('fbe:dataPack', 'vanilla-2.0'))
+        await page.goto('/')
+        await waitForReady(page)
+        expect(fetched).toContain('vanilla-2.0')
+        expect(fetched).not.toContain('space-age')
+        expect(await packSelect(page).inputValue()).toBe('vanilla-2.0')
+    })
+
+    test('round-trips space-age → vanilla → space-age via the dropdown', async ({ page }) => {
+        const fetched = watchDataFetch(page)
+        await page.goto('/') // fresh: default space-age, nothing persisted
+        await waitForReady(page)
+
+        // → vanilla
+        await Promise.all([
+            page.waitForResponse(r => packDataJsonFor('vanilla-2.0').test(r.url()), {
+                timeout: 60_000,
+            }),
+            packSelect(page)
+                .selectOption({ label: 'Vanilla 2.0' })
+                .catch(() => undefined),
+        ])
+        await waitForReady(page)
+        expect(await packSelect(page).inputValue()).toBe('vanilla-2.0')
+
+        // → back to space-age
+        await Promise.all([
+            page.waitForResponse(r => packDataJsonFor('space-age').test(r.url()), {
+                timeout: 60_000,
+            }),
+            packSelect(page)
+                .selectOption({ label: 'Space Age (2.0)' })
+                .catch(() => undefined),
+        ])
+        await waitForReady(page)
+
+        expect(await dataPack(page)).toBe('space-age')
+        expect(await packSelect(page).inputValue()).toBe('space-age')
+        expect(fetched).toContain('space-age')
     })
 
     test('?pack= query overrides the persisted pack', async ({ page }) => {
         const fetched = watchDataFetch(page)
-        // Persisted choice is space-age, but the URL explicitly asks for vanilla.
-        await page.addInitScript(() => window.localStorage.setItem('fbe:dataPack', 'space-age'))
-        await page.goto('/?pack=vanilla-2.0')
+        // Persisted choice is vanilla, but the URL explicitly asks for space-age.
+        await page.addInitScript(() => window.localStorage.setItem('fbe:dataPack', 'vanilla-2.0'))
+        await page.goto('/?pack=space-age')
         await waitForReady(page)
         // Query wins for what's loaded/shown…
-        expect(fetched).toContain('vanilla-2.0')
-        expect(fetched).not.toContain('space-age')
-        expect(await packSelect(page).inputValue()).toBe('vanilla-2.0')
+        expect(fetched).toContain('space-age')
+        expect(fetched).not.toContain('vanilla-2.0')
+        expect(await packSelect(page).inputValue()).toBe('space-age')
         // …but it doesn't rewrite the persisted preference.
-        expect(await dataPack(page)).toBe('space-age')
+        expect(await dataPack(page)).toBe('vanilla-2.0')
     })
 })
 
@@ -259,7 +260,10 @@ test.describe('graphics tier switching (UI)', () => {
         page,
     }, ti) => {
         const { appErrors } = captureConsole(page)
-        await page.goto('/') // default vanilla-2.0, Full tier
+        // Slim is only published for vanilla today (no space-age-slim on the
+        // data plane — docs/slim-graphics.md), so pin the pack explicitly
+        // rather than relying on the space-age default.
+        await page.goto('/?pack=vanilla-2.0')
         await waitForReady(page)
         await expect(gfxSelect(page)).toHaveValue('vanilla-2.0')
 
@@ -293,7 +297,7 @@ test.describe('graphics tier switching (UI)', () => {
         // A toast explains, the select snaps back, and nothing was persisted —
         // no reload, no pack switch.
         await expect(page.locator('.toasts-text', { hasText: 'Not available yet' })).toBeVisible()
-        await expect(gfxSelect(page)).toHaveValue('vanilla-2.0')
+        await expect(gfxSelect(page)).toHaveValue('space-age')
         expect(await dataPack(page)).toBeNull()
     })
 })

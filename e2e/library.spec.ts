@@ -238,7 +238,7 @@ test.describe('blueprint library — organization & multi-pack (Phase 2)', () =>
         // ⋯ → Move to… → pick the Logistics folder in the destination picker.
         await rowAction(page, 'Mall', /move to/i)
         await panel(page)
-            .locator('.library-picker-list button', { hasText: 'Vanilla 2.0 / Logistics' })
+            .locator('.library-picker-list button', { hasText: 'Space Age (2.0) / Logistics' })
             .click()
 
         // Mall is now nested one level deep (padding-left 24px = 8 + 1×16).
@@ -275,16 +275,14 @@ test.describe('blueprint library — organization & multi-pack (Phase 2)', () =>
             .click()
         await expect(indicator(page)).toHaveText('Mall')
 
-        // ⋯ → Copy to… → Space Age root.
+        // ⋯ → Copy to… → Vanilla root (a different pack from the space-age default).
         await rowAction(page, 'Mall', /copy to/i)
         await panel(page)
-            .locator('.library-picker-list button', { hasText: 'Space Age (2.0) / (root)' })
+            .locator('.library-picker-list button', { hasText: 'Vanilla 2.0 / (root)' })
             .click()
 
-        // Switch the pack drop-down to Space Age and confirm the copy is there.
-        await panel(page)
-            .locator('.library-packbar select')
-            .selectOption({ label: 'Space Age (2.0)' })
+        // Switch the pack drop-down to Vanilla and confirm the copy is there.
+        await panel(page).locator('.library-packbar select').selectOption({ label: 'Vanilla 2.0' })
         await expect(panel(page).locator('.library-row', { hasText: 'Mall' })).toHaveCount(1)
         // Browsing a non-active pack disables the active-pack save actions.
         await expect(panel(page).getByRole('button', { name: /save as/i })).toBeDisabled()
