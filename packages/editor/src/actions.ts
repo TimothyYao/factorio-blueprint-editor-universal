@@ -151,9 +151,9 @@ export function isMacPlatform(nav?: { platform?: string; userAgent?: string }): 
     )
 }
 
-/** Ctrl on Windows/Linux, Command on Mac — the undo/redo chord. */
-export function historyModifiers(): Modifiers {
-    return isMacPlatform() ? { meta: true } : { control: true }
+/** Ctrl on Windows/Linux, Command on Mac — the undo/redo chord. Extra flags (e.g. `shift`) layer on. */
+export function historyModifiers(extra: Modifiers = {}): Modifiers {
+    return { ...(isMacPlatform() ? { meta: true } : { control: true }), ...extra }
 }
 
 interface Callbacks {

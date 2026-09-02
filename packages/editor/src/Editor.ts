@@ -663,7 +663,7 @@ export class Editor {
                 trigger: {
                     code: 'KeyZ',
                 },
-                // Command+Z on Mac, Control+Z elsewhere.
+                // Command+Z on Mac, Control+Z elsewhere. Same as Factorio.
                 modifiers: historyModifiers(),
                 callbacks: {
                     onPress: () => {
@@ -672,7 +672,22 @@ export class Editor {
                     },
                 },
             },
+            // Factorio binds redo to both Ctrl/Cmd+Y and Ctrl/Cmd+Shift+Z
+            // (FFF #412: ⌘⇧Z on Mac). Shift+Z is the primary so Mac users get
+            // the usual redo chord; Y stays as the other Factorio default.
             redo: {
+                trigger: {
+                    code: 'KeyZ',
+                },
+                modifiers: historyModifiers({ shift: true }),
+                callbacks: {
+                    onPress: () => {
+                        G.bp.history.redo()
+                        return true
+                    },
+                },
+            },
+            redoY: {
                 trigger: {
                     code: 'KeyY',
                 },

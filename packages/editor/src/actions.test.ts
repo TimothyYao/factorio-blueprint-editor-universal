@@ -66,6 +66,39 @@ describe('ActionRegistry Command (Meta) chords', () => {
         expect(undo).toBe(1)
     })
 
+    it('fires redo on Command+Shift+Z, not undo', () => {
+        let undo = 0
+        let redo = 0
+        const actions = new ActionRegistry({
+            undo: {
+                trigger: { code: 'KeyZ' },
+                modifiers: { meta: true },
+                callbacks: {
+                    onPress: () => {
+                        undo += 1
+                        return true
+                    },
+                },
+            },
+            redo: {
+                trigger: { code: 'KeyZ' },
+                modifiers: { meta: true, shift: true },
+                callbacks: {
+                    onPress: () => {
+                        redo += 1
+                        return true
+                    },
+                },
+            },
+        })
+        actions.pressKey(key({ key: 'z', code: 'KeyZ', metaKey: true, shiftKey: true }))
+        expect(redo).toBe(1)
+        expect(undo).toBe(0)
+        actions.pressKey(key({ key: 'z', code: 'KeyZ', metaKey: true }))
+        expect(undo).toBe(1)
+        expect(redo).toBe(1)
+    })
+
     it('fires redo on Command+Y when bound to meta', () => {
         let redo = 0
         const actions = new ActionRegistry({
@@ -113,6 +146,17 @@ describe('ActionRegistry Command (Meta) chords', () => {
             },
         })
         expect(actions.get('undo').keyCombo).toBe('Command+KeyZ')
+    })
+
+    it('serializes Command+Shift in the keyCombo string', () => {
+        const actions = new ActionRegistry({
+            redo: {
+                trigger: { code: 'KeyZ' },
+                modifiers: { meta: true, shift: true },
+                callbacks: { onPress: () => true },
+            },
+        })
+        expect(actions.get('redo').keyCombo).toBe('Command+Shift+KeyZ')
     })
 
     it('parses Command and Meta when remapping a combo', () => {
