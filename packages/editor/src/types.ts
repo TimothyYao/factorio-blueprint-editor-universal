@@ -592,8 +592,10 @@ export interface IEntity {
     // driver_is_main_gunner: unknown
     // selected_gun_index: unknown
     // spoil_priority: unknown
-    // drop_position: unknown
-    // pickup_position: unknown
+    /** per-entity inserter drop vector (lane offset / custom), only present if set */
+    drop_position?: IPoint
+    /** per-entity inserter pickup vector (custom), only present if set */
+    pickup_position?: IPoint
     // belt_link: unknown
     // link_id: unknown
     // belt_stack_size_override: unknown

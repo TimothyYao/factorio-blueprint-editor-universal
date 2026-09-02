@@ -14,7 +14,7 @@ and is **not** republished from this editor repo.
 | PR preview  | `https://timothyyao.github.io/factorio-blueprint-editor-universal/pr-preview/pr-<N>/` |
 | Parent fork | https://trisiak.github.io/factorio-blueprint-editor/                                  |
 | Original    | https://fbe.teoxoy.com                                                                |
-| Pack data   | https://timothyyao.github.io/factorio-pack-data/                                       |
+| Pack data   | https://timothyyao.github.io/factorio-pack-data/                                      |
 
 Vite `base` must be the project-site path (`/factorio-blueprint-editor-universal/`).
 The production and preview workflows set `PUBLIC_BASE` from
