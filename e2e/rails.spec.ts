@@ -52,8 +52,8 @@ async function spawnRail(page: Page): Promise<void> {
     await expect.poll(async () => (await getState(page)).paint.kind).toBe('rail')
 }
 
-const FROM = { x: 240, y: 400 }
-const TO = { x: 240, y: 280 }
+const FROM = { x: 320, y: 480 }
+const TO = { x: 320, y: 280 }
 
 test.describe('rail planner', () => {
     test('desktop click-drag places a path', async ({ page }) => {
@@ -63,15 +63,13 @@ test.describe('rail planner', () => {
         await spawnRail(page)
         expect((await getState(page)).blueprint.entityCount).toBe(0)
 
-        const editor = page.locator('#editor')
-        await editor.focus()
-        const box = await editor.boundingBox()
-        expect(box).toBeTruthy()
-        // `hover({position})` hit-tests overlays (dat.gui); desktop build specs
-        // drive the canvas with page.mouse instead.
-        await page.mouse.move(box!.x + FROM.x, box!.y + FROM.y)
+        await page.locator('#editor').focus()
+        // Same open-canvas coords as desktopBuild.spec.ts (page space). Avoid
+        // locator.hover — dat.gui intercepts it.
+        await page.mouse.move(FROM.x, FROM.y)
         await page.mouse.down()
-        await page.mouse.move(box!.x + TO.x, box!.y + TO.y)
+        await expect.poll(async () => (await getState(page)).paint.railPlan?.active).toBe(true)
+        await page.mouse.move(TO.x, TO.y)
         await expect.poll(async () => (await getState(page)).paint.railPlan?.complete).toBe(true)
         await page.mouse.up()
 
