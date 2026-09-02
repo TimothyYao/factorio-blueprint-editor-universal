@@ -9,12 +9,13 @@ const fullReloadAlways = {
 }
 
 export default defineConfig(({ command, mode }) => {
-    // NOTE: blueprint-URL imports hit a server-side CORS proxy at `/corsproxy`
-    // (a Cloudflare Pages Function, `functions/corsproxy.js`). It doesn't run on
-    // this fork's GitHub Pages deploy, and we no longer proxy dev to an external
-    // host's proxy, so URL imports are inert here until the fork hosts its own —
-    // see https://github.com/trisiak/factorio-blueprint-editor/issues/17. Paste /
-    // raw `?source=<bpstring>` import still works.
+    // NOTE: blueprint-URL imports fetch the host directly from the browser —
+    // pastebin/gist/etc. send CORS headers nowadays, so this works on static
+    // deploys (GitHub Pages) and in dev with no proxy. Only when the direct
+    // fetch is CORS-blocked (e.g. gitlab.com raw) does the loader fall back to
+    // the server-side `/corsproxy` (a Cloudflare Pages Function,
+    // `functions/corsproxy.js`), which neither GitHub Pages nor this dev server
+    // provides — see https://github.com/trisiak/factorio-blueprint-editor/issues/17.
     const proxy = {}
     if (mode !== 'production') {
         proxy['/data'] = {

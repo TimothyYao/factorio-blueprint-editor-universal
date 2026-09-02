@@ -544,5 +544,7 @@ pipelines at once made touch taps double-act via the browser's synthetic
   harmless no-ops (nothing held; the tap path re-seeds grid position before
   acting). Gate them if stricter isolation is ever wanted.
 - Pen works in both modes (mouse-like on desktop, touch-like on mobile).
-- The `/corsproxy` "import blueprint from a URL" feature is a Cloudflare Pages
-  Function and does **not** work on GitHub Pages; paste-string import + editing do.
+- "Import blueprint from a URL" fetches the host directly from the browser, so
+  it works on GitHub Pages for CORS-friendly hosts (pastebin, gist, …). The
+  `/corsproxy` fallback for CORS-less hosts is a Cloudflare Pages Function and
+  does **not** run on GitHub Pages; paste-string import + editing always work.

@@ -249,11 +249,24 @@ function getBlueprintOrBookFromSource(source: string): Promise<Blueprint | Book>
             console.log(`Loading data from: ${url}`)
             const pathParts = url.pathname.slice(1).split('/')
 
+            // Try the plain cross-origin fetch first: most import hosts answer
+            // it nowadays — pastebin's raw endpoint, the GitHub gist API and
+            // Google Docs exports all send CORS headers (verified 2026-09), and
+            // it is the only path that works on a static deploy (GitHub Pages
+            // has no server side). Only when the browser blocks the direct
+            // fetch (a CORS-less host, e.g. gitlab.com raw — that surfaces as a
+            // rejected promise, not a non-ok response) fall back to the
+            // server-side `/corsproxy`, which exists only where the deploy
+            // provides it (a Cloudflare Pages Function — see
+            // functions/corsproxy.js and
+            // https://github.com/trisiak/factorio-blueprint-editor/issues/17).
             const fetchData = (url: string): Promise<Response> =>
-                fetch(`/corsproxy?url=${encodeURIComponent(url)}`).then(response => {
-                    if (response.ok) return response
-                    throw new Error('Network response was not ok.')
-                })
+                fetch(url)
+                    .catch(() => fetch(`/corsproxy?url=${encodeURIComponent(url)}`))
+                    .then(response => {
+                        if (response.ok) return response
+                        throw new Error('Network response was not ok.')
+                    })
 
             // TODO: add dropbox support https://www.dropbox.com/s/ID?raw=1
             switch (url.hostname.replace(/^www\./, '').split('.')[0]) {
