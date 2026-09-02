@@ -166,7 +166,7 @@ export class EntitySprite extends Sprite {
             assemblerHasFluidOutputs: entity.assemblerHasFluidOutputs,
             railLayer: entity.railLayer,
             trainStopColor: entity.trainStopColor,
-            modules: entity.modules,
+            modules: entity instanceof Entity ? entity.modules.map(m => m?.name) : entity.modules,
             mirror: entity instanceof Entity ? entity.mirror : !!(entity as IEntityData).mirror,
         })
 

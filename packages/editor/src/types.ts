@@ -235,6 +235,8 @@ export interface IEntity {
     /** recipe name, only present if entity is of type assembling-machine or has fixed_recipe */
     recipe?: string
     recipe_quality?: string
+    /** entity quality; omitted means normal */
+    quality?: string
     /** inventory size limitation, only present if entity has inventory_size */
     bar?: number
     /**
@@ -581,7 +583,6 @@ export interface IEntity {
     // - 68, 69 no changes
 
     // remaining keys of BlueprintEntity from 'factorio:runtime'
-    // quality: unknown
     // tags: unknown
     // wires: unknown
     // burner_fuel_inventory: unknown

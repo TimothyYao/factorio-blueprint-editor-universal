@@ -504,7 +504,7 @@ export function installTestHook(win: Window = window): void {
         // `Array.from` visits every index, so holes normalize to `null`.
         entityModules: name => {
             const mods = findEntity(name)?.modules
-            return mods ? Array.from(mods, m => m ?? null) : null
+            return mods ? Array.from(mods, m => (m ? m.name : null)) : null
         },
         entityFilters: name => {
             const filters = findEntity(name)?.filters

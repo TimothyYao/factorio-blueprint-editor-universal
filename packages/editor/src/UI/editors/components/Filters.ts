@@ -153,6 +153,8 @@ export class Filters extends Container<Slot<number>> {
                         index: item.index,
                         name: item.name,
                         count: item.count,
+                        ...(item.quality ? { quality: item.quality } : {}),
+                        ...(item.comparator ? { comparator: item.comparator } : {}),
                     }
                 }
             }

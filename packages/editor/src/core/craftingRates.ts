@@ -8,6 +8,7 @@ import { IPoint } from '../types'
 import FD, { getModule, isCraftingMachine } from './factorioData'
 import { beaconEffectMultiplier } from './beaconEffects'
 import { getIngredientAmount, getProductAmountWithProductivity } from './recipeAmounts'
+import type { IModuleSlot } from './Entity'
 
 /**
  * Blueprint-wide production/consumption rate maths (issue: RateCalculator-style
@@ -288,7 +289,7 @@ export interface RateSource {
     position: IPoint
     size: IPoint
     recipe?: string
-    modules: (string | undefined)[]
+    modules: (string | IModuleSlot | undefined)[]
 }
 
 /**
@@ -296,9 +297,10 @@ export interface RateSource {
  * slots and names the loaded pack doesn't know — a foreign blueprint can carry
  * module names this pack doesn't have. Shared with EntityInfoPanel.
  */
-export function resolveModuleNames(names: (string | undefined)[]): ModulePrototype[] {
+export function resolveModuleNames(names: (string | IModuleSlot | undefined)[]): ModulePrototype[] {
     const out: ModulePrototype[] = []
-    for (const name of names) {
+    for (const slot of names) {
+        const name = !slot ? undefined : typeof slot === 'string' ? slot : slot.name
         if (name && FD.items[name]) out.push(getModule(name))
     }
     return out

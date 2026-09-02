@@ -260,7 +260,7 @@ export class OverlayContainer extends Container {
                 const separation_multiplier = module_icon_positioning?.separation_multiplier || 1.1
                 for (let slot = 0; slot < module_slots; slot++) {
                     if (modules[slot]) {
-                        createIconWithBackground(moduleInfo, modules[slot], {
+                        createIconWithBackground(moduleInfo, modules[slot].name, {
                             x: slot * 32 * separation_multiplier,
                             y: 0,
                         })

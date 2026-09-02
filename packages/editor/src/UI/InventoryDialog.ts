@@ -8,6 +8,7 @@ import { Button } from './controls/Button'
 import { fitToWidthScale } from './quickbarLayout'
 import { isItemTappable, maxItemScroll } from './inventoryScroll'
 import { getRecents, recordRecent } from './recentItems'
+import { moduleSlotName } from '../core/Entity'
 import { colors, styles } from './style'
 
 /*
@@ -634,7 +635,8 @@ export class InventoryDialog extends Dialog {
     private static blueprintNames(key: string): string[] {
         const ents = G.bp.entities.valuesArray()
         if (key === 'recipes') return ents.map(e => e.recipe).filter((r): r is string => !!r)
-        if (key === 'modules') return ents.flatMap(e => e.modules).filter((m): m is string => !!m)
+        if (key === 'modules')
+            return ents.flatMap(e => e.modules.map(moduleSlotName)).filter((m): m is string => !!m)
         return ents.map(e => e.name)
     }
 
