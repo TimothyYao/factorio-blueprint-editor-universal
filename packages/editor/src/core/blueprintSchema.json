@@ -491,6 +491,10 @@
                             "recipe_quality": {
                                 "type": "string"
                             },
+                            "quality": {
+                                "type": "string",
+                                "$comment": "entity quality; omitted means normal"
+                            },
                             "bar": {
                                 "type": "integer",
                                 "$comment": "inventory size limitation, only present if entity has inventory_size"
