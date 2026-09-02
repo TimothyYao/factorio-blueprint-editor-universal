@@ -104,6 +104,11 @@ export interface EditorTestState {
     infoPanelVisible: boolean
     /** Whether the top-left blueprint-wide production rates panel is showing. */
     ratesPanelVisible: boolean
+    /**
+     * Hovered / tap-selected entity (EDIT). Direction + blueprint `mirror` bit
+     * so Flip tests can assert in-place flip without re-pipetting.
+     */
+    hovered: { name: string; direction: number; mirrored: boolean } | null
 }
 
 export function getEditorTestState(): EditorTestState {
@@ -163,6 +168,13 @@ export function getEditorTestState(): EditorTestState {
         },
         infoPanelVisible: G.UI.entityInfoPanelVisible,
         ratesPanelVisible: G.UI.ratesPanelVisible,
+        hovered: G.BPC.hoverContainer
+            ? {
+                  name: G.BPC.hoverContainer.entity.name,
+                  direction: G.BPC.hoverContainer.entity.direction,
+                  mirrored: G.BPC.hoverContainer.entity.mirror,
+              }
+            : null,
     }
 }
 

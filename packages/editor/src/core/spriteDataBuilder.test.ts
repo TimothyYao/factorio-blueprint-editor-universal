@@ -144,11 +144,18 @@ describe('assembling-machine sprites (space-age)', () => {
                 mirror: true,
             } as Parameters<typeof getSpriteData>[0])
             expect(Array.isArray(plain) && Array.isArray(flipped)).toBe(true)
-            const p0 = (plain as unknown as { shift?: number[] }[])[0]
-            const f0 = (flipped as unknown as { shift?: number[] }[])[0]
+            const p0 = (
+                plain as unknown as { shift?: number[]; scale?: unknown; flipX?: boolean }[]
+            )[0]
+            const f0 = (
+                flipped as unknown as { shift?: number[]; scale?: unknown; flipX?: boolean }[]
+            )[0]
             expect(p0?.shift && f0?.shift).toBeTruthy()
             expect(f0.shift[0]).toBeCloseTo(-p0.shift[0])
             expect(f0.shift[1]).toBeCloseTo(p0.shift[1])
+            expect(f0.flipX).toBe(true)
+            expect(p0.flipX).toBeFalsy()
+            expect(f0.scale).toBe(p0.scale)
         }
     )
 

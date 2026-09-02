@@ -142,8 +142,6 @@ export class PaintEntityContainer extends PaintContainer {
     }
 
     public override rotate(ccw = false): void {
-        if (!this.visible) return
-
         const pr = getPossibleRotations(FD.entities[this.name])
         if (pr.length === 0) return
         this.direction = pr[(pr.indexOf(this.direction) + (ccw ? 3 : 1)) % pr.length]
@@ -153,7 +151,6 @@ export class PaintEntityContainer extends PaintContainer {
     }
 
     public override flip(vertical: boolean): void {
-        if (!this.visible) return
         const fd = FD.entities[this.name]
         if (entityUsesMirroring(fd)) this.mirrored = !this.mirrored
         const pr = getPossibleRotations(fd)

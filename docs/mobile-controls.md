@@ -114,12 +114,15 @@ pipelines at once made touch taps double-act via the browser's synthetic
   no-op and the mobile Flip buttons stayed hidden. Now: H/V (aliases kept),
   a held entity ghost remaps facing, a hovered / single-selected entity flips
   in place, paste ghosts take their tiles with them, and the rail shows Flip H/V
-  in PAINT / EDIT / SELECT whenever `cursorCanFlip`. Sprite mirroring: the
-  blueprint `mirror` bit is stored and drawn — recycler uses
-  `graphics_set_flipped` / `recycler-flipped-*.png`; chemical-plant / refinery /
-  foundry / biochamber / cryogenic-plant / electromagnetic-plant / boiler /
-  fusion-\* geometrically mirror `graphics_set`. `e2e/flip.spec.ts` +
-  `actionToolbar.spec.ts`.
+  in PAINT / EDIT / SELECT whenever `cursorCanFlip`. Flip/Rotate from the rail
+  (or keyboard after an inventory pick) **reveal a still-hidden paint ghost**
+  instead of no-op'ing on `visible` — the ghost stays hidden until the first
+  canvas tap, which made Flip look broken on touch and after picking from E.
+  Sprite mirroring: the blueprint `mirror` bit is stored and drawn — recycler
+  uses `graphics_set_flipped` / `recycler-flipped-*.png`; chemical-plant /
+  refinery / foundry / biochamber / cryogenic-plant / electromagnetic-plant /
+  boiler / fusion-\* geometrically `flipX` (`scale.x *= -1`) `graphics_set`.
+  `e2e/flip.spec.ts` + `actionToolbar.spec.ts`.
 - ✅ **Item-selector overhaul** (`InventoryDialog`, the shared item/recipe/module
   picker) — now touch-usable: **scrollable** group-tabs (◀▶) and item grid (▲▼),
   masked with viewport-gated hit-testing; a **Recents tab** (first/active) with

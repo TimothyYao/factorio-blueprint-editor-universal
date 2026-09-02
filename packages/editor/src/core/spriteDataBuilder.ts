@@ -139,6 +139,12 @@ export interface ExtendedSpriteData extends SpriteData {
     anchorY?: number
     squishY?: number
     rotAngle?: number
+    /**
+     * Geometric left/right flip of the drawn sprite (Factorio's `mirror` bit
+     * for buildings that reuse `graphics_set`). Applied last in EntitySprite
+     * as `scale.x *= -1` so width/squishY math cannot clobber the sign.
+     */
+    flipX?: boolean
 }
 
 export const SPRITE_GENERATION_FAILED = Symbol('SPRITE_GENERATION_FAILED')
@@ -232,14 +238,11 @@ function generateConnection(e: EntityWithOwnerPrototype, data: IDrawData): reado
 function applyHorizontalSpriteMirror(s: ExtendedSpriteData): ExtendedSpriteData {
     const out = util.duplicate(s)
     if (out.shift) out.shift = [-out.shift[0], out.shift[1]]
-    const sc = out.scale as number | { x?: number; y?: number } | undefined
-    if (sc == null) {
-        ;(out as { scale?: unknown }).scale = { x: -1, y: 1 }
-    } else if (typeof sc === 'number') {
-        ;(out as { scale?: unknown }).scale = { x: -sc, y: sc }
-    } else {
-        ;(out as { scale?: unknown }).scale = { x: -(sc.x ?? 1), y: sc.y ?? 1 }
-    }
+    // Keep Factorio's numeric `scale` (usually 0.5 for HR) and flip via flipX.
+    // Packing a `{x:-s,y:s}` scale used to fight EntitySprite's width/squishY
+    // path and OverlayContainer's `scale.set(number)` — chemical plants looked
+    // unchanged because their body shift.x is ~0.
+    out.flipX = !out.flipX
     return out
 }
 

@@ -728,13 +728,14 @@ export class BlueprintContainer extends Container {
 
     public rotate(ccw: boolean): void {
         if (this.mode === EditorMode.EDIT) {
-            this.hoverContainer.entity.rotate(ccw, true)
-        } else if (this.mode === EditorMode.PAINT) {
+            const entity = this.editTarget()
+            if (entity) entity.rotate(ccw, true)
+        } else if (this.mode === EditorMode.PAINT && this.paintContainer) {
+            this.revealPaintGhost()
             if (this.paintContainer.canFlipOrRotateByCopying()) {
                 const copies = this.paintContainer.rotatedEntities(ccw)
                 const tiles = this.paintContainer.rotatedTiles(ccw)
-                this.paintContainer.destroy()
-                this.spawnPaintContainer(copies, 0, tiles)
+                this.replacePaintGhost(copies, tiles)
             } else {
                 this.paintContainer.rotate(ccw)
             }
@@ -753,16 +754,17 @@ export class BlueprintContainer extends Container {
     public flip(vertical: boolean): void {
         try {
             if (this.mode === EditorMode.PAINT && this.paintContainer) {
+                this.revealPaintGhost()
                 if (this.paintContainer.canFlipOrRotateByCopying()) {
                     const copies = this.paintContainer.flippedEntities(vertical)
                     const tiles = this.paintContainer.flippedTiles(vertical)
-                    this.paintContainer.destroy()
-                    this.spawnPaintContainer(copies, 0, tiles)
+                    this.replacePaintGhost(copies, tiles)
                 } else {
                     this.paintContainer.flip(vertical)
                 }
-            } else if (this.mode === EditorMode.EDIT && this.hoverContainer) {
-                this.hoverContainer.entity.flip(vertical)
+            } else if (this.mode === EditorMode.EDIT) {
+                const entity = this.editTarget()
+                if (entity) entity.flip(vertical)
             } else if (this.mode === EditorMode.SELECT && this.marqueeEntities.length === 1) {
                 const brokenBefore = this.countOverReach()
                 this.marqueeEntities[0].flip(vertical)
@@ -774,6 +776,55 @@ export class BlueprintContainer extends Container {
             } else {
                 throw e
             }
+        }
+    }
+
+    /**
+     * Entity under the cursor in EDIT: the hover container, or the last
+     * tap-selected entity on touch (hover is a desktop-only concept, so Flip/
+     * Rotate from the rail would otherwise no-op after the tap that entered
+     * EDIT if something cleared hoverContainer).
+     */
+    private editTarget(): Entity | undefined {
+        if (this.hoverContainer) return this.hoverContainer.entity
+        if (this.lastEditTapEntity !== undefined) {
+            return this.bp.entities.get(this.lastEditTapEntity)
+        }
+        return undefined
+    }
+
+    /**
+     * Show a still-hidden paint ghost at the current grid cursor. Touch hides
+     * the ghost until the first canvas tap (inventory pick / `?test` slot key);
+     * Flip/Rotate/nudge from the rail must still preview. Same reveal as
+     * `moveEntity`.
+     */
+    private revealPaintGhost(): void {
+        if (this.mode !== EditorMode.PAINT || !this.paintContainer) return
+        this.paintContainer.show()
+        this.paintContainer.moveAtCursor()
+        this.lastPaintTapTile = this.paintContainer.getGridPosition()
+    }
+
+    /**
+     * Replace the current paint ghost (rotate/flip of a paste). `spawnPaintContainer`
+     * hides the new ghost when the pointer isn't over the canvas — true for a
+     * rail tap and for a keyboard flip after picking from the inventory — so
+     * keep the previous visibility and tile or the Flip/Rotate looks like a no-op.
+     */
+    private replacePaintGhost(entities: Entity[], tiles: Tile[]): void {
+        const wasVisible = !!this.paintContainer?.visible
+        const tile = this.paintContainer?.getGridPosition()
+        this.paintContainer.destroy()
+        this.spawnPaintContainer(entities, 0, tiles)
+        if (!this.paintContainer) return
+        if (wasVisible && tile) {
+            this.paintContainer.show()
+            this.gridData.moveToWorld(tile.x * 32, tile.y * 32)
+            this.paintContainer.moveAtCursor()
+            this.lastPaintTapTile = this.paintContainer.getGridPosition()
+        } else if (inputMode.mode === 'mobile') {
+            this.revealPaintGhost()
         }
     }
 

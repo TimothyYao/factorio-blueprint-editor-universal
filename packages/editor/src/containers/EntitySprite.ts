@@ -122,6 +122,10 @@ export class EntitySprite extends Sprite {
             this.angle = data.rotAngle
         }
 
+        // After height/squishY (which rewrite scale.y from the texture). Same
+        // seam WiresContainer uses for copper-wire direction.
+        if (data.flipX) this.scale.x *= -1
+
         if (data.tint) {
             F.applyTint(this, getColor(data.tint))
         } else if (data.apply_runtime_tint) {

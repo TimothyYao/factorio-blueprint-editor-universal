@@ -199,7 +199,6 @@ export class PaintBlueprintContainer extends PaintContainer {
     }
 
     public override rotatedEntities(ccw?: boolean): Entity[] {
-        if (!this.visible) return undefined
         const result = []
         for (const [e] of this.entities) {
             result.push(e.getRotatedCopy(ccw))
