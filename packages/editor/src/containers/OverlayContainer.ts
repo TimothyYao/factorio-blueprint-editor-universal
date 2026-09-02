@@ -15,7 +15,13 @@ import { EditorMode, BlueprintContainer } from './BlueprintContainer'
 import { EntityContainer } from './EntityContainer'
 import { CursorBoxSpecification } from 'factorio:prototype'
 import { Sprite as SpriteData } from 'factorio:prototype'
-import { MiningDrillPrototype, UndergroundBeltPrototype } from 'factorio:prototype'
+import { InserterPrototype, UndergroundBeltPrototype } from 'factorio:prototype'
+import {
+    vectorToPoint,
+    inserterIndicationSprites,
+    placeResultIndicationSprite,
+    type IndicationKind,
+} from './overlayIndication'
 
 // Glyph drawn between a combinator's input signals so the overlay reads like the
 // base game (e.g. `[iron] + [copper]`). White with a heavy outline so it stays
@@ -357,15 +363,45 @@ export class OverlayContainer extends Container {
             entityInfo.addChild(arrows)
         }
 
-        if (entity.type === 'mining-drill' && entity.name !== 'pumpjack') {
+        // Inserter pickup line + drop arrow (Factorio alt-mode). Prototype
+        // `draw_inserter_arrow === false` opts out (the game default is true).
+        // Per-entity `pickup_position` / `drop_position` (lane offset, custom
+        // vectors) win over the prototype when present.
+        if (entity.type === 'inserter') {
+            const proto = entity.entityData as InserterPrototype
+            if (proto.draw_inserter_arrow !== false) {
+                const pickup =
+                    vectorToPoint(entity.rawEntity.pickup_position) ??
+                    vectorToPoint(proto.pickup_position)
+                const insert =
+                    vectorToPoint(entity.rawEntity.drop_position) ??
+                    vectorToPoint(proto.insert_position)
+                if (pickup && insert) {
+                    const { pickup: pick, drop } = inserterIndicationSprites(pickup, insert)
+                    const arrows = new Container()
+                    const line = createIndicationSprite({ x: pick.x, y: pick.y }, pick.kind)
+                    line.rotation = pick.rotation
+                    const arrow = createIndicationSprite({ x: drop.x, y: drop.y }, drop.kind)
+                    arrow.rotation = drop.rotation
+                    arrows.addChild(line, arrow)
+                    arrows.rotation = entity.direction * Math.PI * 0.125
+                    arrows.scale.set(0.5, 0.5)
+                    entityInfo.addChild(arrows)
+                }
+            }
+        }
+
+        // Output arrow for anything that dumps onto a belt via
+        // `vector_to_place_result` — mining drills and the Space Age recycler
+        // (a furnace with the same field). Pumpjacks dump `[0, 0]` (fluid
+        // output, not an item drop) and are skipped with the zero check.
+        const placeResult = vectorToPoint(
+            (entity.entityData as { vector_to_place_result?: unknown }).vector_to_place_result
+        )
+        if (placeResult && (placeResult.x !== 0 || placeResult.y !== 0)) {
+            const sprite = placeResultIndicationSprite(placeResult)
             const arrows = new Container()
-            const drillData = entity.entityData as MiningDrillPrototype
-            arrows.addChild(
-                createArrow({
-                    x: drillData.vector_to_place_result[0] * 64,
-                    y: drillData.vector_to_place_result[1] * 64 + 18,
-                })
-            )
+            arrows.addChild(createIndicationSprite({ x: sprite.x, y: sprite.y }, sprite.kind))
             arrows.rotation = entity.direction * Math.PI * 0.125
             arrows.scale.set(0.5, 0.5)
             entityInfo.addChild(arrows)
@@ -402,23 +438,36 @@ export class OverlayContainer extends Container {
         }
 
         function createArrow(position: IPoint, type = 0): Sprite {
-            const typeToPath = (type = 0): SpriteData => {
-                switch (type) {
-                    case 0:
-                        return FD.utilitySprites.indication_arrow
-                    case 1:
-                        return FD.utilitySprites.fluid_indication_arrow
-                    case 2:
-                        return FD.utilitySprites.fluid_indication_arrow_both_ways
-                }
-            }
-            const data = typeToPath(type)
-            const arrow = new Sprite(
+            return createIndicationSprite(
+                position,
+                type === 0 ? 'arrow' : type === 1 ? 'fluid' : 'fluid-both'
+            )
+        }
+
+        function createIndicationSprite(
+            position: IPoint,
+            kind: IndicationKind | 'fluid' | 'fluid-both'
+        ): Sprite {
+            const data = indicationSpriteData(kind)
+            const sprite = new Sprite(
                 G.getTexture(data.filename, data.x, data.y, data.width, data.height)
             )
-            arrow.anchor.set(0.5, 0.5)
-            arrow.position.set(position.x, position.y)
-            return arrow
+            sprite.anchor.set(0.5, 0.5)
+            sprite.position.set(position.x, position.y)
+            return sprite
+        }
+
+        function indicationSpriteData(kind: IndicationKind | 'fluid' | 'fluid-both'): SpriteData {
+            switch (kind) {
+                case 'line':
+                    return FD.utilitySprites.indication_line
+                case 'fluid':
+                    return FD.utilitySprites.fluid_indication_arrow
+                case 'fluid-both':
+                    return FD.utilitySprites.fluid_indication_arrow_both_ways
+                default:
+                    return FD.utilitySprites.indication_arrow
+            }
         }
     }
 

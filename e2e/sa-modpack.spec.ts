@@ -26,6 +26,12 @@ const SA_BLUEPRINT =
 const SA_ASSEMBLING_MACHINES =
     '0eNp9kcFugzAMhl+l8jlILQU6uO0ZdpyqKVCXWUoclISpCOXd53YTHDp2iZTk/z/bv2dozYiDJ47QzECd4wDN+wyBetbm/sbaIjSABrvondU9Y6QuG4wWT1JAfMEbNId0VoAcKRL+IB6X6YNH26IXgfofpWBwQdyO71WFuFcwyZmSemLlC0uHgLY1xH1mdfdJjNnxGVVto44LqvOT65G3Gzrk25hiwVzdyBc/bc3z8pe7XJuQH0/XscetKQQgSVNEK/J1ewqMblE2Bm+vuzWV3W8qQQRf6MODVlZ5XdR1WexPVXXKU/oG5v6uXg=='
 
+// Inserters in four facings + a long-handed + two recyclers (N and E) + a
+// mining drill (the overlay these arrows share, so a regression on drills
+// shows up here too). Generated with zlib raw-deflate → base64.
+const SA_INSERTERS_AND_RECYCLER =
+    '0jdLhboMgEADgd7nfuFQGqLzKsjSot+0SxAboOmN899E1MyZV4y/gOL4cHCPU9ooXTy6CHoEidqAXMQbW1GhTjFxAH9FnHpuhsWlivO9vIaV8ow/UO9BS8UpUlRSnQqmCM0AXKRIG0G/jYzGc3bWr0YPOGTjT4YJO1KUP6cDdGuEH9OlFMhj+xmliTwQ/QPAFwaClVP5jV6yArwdAsQWWK6CYQdu7z+zLuBbbbBtX+xeWM/dhQtxxyq0ic77Cqpn9b+6zmPO9woojgjreiHL20KY8T03WkaP0hK0na7d/irzX9z5Nvw=='
+
 // Errors from blocked external resources (pixi's jsdelivr basis-transcoder CDN
 // fallback, a blueprint host's firebase backend, etc.) are environment noise in
 // the sandbox, not app bugs — filter them so assertions only see app/page errors.
@@ -116,6 +122,22 @@ test.describe('modpack + Space Age', () => {
             contentType: 'image/png',
         })
         console.log('SA-ASSEMBLERS app errors:', JSON.stringify(appErrors, null, 2))
+        expect(appErrors, appErrors.join('\n')).toHaveLength(0)
+    })
+
+    // Inserter pickup-line + drop-arrow, recycler output arrow (same overlay
+    // as mining drills, which are in the fixture so we don't regress them).
+    test('draws directional arrows on inserters and recyclers', async ({ page }, testInfo) => {
+        const { appErrors } = captureConsole(page)
+        await page.goto(`/?pack=space-age&source=${encodeURIComponent(SA_INSERTERS_AND_RECYCLER)}`)
+        await expect(page.getByText(/loaded successfully/i)).toBeVisible({ timeout: 60_000 })
+        await waitForReady(page)
+        await page.waitForTimeout(2000)
+        const shot = await page.screenshot()
+        await testInfo.attach('spaceage-inserter-recycler-arrows', {
+            body: shot,
+            contentType: 'image/png',
+        })
         expect(appErrors, appErrors.join('\n')).toHaveLength(0)
     })
 
