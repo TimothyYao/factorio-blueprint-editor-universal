@@ -108,9 +108,11 @@ exporter is a separate Rust tool and is **not** a JS workspace.
 - `functions/corsproxy.js` — Cloudflare Pages Function backing URL blueprint
   import as a **fallback only**: the loader (`bpString.ts`) fetches the host
   directly first, which works on GitHub Pages for CORS-friendly hosts
-  (pastebin, gist, Google Docs, factorioprints). The proxy — needed for
-  CORS-less hosts like gitlab raw — **does not run on GitHub Pages**;
-  paste-string import + editing always do.
+  (pastebin, gist, Google Docs, Dropbox, and the factorioprints Firebase DB —
+  which also serves factorio.school links, same keys). The proxy — needed for
+  CORS-less hosts (gitlab raw, FactorioBin, FactorioCodex) — **does not run on
+  GitHub Pages**; paste-string import + editing always do. The README's host
+  table lists every supported site with verified sample links.
 - `e2e/` — Playwright specs. `docs/` — design/tracking docs
   (`docs/github-pages.md` is this fork's Pages URL + the one-time GitHub
   settings).
