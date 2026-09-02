@@ -19,7 +19,7 @@ import { BlueprintContainer, EditorMode, GridPattern } from './containers/Bluepr
 import { PaintTileContainer } from './containers/PaintTileContainer'
 import { UIContainer } from './UI/UIContainer'
 import { Dialog } from './UI/controls/Dialog'
-import { ActionRegistry, MouseButton } from './actions'
+import { ActionRegistry, MouseButton, historyModifiers } from './actions'
 
 export class Editor {
     // Stable mode emitter. The BlueprintContainer is swapped out on every
@@ -663,7 +663,8 @@ export class Editor {
                 trigger: {
                     code: 'KeyZ',
                 },
-                modifiers: { control: true },
+                // Command+Z on Mac, Control+Z elsewhere.
+                modifiers: historyModifiers(),
                 callbacks: {
                     onPress: () => {
                         G.bp.history.undo()
@@ -675,7 +676,7 @@ export class Editor {
                 trigger: {
                     code: 'KeyY',
                 },
-                modifiers: { control: true },
+                modifiers: historyModifiers(),
                 callbacks: {
                     onPress: () => {
                         G.bp.history.redo()
