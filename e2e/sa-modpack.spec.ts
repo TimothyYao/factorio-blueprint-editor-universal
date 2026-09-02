@@ -18,6 +18,14 @@ import { test, expect, type Page, type ConsoleMessage } from '@playwright/test'
 const SA_BLUEPRINT =
     '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'
 
+// Isolated Space Age assembling machines so a human (and CI screenshot) can
+// eyeball the electromagnetic plant's idle coils. The plant's body is an
+// always-draw working visualisation gated to the idle state; drawing only
+// `idle_animation` left a bare pad. Neighbours (assembler 3, cryogenic plant,
+// foundry, centrifuge) are the same graphics_set path, for visual regression.
+const SA_ASSEMBLING_MACHINES =
+    '0eNp9kcFugzAMhl+l8jlILQU6uO0ZdpyqKVCXWUoclISpCOXd53YTHDp2iZTk/z/bv2dozYiDJ47QzECd4wDN+wyBetbm/sbaIjSABrvondU9Y6QuG4wWT1JAfMEbNId0VoAcKRL+IB6X6YNH26IXgfofpWBwQdyO71WFuFcwyZmSemLlC0uHgLY1xH1mdfdJjNnxGVVto44LqvOT65G3Gzrk25hiwVzdyBc/bc3z8pe7XJuQH0/XscetKQQgSVNEK/J1ewqMblE2Bm+vuzWV3W8qQQRf6MODVlZ5XdR1WexPVXXKU/oG5v6uXg=='
+
 // Errors from blocked external resources (pixi's jsdelivr basis-transcoder CDN
 // fallback, a blueprint host's firebase backend, etc.) are environment noise in
 // the sandbox, not app bugs — filter them so assertions only see app/page errors.
@@ -91,6 +99,26 @@ test.describe('modpack + Space Age', () => {
         const shot = await page.screenshot()
         await testInfo.attach('spaceage-blueprint', { body: shot, contentType: 'image/png' })
         console.log('SA-BLUEPRINT app errors:', JSON.stringify(appErrors, null, 2))
+        expect(appErrors, appErrors.join('\n')).toHaveLength(0)
+    })
+
+    test('electromagnetic plant renders idle coils among SA assembling machines', async (
+        { page },
+        testInfo
+    ) => {
+        const { appErrors } = captureConsole(page)
+        await page.goto(
+            `/?pack=space-age&source=${encodeURIComponent(SA_ASSEMBLING_MACHINES)}`
+        )
+        await expect(page.getByText(/loaded successfully/i)).toBeVisible({ timeout: 60_000 })
+        await waitForReady(page)
+        await page.waitForTimeout(2000)
+        const shot = await page.screenshot()
+        await testInfo.attach('spaceage-assembling-machines', {
+            body: shot,
+            contentType: 'image/png',
+        })
+        console.log('SA-ASSEMBLERS app errors:', JSON.stringify(appErrors, null, 2))
         expect(appErrors, appErrors.join('\n')).toHaveLength(0)
     })
 
