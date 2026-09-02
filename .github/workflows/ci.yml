@@ -42,7 +42,7 @@ jobs:
         run: |
           for p in vanilla-2.0 space-age space-exploration; do
             mkdir -p "packages/exporter/data/output/$p"
-            curl -fsSL "https://trisiak.github.io/factorio-pack-data/$p/data.json" \
+            curl -fsSL "https://timothyyao.github.io/factorio-pack-data/$p/data.json" \
               -o "packages/exporter/data/output/$p/data.json"
           done
       - run: npm test
@@ -91,7 +91,7 @@ jobs:
       # playwright.config builds the site and serves it on :8080 automatically.
       #
       # The build fetches its pack data live from the data plane
-      # (https://trisiak.github.io/factorio-pack-data) — nothing is committed
+      # (https://timothyyao.github.io/factorio-pack-data) — nothing is committed
       # here or baked into dist/ — so this job needs outbound HTTPS and doubles
       # as a canary for that site. A red e2e with green lint/test/type-check is
       # worth checking against the data plane before assuming a code regression.

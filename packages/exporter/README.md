@@ -16,8 +16,8 @@ server to proxy.
 gitignored: generated pack data is no longer committed to this repo. The copy of
 record — and what every deployed build, PR preview and e2e run actually fetches —
 is published by the dedicated data plane,
-[`trisiak/factorio-pack-data`](https://github.com/trisiak/factorio-pack-data),
-at `https://trisiak.github.io/factorio-pack-data/` (GitHub Pages, CORS `*`). Its
+[`TimothyYao/factorio-pack-data`](https://github.com/TimothyYao/factorio-pack-data),
+at `https://timothyyao.github.io/factorio-pack-data/` (GitHub Pages, CORS `*`). Its
 deploy workflow is what publishes generated output; there is nothing to commit
 back here after a run.
 
@@ -30,7 +30,7 @@ Two consequences for a local run:
 
   ```bash
   mkdir -p data/output   # a fresh clone has no data/ at all
-  curl -fsSL https://trisiak.github.io/factorio-pack-data/packs.json \
+  curl -fsSL https://timothyyao.github.io/factorio-pack-data/packs.json \
       -o data/output/packs.json
   ```
 

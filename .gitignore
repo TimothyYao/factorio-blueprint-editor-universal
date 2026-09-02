@@ -4,7 +4,7 @@ packages/website/dist
 # download, the mod-portal cache, and — since the data plane took over hosting —
 # the generated packs themselves. `data/output/` is the exporter's working
 # directory (it still reads and writes it); the published copy of record lives in
-# https://github.com/trisiak/factorio-pack-data and is what every build fetches.
+# https://github.com/TimothyYao/factorio-pack-data and is what every build fetches.
 # Nothing game-derived is committed here.
 packages/exporter/data/*
 packages/exporter/data/output/

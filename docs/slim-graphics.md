@@ -13,7 +13,8 @@ are completely independent of which graphics variant is active.
 
 A slim pack is a **graphics-only variant** of a base pack: same Factorio
 version, same mod set, same `data.json` semantics — different texture files.
-The manifest (`packs.json` in `trisiak/factorio-pack-data`) expresses that
+The manifest (`packs.json` in this fork's `TimothyYao/factorio-pack-data`;
+originally `trisiak/factorio-pack-data`) expresses that
 additively:
 
 ```jsonc
@@ -192,7 +193,7 @@ auth-fronted hosting guidance.
       for the source PNGs, `--slim`, byte/JSON drift check vs the committed
       `data.json` + `textures.json` sidecar; slim packs skip-and-omit from the
       served manifest until first built). Built end-to-end in CI and serving at
-      `https://trisiak.github.io/factorio-pack-data/vanilla-2.0-slim/`. Renders
+      `https://timothyyao.github.io/factorio-pack-data/vanilla-2.0-slim/`. Renders
       only on builds with transform support (this branch / its PR preview with
       `?pack=vanilla-2.0-slim`) until #83 merges — then flip the data repo's
       `FBE_REF` TODO back to `master`.

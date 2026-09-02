@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test'
 /**
  * End-to-end tests run against a production build of the app served from :8080
  * (`build:website && preview:website`), fetching its pack data **live** from the
- * shared data plane (`trisiak.github.io/factorio-pack-data`) — the same URL
+ * shared data plane (`timothyyao.github.io/factorio-pack-data`) — the same URL
  * production and the PR previews use. Nothing pack-related is committed here or
  * baked into `dist/`, so the suite doubles as a canary for the data plane and
  * for format drift in it; a red suite means either our code or the published
@@ -17,7 +17,7 @@ import { defineConfig, devices } from '@playwright/test'
 const CI = !!process.env.CI
 
 /** Where the build under test fetches packs.json + each pack's data.json/atlas. */
-const DATA_URL = process.env.VITE_DATA_URL ?? 'https://trisiak.github.io/factorio-pack-data'
+const DATA_URL = process.env.VITE_DATA_URL ?? 'https://timothyyao.github.io/factorio-pack-data'
 
 /**
  * Sandboxed hosts route outbound HTTPS through an agent proxy (HTTPS_PROXY); the
