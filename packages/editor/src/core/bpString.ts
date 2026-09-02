@@ -268,12 +268,63 @@ function getBlueprintOrBookFromSource(source: string): Promise<Blueprint | Book>
                         throw new Error('Network response was not ok.')
                     })
 
-            // TODO: add dropbox support https://www.dropbox.com/s/ID?raw=1
+            // factorioprints.com and factorio.school share one database — the
+            // school is a search frontend over the prints Firebase DB, so a
+            // /view/<key> on either site names the same record. The Firebase
+            // REST endpoint sends CORS headers (verified 2026-09) which makes
+            // it the only route that works on GitHub Pages; the school's own
+            // API (no CORS → proxy-only) is kept as a fallback for records
+            // that exist only on its side of the periodic sync.
+            const fetchFromFactorioPrintsDB = (key: string): Promise<string> =>
+                fetchData(
+                    `https://facorio-blueprints.firebaseio.com/blueprints/${key}/blueprintString.json`
+                )
+                    .then(r => r.json())
+                    .then((str: string | null) => {
+                        // Firebase answers a missing key with 200 + `null`.
+                        if (str === null) throw new Error('Blueprint not found.')
+                        return str
+                    })
+            const fetchFromFactorioSchoolAPI = (key: string): Promise<string> =>
+                fetchData(`https://www.factorio.school/api/blueprint/${key}`)
+                    .then(r => r.json())
+                    .then(data => data.blueprintString.blueprintString)
+
+            // NOTE: hastebin support was dropped — Toptal's takeover put the
+            // /raw endpoint behind an API key (401 for anonymous fetches).
             switch (url.hostname.replace(/^www\./, '').split('.')[0]) {
                 case 'pastebin':
                     return fetchData(`https://pastebin.com/raw/${pathParts[0]}`).then(r => r.text())
-                case 'hastebin':
-                    return fetchData(`https://hastebin.com/raw/${pathParts[0]}`).then(r => r.text())
+                case 'factoriobin': {
+                    // FactorioBin's documented mini-API: append /blueprint.txt
+                    // to any post URL — including a book child like
+                    // /post/<id>/3 — for a 302 to the raw string on
+                    // cdn.factoriobin.com (a bare CDN link falls through to the
+                    // default case below). Neither host sends CORS headers
+                    // (verified 2026-09), so this route needs the /corsproxy.
+                    const postPath = url.pathname.replace(/\/(blueprint\.txt)?\/*$/, '')
+                    return fetchData(`https://factoriobin.com${postPath}/blueprint.txt`).then(r =>
+                        r.text()
+                    )
+                }
+                case 'factoriocodex':
+                    // factoriocodex.com/blueprints/<id> — the (undocumented,
+                    // verified 2026-09) JSON API carries the raw string on each
+                    // entry of `versions`; `current_version` names the live
+                    // one. No CORS headers, so this route needs the /corsproxy.
+                    return fetchData(
+                        `https://www.factoriocodex.com/api/v1/blueprints/${pathParts[1]}`
+                    )
+                        .then(r => r.json())
+                        .then(data => {
+                            const versions: { version_number: number; blueprint_string: string }[] =
+                                data.versions ?? []
+                            const current =
+                                versions.find(v => v.version_number === data.current_version) ??
+                                versions[versions.length - 1]
+                            if (current === undefined) throw new Error('Blueprint not found.')
+                            return current.blueprint_string
+                        })
                 case 'gist':
                     return fetchData(`https://api.github.com/gists/${pathParts[1]}`)
                         .then(r => r.json())
@@ -283,19 +334,27 @@ function getBlueprintOrBookFromSource(source: string): Promise<Blueprint | Book>
                         r.text()
                     )
                 case 'factorioprints':
-                    return fetchData(
-                        `https://facorio-blueprints.firebaseio.com/blueprints/${pathParts[1]}.json`
-                    )
-                        .then(r => r.json())
-                        .then(data => data.blueprintString)
+                    return fetchFromFactorioPrintsDB(pathParts[1])
                 case 'factorio': // factorio.school
                     if (pathParts[0] === 'api') {
                         return fetchData(url.href).then(r => r.text())
                     }
 
-                    return fetchData(`https://www.factorio.school/api/blueprint/${pathParts[1]}`)
-                        .then(r => r.json())
-                        .then(data => data.blueprintString.blueprintString)
+                    return fetchFromFactorioPrintsDB(pathParts[1]).catch(() =>
+                        fetchFromFactorioSchoolAPI(pathParts[1])
+                    )
+                case 'dropbox': {
+                    // Share links (/s/<id>/<name> and the newer
+                    // /scl/fi/<id>/<name>?rlkey=…) land on an HTML preview;
+                    // swapping the host for dl.dropboxusercontent.com serves
+                    // the raw file instead — same path, same rlkey — and that
+                    // host sends CORS headers (verified 2026-09), so it works
+                    // without the proxy.
+                    const raw = new URL(url.href)
+                    raw.hostname = 'dl.dropboxusercontent.com'
+                    raw.searchParams.delete('dl')
+                    return fetchData(raw.href).then(r => r.text())
+                }
                 case 'docs':
                     return fetchData(
                         `https://docs.google.com/document/d/${pathParts[2]}/export?format=txt`

@@ -35,10 +35,13 @@ parent's `/factorio-blueprint-editor/` path.
 Both keep `VITE_DATA_URL=https://trisiak.github.io/factorio-pack-data`. Cloudflare
 Pages Functions (`functions/corsproxy.js`) do **not** run here, but URL-based
 blueprint import works anyway for hosts that send CORS headers (pastebin raw,
-the gist API, Google Docs exports, factorioprints) — the loader fetches those
-directly from the browser and only falls back to `/corsproxy` when the direct
-fetch is CORS-blocked (e.g. gitlab raw), which stays inert on this deploy.
-Paste-string and `?source=<bpstring>` work regardless.
+the gist API, Google Docs exports, Dropbox's dl.dropboxusercontent.com, and the
+factorioprints Firebase DB — which also serves factorio.school links, same
+keys) — the loader fetches those directly from the browser and only falls back
+to `/corsproxy` when the direct fetch is CORS-blocked (gitlab raw, FactorioBin,
+FactorioCodex — all verified CORS-less 2026-09), which stays inert on this
+deploy. Paste-string and `?source=<bpstring>` work regardless. The README's
+host table is the user-facing version of this list.
 
 ## What you must configure in GitHub (cannot be done from code)
 
