@@ -5,6 +5,9 @@ import {
     vectorToPoint,
     inserterIndicationSprites,
     placeResultIndicationSprite,
+    overlayLocalToWorld,
+    overlayLocalDirection,
+    mirroredPlaceResult,
     OVERLAY_TILE,
     PLACE_RESULT_ARROW_NUDGE_Y,
 } from './overlayIndication'
@@ -66,6 +69,34 @@ describe('placeResultIndicationSprite', () => {
         expect(s.y).toBeCloseTo(-1.85 * OVERLAY_TILE + PLACE_RESULT_ARROW_NUDGE_Y)
         expect(s.kind).toBe('arrow')
         expect(s.rotation).toBe(0)
+    })
+})
+
+describe('overlay mirror (local left/right)', () => {
+    it('swaps a chemical-plant input from west to east when mirrored, north-facing', () => {
+        const west = overlayLocalToWorld({ x: -1, y: -1 }, 0, true)
+        const east = overlayLocalToWorld({ x: 1, y: -1 }, 0, true)
+        expect(west).toEqual({ x: 1, y: -1 })
+        expect(east).toEqual({ x: -1, y: -1 })
+        expect(overlayLocalDirection(0, 0, true)).toBe(0)
+    })
+
+    it('keeps north recipe shift on X=0 and still rotates it when the plant faces east', () => {
+        const north = overlayLocalToWorld({ x: 0, y: -0.3 }, 0, true)
+        expect(north.x).toBeCloseTo(0)
+        expect(north.y).toBeCloseTo(-0.3)
+        const east = overlayLocalToWorld({ x: 0, y: -0.3 }, 4, false)
+        expect(east.x).toBeCloseTo(0.3)
+        expect(east.y).toBeCloseTo(0)
+    })
+
+    it('mirrors the recycler drop vector across local X', () => {
+        const raw = { x: -0.5, y: -2.3 }
+        expect(mirroredPlaceResult(raw, false)).toEqual(raw)
+        expect(mirroredPlaceResult(raw, true)).toEqual({ x: 0.5, y: -2.3 })
+        expect(placeResultIndicationSprite(mirroredPlaceResult(raw, true)).x).toBeCloseTo(
+            0.5 * OVERLAY_TILE
+        )
     })
 })
 

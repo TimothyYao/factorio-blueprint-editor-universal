@@ -122,6 +122,8 @@ pipelines at once made touch taps double-act via the browser's synthetic
   uses `graphics_set_flipped` / `recycler-flipped-*.png`; chemical-plant /
   refinery / foundry / biochamber / cryogenic-plant / electromagnetic-plant /
   boiler / fusion-\* geometrically `flipX` (`scale.x *= -1`) `graphics_set`.
+  Alt-mode overlay (fluid arrows, fluid/recipe icons, recycler drop arrow)
+  uses the same local-X mirror so it stays glued to the flipped building.
   `e2e/flip.spec.ts` + `actionToolbar.spec.ts`.
 - ✅ **Item-selector overhaul** (`InventoryDialog`, the shared item/recipe/module
   picker) — now touch-usable: **scrollable** group-tabs (◀▶) and item grid (▲▼),

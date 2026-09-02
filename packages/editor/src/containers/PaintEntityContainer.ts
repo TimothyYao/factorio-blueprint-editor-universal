@@ -206,6 +206,7 @@ export class PaintEntityContainer extends PaintContainer {
                     name: this.name,
                     position: { x: 0, y: 0 },
                     direction,
+                    mirror: this.mirrored || undefined,
                     type:
                         FD.entities[this.name].type === 'underground-belt' ||
                         FD.entities[this.name].type === 'loader'
