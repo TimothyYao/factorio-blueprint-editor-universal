@@ -120,13 +120,18 @@ export class PositionGrid {
         )
     }
 
-    public removeTileData(entity: Entity, position: IPoint = entity.position): void {
+    public removeTileData(
+        entity: Entity,
+        position: IPoint = entity.position,
+        direction: number = entity.direction
+    ): void {
+        const size = getEntitySize(entity.entityData, direction)
         this.tileDataAction(
             {
                 x: position.x,
                 y: position.y,
-                w: entity.size.x,
-                h: entity.size.y,
+                w: size.x,
+                h: size.y,
             },
             (key, cell) => {
                 if (typeof cell === 'number') {
