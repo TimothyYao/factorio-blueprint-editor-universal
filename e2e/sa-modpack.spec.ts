@@ -102,14 +102,11 @@ test.describe('modpack + Space Age', () => {
         expect(appErrors, appErrors.join('\n')).toHaveLength(0)
     })
 
-    test('electromagnetic plant renders idle coils among SA assembling machines', async (
-        { page },
-        testInfo
-    ) => {
+    test('electromagnetic plant renders idle coils among SA assembling machines', async ({
+        page,
+    }, testInfo) => {
         const { appErrors } = captureConsole(page)
-        await page.goto(
-            `/?pack=space-age&source=${encodeURIComponent(SA_ASSEMBLING_MACHINES)}`
-        )
+        await page.goto(`/?pack=space-age&source=${encodeURIComponent(SA_ASSEMBLING_MACHINES)}`)
         await expect(page.getByText(/loaded successfully/i)).toBeVisible({ timeout: 60_000 })
         await waitForReady(page)
         await page.waitForTimeout(2000)
