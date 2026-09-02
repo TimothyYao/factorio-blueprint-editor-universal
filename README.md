@@ -38,7 +38,7 @@ URL imports (`?source=https://…`) fetch the host directly from the browser, so
 - rendering and editing blueprints
 - history (undo/redo)
 - copy and delete selections
-- import blueprints and books from a pasted bp string (URL imports need a CORS proxy and do not run on this GitHub Pages deploy)
+- import blueprints and books from a pasted bp string or a URL (pastebin, gist, Google Docs, factorioprints; CORS-less hosts like gitlab raw need a proxy this GitHub Pages deploy doesn't run)
 - generating blueprint images
 - oil outpost generator
 - customizable keybinds
