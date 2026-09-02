@@ -7,6 +7,7 @@ import { EntitySprite } from './EntitySprite'
 import { VisualizationArea } from './VisualizationArea'
 import { PaintContainer } from './PaintContainer'
 import { BlueprintContainer } from './BlueprintContainer'
+import { OverlayContainer } from './OverlayContainer'
 
 export class PaintEntityContainer extends PaintContainer {
     private visualizationArea: VisualizationArea
@@ -157,12 +158,36 @@ export class PaintEntityContainer extends PaintContainer {
 
     protected override redraw(): void {
         this.removeChildren()
+        const direction =
+            this.directionType === 'input' ? this.direction : (this.direction + 8) % 16
         const sprites = EntitySprite.getParts({
             name: this.name,
-            direction: this.directionType === 'input' ? this.direction : (this.direction + 8) % 16,
+            direction,
             directionType: this.directionType,
         })
         this.addChild(...sprites)
+        // Same alt-mode overlay placed entities get (drop/pickup arrows on
+        // inserters, output arrow on miners/recyclers, combinator/fluid
+        // arrows). Stub Entity is not in the blueprint — createEntityInfo
+        // only reads prototype + direction.
+        OverlayContainer.attachEntityInfo(
+            this,
+            new Entity(
+                {
+                    entity_number: 0,
+                    name: this.name,
+                    position: { x: 0, y: 0 },
+                    direction,
+                    type:
+                        FD.entities[this.name].type === 'underground-belt' ||
+                        FD.entities[this.name].type === 'loader'
+                            ? this.directionType
+                            : undefined,
+                },
+                this.bpc.bp
+            ),
+            { x: 0, y: 0 }
+        )
     }
 
     public override moveAtCursor(): void {

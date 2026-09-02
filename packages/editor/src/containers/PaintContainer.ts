@@ -4,7 +4,7 @@ import G from '../common/globals'
 import { Entity } from '../core/Entity'
 import F from '../UI/controls/functions'
 import { BlueprintContainer } from './BlueprintContainer'
-import { EntitySprite } from './EntitySprite'
+import { ENTITY_INFO_LABEL } from './overlayIndication'
 
 export class IllegalFlipError {
     public message: string
@@ -18,7 +18,7 @@ export enum Axis {
     Y,
 }
 
-export abstract class PaintContainer extends Container<EntitySprite> {
+export abstract class PaintContainer extends Container {
     protected readonly bpc: BlueprintContainer
     private _name: string
     private icon: Container
@@ -33,8 +33,10 @@ export abstract class PaintContainer extends Container<EntitySprite> {
 
         this._children_tint = F.rgbToColorSource(0.4, 1, 0.4)
 
-        this.on('childAdded', (s: EntitySprite) => {
-            s.tint = this._children_tint
+        this.on('childAdded', (child: Container) => {
+            // Alt-mode arrows stay yellow on ghosts (same as the game).
+            if (child.label === ENTITY_INFO_LABEL) return
+            child.tint = this._children_tint
         })
 
         this.bpc.on('globalpointermove', this.updateIconPos, this)
@@ -84,6 +86,7 @@ export abstract class PaintContainer extends Container<EntitySprite> {
             0.4
         )
         for (const s of this.children) {
+            if (s.label === ENTITY_INFO_LABEL) continue
             s.tint = this._children_tint
         }
     }

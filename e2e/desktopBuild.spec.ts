@@ -59,4 +59,45 @@ test.describe('desktop build / mine', () => {
         await page.mouse.click(at.x, at.y, { button: 'right' }) // mine
         await expect.poll(() => entityCount(page)).toBe(0)
     })
+
+    test('paint ghosts show inserter and miner direction arrows', async ({ page }, testInfo) => {
+        await page.addInitScript(() => {
+            window.localStorage.setItem(
+                'quickbarItemNames',
+                JSON.stringify(['inserter', 'electric-mining-drill'])
+            )
+        })
+        await page.goto('/?test')
+        await waitForLoaded(page)
+
+        const at = { x: 320, y: 360 }
+        await page.locator('#editor').focus()
+        await page.mouse.move(at.x, at.y)
+        await page.keyboard.press('1') // hold inserter
+
+        const overlayCount = async (): Promise<number> =>
+            page
+                .evaluate(() => {
+                    const w = window as unknown as {
+                        __FBE_TEST__: { getState: () => { paint: { overlayInfoCount: number } } }
+                    }
+                    return w.__FBE_TEST__.getState().paint.overlayInfoCount
+                })
+                .then(n => n)
+
+        await expect.poll(overlayCount).toBeGreaterThan(0)
+        const inserterShot = await page.screenshot()
+        await testInfo.attach('ghost-inserter-arrows', {
+            body: inserterShot,
+            contentType: 'image/png',
+        })
+
+        await page.keyboard.press('2') // swap to mining drill
+        await expect.poll(overlayCount).toBeGreaterThan(0)
+        const drillShot = await page.screenshot()
+        await testInfo.attach('ghost-miner-arrows', {
+            body: drillShot,
+            contentType: 'image/png',
+        })
+    })
 })
