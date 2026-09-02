@@ -232,6 +232,19 @@ pipelines at once made touch taps double-act via the browser's synthetic
   `PaintTileContainer.brushSize`. Covered by `e2e/touchTiles.spec.ts` via new
   `?test` fields (`paint.tileSize`, `blueprint.tileCount`).
 
+- ✅ **Ground rail planner** — picking the `rail` item opens a Factorio-like
+  planner (`PaintRailContainer`) instead of stamping one piece. Bidirectional A\*
+  on pose (position + direction) with only straight/left/right steps (FFF-113),
+  **200 expansions per frame** and search-tree reuse, 2.0 A/B + half-diagonal
+  joints (FFF-377). Desktop: click-drag commits on mouse-up; click-without-move
+  lingers (second click commits). Mobile: idle one-finger pan still works; drag
+  on the ghost plans; finger-up **lingers**; Place ✓ or a tap commits; two-finger
+  pan/pinch does not abort the plan. An idle tap stamps one straight (manual
+  building). Seams: `core/rails/`, `PaintRailContainer`, `BlueprintContainer`
+  (`buildStart` / touch `rail-plan` target). Covered by unit tests in
+  `packages/editor/src/core/rails/` and `e2e/rails.spec.ts` (`paint.railPlan` on
+  the `?test` hook).
+
 - ✅ **Station names are typeable on touch** (issue #56) — the train-stop
   editor's station-name / trains-limit fields are DOM `<input>`s overlaid on the
   canvas (`UI/controls/TextInput.ts`) — the one editor UI that is _not_

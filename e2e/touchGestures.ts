@@ -106,3 +106,40 @@ export async function longPressOneFinger(
         await cdp.detach()
     }
 }
+
+/**
+ * Two-finger pan: both points move by the same delta so scale stays 1.
+ * Canvas-relative coordinates, same frame as `dragOneFinger`.
+ */
+export async function panTwoFingers(
+    page: Page,
+    a: { x: number; y: number },
+    b: { x: number; y: number },
+    delta: { x: number; y: number }
+): Promise<void> {
+    const box = await page.locator('#editor').boundingBox()
+    const ox = box?.x ?? 0
+    const oy = box?.y ?? 0
+    const cdp = await page.context().newCDPSession(page)
+    const p = (pt: { x: number; y: number }, extra = { x: 0, y: 0 }, id: number) => ({
+        id,
+        x: ox + pt.x + extra.x,
+        y: oy + pt.y + extra.y,
+    })
+    try {
+        await cdp.send('Input.dispatchTouchEvent', {
+            type: 'touchStart',
+            touchPoints: [p(a, { x: 0, y: 0 }, 0), p(b, { x: 0, y: 0 }, 1)],
+        })
+        await cdp.send('Input.dispatchTouchEvent', {
+            type: 'touchMove',
+            touchPoints: [p(a, delta, 0), p(b, delta, 1)],
+        })
+        await cdp.send('Input.dispatchTouchEvent', {
+            type: 'touchEnd',
+            touchPoints: [],
+        })
+    } finally {
+        await cdp.detach()
+    }
+}
