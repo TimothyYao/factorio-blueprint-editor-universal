@@ -1317,8 +1317,12 @@ export class BlueprintContainer extends Container {
 
     private get isPointerInside(): boolean {
         const boundary = new EventBoundary(G.app.stage)
-        const container = boundary.hitTest(this.gridData.x, this.gridData.y)
-        return container === this
+        let node = boundary.hitTest(this.gridData.x, this.gridData.y) as { parent?: unknown } | null
+        while (node) {
+            if (node === this) return true
+            node = (node.parent as { parent?: unknown }) ?? null
+        }
+        return false
     }
 
     private updateHoverContainer(forceRemove = false): void {

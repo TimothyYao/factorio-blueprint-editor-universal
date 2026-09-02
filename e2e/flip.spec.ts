@@ -138,8 +138,16 @@ test.describe('desktop entity flip (H / V)', () => {
         await expect.poll(async () => (await getState(page)).blueprint.entityCount).toBe(1)
 
         await page.keyboard.press('Escape')
-        await page.mouse.move(at.x + 80, at.y + 80)
-        await page.mouse.move(at.x, at.y)
+        const pos = await page.evaluate(() =>
+            (
+                window as unknown as {
+                    __FBE_TEST__: { entityScreenPos: (n: string) => { x: number; y: number } }
+                }
+            ).__FBE_TEST__.entityScreenPos('chemical-plant')
+        )
+        expect(pos).not.toBeNull()
+        await page.mouse.move(pos.x + 80, pos.y + 80)
+        await page.mouse.move(pos.x, pos.y)
         await expect.poll(async () => (await getState(page)).hovered?.name).toBe('chemical-plant')
 
         await page.keyboard.press('h')
