@@ -30,9 +30,12 @@ export const DATA_ROOT: string = typeof __DATA_URL__ === 'string' ? __DATA_URL__
  * branches), so a single build renders any pack — vanilla 2.0, 2.0+Space Age,
  * etc. — selected purely by which data directory it fetches from.
  *
- * Keep this id in sync with an entry in `packs.json`.
+ * Keep this id in sync with an entry in `packs.json`. The data plane's
+ * `default: true` flag is what the exporter falls back to; this constant is
+ * what first-time visitors of the editor load (until they pick another pack
+ * or arrive with `?pack=`).
  */
-export const DEFAULT_DATA_PACK = 'vanilla-2.0'
+export const DEFAULT_DATA_PACK = 'space-age'
 const PACK_STORAGE_KEY = 'fbe:dataPack'
 
 /** Active pack: `?pack=` query param > persisted choice > default. */
