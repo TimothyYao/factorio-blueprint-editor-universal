@@ -271,7 +271,8 @@ export class ActionRegistry {
     private press(e: TriggerEvent): void {
         for (const action of this.sortedActions) {
             if (action.press(this.modifiers, e)) {
-                if (e instanceof KeyboardEvent) {
+                // KeyboardEvent isn't defined in the node unit-test env.
+                if (typeof KeyboardEvent !== 'undefined' && e instanceof KeyboardEvent) {
                     e.preventDefault()
                 }
                 return
