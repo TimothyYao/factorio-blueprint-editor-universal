@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
     cycleHeading,
     headingFromDelta,
+    headingToward,
     jointsOf,
     poseKey,
     reversePose,
@@ -110,6 +111,22 @@ describe('rail joints', () => {
         // Front joint of a northbound straight sits one tile north of the
         // odd/odd entity center, so y is even.
         expect(Math.abs(p.y) % 2).toBe(0)
+        expect(successors(p)).toHaveLength(3)
+    })
+
+    it('snapIdlePose odd heading sits on a half-diagonal joint', () => {
+        const p = snapIdlePose({ x: 4.4, y: 5.6 }, 1, { x: 1, y: 1 })
+        expect(p.dir).toBe(1)
+        expect(successors(p)).toHaveLength(3)
+        expect(successors(p).find(s => s.move === 'straight')?.pieces[0].name).toBe(
+            'half-diagonal-rail'
+        )
+    })
+
+    it('headingToward keeps fallback until the cursor has moved', () => {
+        expect(headingToward({ x: 0, y: 0 }, { x: 0.5, y: -0.5 }, 4)).toBe(4)
+        expect(headingToward({ x: 0, y: 0 }, { x: 0, y: -8 }, 4)).toBe(0)
+        expect(headingToward({ x: 0, y: 0 }, { x: 8, y: 0 }, 0)).toBe(4)
     })
 
     it('canPlace filters colliding pieces', () => {

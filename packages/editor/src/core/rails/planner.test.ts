@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { PLANNER_NODE_BUDGET, RailPlanner } from './planner'
-import { jointsOf, type RailPiece, type RailPose } from './joints'
+import { jointsOf, snapIdlePose, type RailPiece, type RailPose } from './joints'
 
 function pathJointsConnect(pieces: RailPiece[]): boolean {
     for (let i = 0; i < pieces.length - 1; i++) {
@@ -97,5 +97,15 @@ describe('rail planner', () => {
         if (pieces) {
             expect(pieces.some(x => x.position.x === 0 && x.position.y === -1)).toBe(false)
         }
+    })
+
+    it('connects two idle north snaps several tiles apart', () => {
+        const start = snapIdlePose({ x: 1, y: 11 }, 0, { x: 1, y: 1 })
+        const goal = snapIdlePose({ x: 1, y: 1 }, 0, { x: 1, y: 1 })
+        const p = new RailPlanner()
+        const pieces = runUntil(p, start, goal)
+        expect(p.complete).toBe(true)
+        expect(pieces?.length).toBeGreaterThan(0)
+        expect(pathJointsConnect(pieces!)).toBe(true)
     })
 })

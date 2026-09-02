@@ -8,6 +8,8 @@ export {
     snapToRails,
     successors,
     headingFromDelta,
+    headingToward,
+    evenHeading,
     type RailLayer,
     type RailMove,
     type RailPiece,

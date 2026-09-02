@@ -303,6 +303,9 @@ export function snapIdlePose(
     dir: number,
     firstRail?: { x: number; y: number }
 ): RailPose {
+    // Keep odd headings on half-diagonals — rounding to 8-way puts the goal
+    // off the three-move graph (or on a diagonal straight the start heading
+    // can't reach in a short drag), which made the ghost vanish.
     const h = ((dir % 16) + 16) % 16
 
     const px = firstRail ? firstRail.x : 1
@@ -315,12 +318,37 @@ export function snapIdlePose(
         x: snapParity(cursor.x, px),
         y: snapParity(cursor.y, py),
     }
-    const dummy = { name: 'straight-rail', position: ent, direction: h % 2 === 0 ? h : 0 }
-    if (h % 2 === 0) {
-        const front = jointsOf(dummy).find(j => j.dir === h)
-        if (front) return front
-    }
-    return { x: ent.x, y: ent.y, dir: h, layer: 'ground' }
+    const dummy =
+        h % 2 === 0
+            ? { name: 'straight-rail', position: ent, direction: h }
+            : { name: 'half-diagonal-rail', position: ent, direction: (h + 15) % 16 }
+    const front = jointsOf(dummy).find(j => j.dir === h)
+    if (front) return front
+    return { x: ent.x, y: ent.y - 1, dir: evenHeading(h), layer: 'ground' }
+}
+
+/** Nearest even (8-way) heading. */
+export function evenHeading(dir: number): number {
+    const d = ((dir % 16) + 16) % 16
+    return (Math.round(d / 2) * 2) % 16
+}
+
+/**
+ * Goal heading while dragging: keep the start heading until the cursor has
+ * actually left the joint (small jitter otherwise flips to an unreachable
+ * nearby heading and the search never meets). Farther away, face along the
+ * pointer so an east drag doesn't keep asking to "arrive facing north".
+ */
+export function headingToward(
+    from: { x: number; y: number },
+    to: { x: number; y: number },
+    fallback: number,
+    minDist = 2.5
+): number {
+    const dx = to.x - from.x
+    const dy = to.y - from.y
+    if (dx * dx + dy * dy < minDist * minDist) return fallback
+    return headingFromDelta(dx, dy)
 }
 
 export function cycleHeading(dir: number, ccw = false): number {

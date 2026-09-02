@@ -5,7 +5,7 @@ import {
     PLANNER_NODE_BUDGET,
     RailPlanner,
     cycleHeading,
-    headingFromDelta,
+    headingToward,
     isGroundRailName,
     jointsOf,
     snapIdlePose,
@@ -44,6 +44,23 @@ export class PaintRailContainer extends PaintContainer {
         this.updateBlocked()
     }
 
+    /** Idle straight (or half-diag) from a pose — always a legal one-piece ghost. */
+    private idlePieces(pose: RailPose): RailPiece[] {
+        const idle = successors(pose).find(s => s.move === 'straight')
+        return idle ? idle.pieces : (successors(pose)[0]?.pieces ?? [])
+    }
+
+    /**
+     * What to draw: the best path so far, or the idle piece at start so the
+     * ghost never goes blank while the 200/frame search is still hunting (or
+     * when start===goal on pointer-down).
+     */
+    private displayPieces(): RailPiece[] {
+        if (this.pieces.length > 0) return this.pieces
+        if (this.start) return this.idlePieces(this.start)
+        return []
+    }
+
     public constructor(bpc: BlueprintContainer, _name: string, direction: number) {
         super(bpc, 'straight-rail')
         this.heading = [0, 2, 4, 6, 8, 10, 12, 14].includes(direction) ? direction : 0
@@ -73,7 +90,7 @@ export class PaintRailContainer extends PaintContainer {
     } {
         return {
             active: this.isPlanning,
-            pieceCount: this.pieces.length,
+            pieceCount: this.displayPieces().length,
             complete: this.planner.complete,
             start: this.start ? { x: this.start.x, y: this.start.y, dir: this.start.dir } : null,
             goal: this.goal ? { x: this.goal.x, y: this.goal.y, dir: this.goal.dir } : null,
@@ -140,9 +157,13 @@ export class PaintRailContainer extends PaintContainer {
         this.goal = { ...this.start }
         this.movedSinceBegin = false
         this.goalHeadingLocked = false
-        this.pieces = []
         this.show()
-        this.replan()
+        // start===goal completes the search with an empty path. Keep the idle
+        // straight on screen so pointer-down doesn't blank the ghost.
+        this.pieces = this.idlePieces(this.start)
+        this.planner.begin(this.start, this.goal, p => this.canPlacePiece(p))
+        this.redraw()
+        this.updateBlocked()
     }
 
     public cancelPlan(): void {
@@ -186,8 +207,7 @@ export class PaintRailContainer extends PaintContainer {
         }
         if (!this.visible) return
         const pose = this.poseAtCursor(this.heading)
-        const idle = successors(pose).find(s => s.move === 'straight')
-        this.pieces = idle ? idle.pieces : []
+        this.pieces = this.idlePieces(pose)
         this.redraw()
         this.updateBlocked()
     }
@@ -266,7 +286,7 @@ export class PaintRailContainer extends PaintContainer {
             x: this.bpc.gridData.x / 32,
             y: this.bpc.gridData.y / 32,
         }
-        return headingFromDelta(cursor.x - this.start.x, cursor.y - this.start.y)
+        return headingToward(this.start, cursor, this.start.dir)
     }
 
     private rememberContinueFrom(pieces: RailPiece[]): void {
@@ -361,7 +381,7 @@ export class PaintRailContainer extends PaintContainer {
         // World-space sprites: the container sits at the origin so piece
         // positions are absolute (the path isn't a cursor-relative stamp).
         this.position.set(0, 0)
-        for (const piece of this.pieces) {
+        for (const piece of this.displayPieces()) {
             const sprites = EntitySprite.getParts(
                 {
                     name: piece.name,
