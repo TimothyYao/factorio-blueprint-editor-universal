@@ -78,6 +78,10 @@ exporter is a separate Rust tool and is **not** a JS workspace.
       `:8081`, which the dev server's `/data` proxy targets. That repo also holds
       the **manifest of record** (`packs/packs.json`). Issue #8 tracked the move
       off this repo; the live plane for this line is now TimothyYao's data repo.
+      Dumps also emit `qualities` (`data.raw.quality` → `FD.qualities`); packs
+      published before that field still load (`{}` + the built-in table in
+      `core/quality.ts`). A `space-age` regen on the data plane is what ships
+      the real tier icons.
     - **Data packs (modpack support):** the data plane publishes one
       sub-directory per dump — `vanilla-2.0/` (base 2.0), `space-age/` (2.0 +
       Space Age + Quality + Elevated Rails) and `space-exploration/` — each with

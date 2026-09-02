@@ -19,7 +19,10 @@ is published by the dedicated data plane,
 [`TimothyYao/factorio-pack-data`](https://github.com/TimothyYao/factorio-pack-data),
 at `https://timothyyao.github.io/factorio-pack-data/` (GitHub Pages, CORS `*`). Its
 deploy workflow is what publishes generated output; there is nothing to commit
-back here after a run.
+back here after a run. Each pack's `data.json` includes a `qualities` map
+(`data.raw.quality`: name, `level`, `color`, `icon`) so the editor can badge
+from the atlas; packs dumped before that field still load (the editor treats a
+missing key as `{}`).
 
 Two consequences for a local run:
 

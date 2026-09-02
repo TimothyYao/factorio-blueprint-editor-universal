@@ -66,6 +66,7 @@ import {
     TurretPrototype,
     ValvePrototype,
     WallPrototype,
+    QualityPrototype,
 } from 'factorio:prototype'
 import { IPoint } from '../types'
 import { WireConnectionPoint } from 'factorio:prototype'
@@ -725,6 +726,12 @@ const FD: {
     utilityConstants: UtilityConstants
     guiStyle: GuiStyle
     defines: typeof defines
+    /**
+     * Quality prototypes from the dump (`data.raw.quality`). Empty on packs
+     * generated before this field existed; those callers use the built-in
+     * table in `core/quality.ts`.
+     */
+    qualities: Record<string, QualityPrototype>
     // treesAndRocks: Record<string, TreeOrRock>
 
     getModulesFor: (entityName: string) => ModulePrototype[]
@@ -795,6 +802,9 @@ export function loadData(str: string): void {
     FD.utilityConstants = data.utilityConstants
     FD.guiStyle = data.guiStyle
     FD.defines = data.defines
+    // Older published dumps omit this key; never leave it undefined so
+    // `FD.qualities[name]` is a safe lookup.
+    FD.qualities = data.qualities ?? {}
     FD.getModulesFor = getModulesFor
 
     for (const e of Object.values(FD.entities)) {
