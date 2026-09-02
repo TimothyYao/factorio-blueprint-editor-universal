@@ -87,6 +87,17 @@ export class EntityContainer {
             }
         }
 
+        const onQualityChange = (): void => {
+            // Always rebuild: a quality-only overlay (no recipe/filters) must
+            // appear when quality is set and disappear when it is cleared, even
+            // on entity types the type-gated redrawEntityInfo would skip.
+            if (this.entityInfo !== undefined) {
+                this.entityInfo.destroy()
+            }
+            this.entityInfo = G.BPC.overlayContainer.createEntityInfo(this.m_Entity, this.position)
+            G.UI.updateEntityInfoPanel(this.m_Entity)
+        }
+
         // The train-stop sign (and locomotive body) is tinted by the root-level
         // `color` at sprite-build time, so a colour edit needs a full sprite
         // rebuild to show — cheap, and instant feedback while picking a swatch.
@@ -118,6 +129,7 @@ export class EntityContainer {
         this.m_Entity.on('directionType', onDirectionTypeChange)
         this.m_Entity.on('position', onPositionChange)
         this.m_Entity.on('modules', onModulesChange)
+        this.m_Entity.on('quality', onQualityChange)
 
         this.m_Entity.on('filters', this.redrawEntityInfo, this)
         this.m_Entity.on('splitterInputPriority', this.redrawEntityInfo, this)
@@ -137,6 +149,7 @@ export class EntityContainer {
             this.m_Entity.off('directionType', onDirectionTypeChange)
             this.m_Entity.off('position', onPositionChange)
             this.m_Entity.off('modules', onModulesChange)
+            this.m_Entity.off('quality', onQualityChange)
 
             this.m_Entity.off('filters', this.redrawEntityInfo, this)
             this.m_Entity.off('splitterInputPriority', this.redrawEntityInfo, this)
@@ -309,7 +322,8 @@ export class EntityContainer {
             this.m_Entity.type === 'selector-combinator' ||
             this.m_Entity.type === 'constant-combinator' ||
             this.m_Entity.type === 'inserter' ||
-            this.m_Entity.type === 'logistic-container'
+            this.m_Entity.type === 'logistic-container' ||
+            this.m_Entity.quality
         ) {
             if (this.entityInfo !== undefined) {
                 this.entityInfo.destroy()

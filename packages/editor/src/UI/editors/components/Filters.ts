@@ -177,8 +177,17 @@ export class Filters extends Container<Slot<number>> {
                 if (slot.content !== undefined) {
                     slot.content = undefined
                 }
+                slot.label = ''
             } else {
-                if (slot.content === undefined || slot.name !== slotFilter.name || this.m_Amount) {
+                // `label` caches quality so a same-name / different-tier edit
+                // still rebuilds the badge (Pixi Container.label, unused elsewhere).
+                const qualityKey = slotFilter.quality || ''
+                if (
+                    slot.content === undefined ||
+                    slot.name !== slotFilter.name ||
+                    slot.label !== qualityKey ||
+                    this.m_Amount
+                ) {
                     if (this.m_Amount) {
                         if (slot.content !== undefined) {
                             const text = slot.children[1] as Text
@@ -192,13 +201,23 @@ export class Filters extends Container<Slot<number>> {
                             -16,
                             -16,
                             slotFilter.name,
-                            slotFilter.count
+                            slotFilter.count,
+                            undefined,
+                            undefined,
+                            slotFilter.quality
                         )
                         slot.content = container
                     } else {
-                        slot.content = F.CreateIcon(slotFilter.name)
+                        slot.content = F.CreateIcon(
+                            slotFilter.name,
+                            32,
+                            true,
+                            false,
+                            slotFilter.quality
+                        )
                     }
                     slot.name = slotFilter.name
+                    slot.label = slotFilter.quality || ''
                 }
             }
         }

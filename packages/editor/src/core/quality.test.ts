@@ -1,7 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import FD, { loadData } from './factorioData'
 import { havePackData, readPackData } from './packDataFiles'
-import { BUILTIN_QUALITY_TIERS, qualityLevel, resolveQuality } from './quality'
+import {
+    BUILTIN_QUALITY_TIERS,
+    qualityColorHex,
+    qualityDisplayName,
+    qualityLevel,
+    qualityShowsBadge,
+    resolveQuality,
+} from './quality'
 
 describe('builtin quality tiers', () => {
     it('uses legendary level 5, not a 0-based index of 4', () => {
@@ -24,6 +31,22 @@ describe('builtin quality tiers', () => {
         expect(q?.name).toBe('my-mod-tier')
         expect(q?.level).toBe(0)
         expect(resolveQuality(undefined)).toBeUndefined()
+    })
+
+    it('shows a badge for every non-normal id, including unknown names', () => {
+        expect(qualityShowsBadge(undefined)).toBe(false)
+        expect(qualityShowsBadge('normal')).toBe(false)
+        expect(qualityShowsBadge('legendary')).toBe(true)
+        expect(qualityShowsBadge('my-mod-tier')).toBe(true)
+        expect(qualityDisplayName(undefined)).toBeUndefined()
+        expect(qualityDisplayName('normal')).toBeUndefined()
+        expect(qualityDisplayName('legendary')).toBe('Legendary')
+    })
+
+    it('normalizes 0–1 and 0–255 dump colors to the same hex', () => {
+        expect(qualityColorHex({ r: 1, g: 0, b: 0 })).toBe(0xff0000)
+        expect(qualityColorHex({ r: 255, g: 0, b: 0 })).toBe(0xff0000)
+        expect(qualityColorHex([43, 165, 61])).toBe(qualityColorHex({ r: 43, g: 165, b: 61 }))
     })
 })
 

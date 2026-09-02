@@ -1,5 +1,5 @@
 import { Color, QualityPrototype } from 'factorio:prototype'
-import FD from './factorioData'
+import FD, { getColor } from './factorioData'
 
 /**
  * Built-in vanilla quality tiers (FFF-375 / wiki). Legendary is level **5**,
@@ -92,4 +92,45 @@ export function resolveQuality(
         level: 0,
         color: { r: 0.45, g: 0.45, b: 0.5 },
     }
+}
+
+/**
+ * Anything other than omitted/`normal` gets a badge — including unknown mod
+ * names (neutral diamond) and dumped tiers whose `level` happens to be 0.
+ * Fluids never carry quality; callers skip those icons separately.
+ */
+export function qualityShowsBadge(quality: string | undefined): boolean {
+    return !!quality && quality !== 'normal'
+}
+
+/** Human label for the info panel (`Legendary`), or undefined when no badge. */
+export function qualityDisplayName(quality: string | undefined): string | undefined {
+    if (!qualityShowsBadge(quality)) return undefined
+    const q = resolveQuality(quality)
+    const name = q?.localised_name
+    return typeof name === 'string' ? name : quality
+}
+
+/**
+ * Dump colors are either 0–1 floats or 0–255 ints (and sometimes arrays). Same
+ * rule as `applyTint`: any component > 1 means the whole colour is 0–255.
+ */
+export function qualityColorHex(
+    color:
+        | Color
+        | readonly [number, number, number]
+        | readonly [number, number, number, number]
+        | undefined
+): number {
+    if (color === undefined) return 0x808080
+    const c = getColor(color)
+    let r = c.r || 0
+    let g = c.g || 0
+    let b = c.b || 0
+    if (r > 1 || g > 1 || b > 1) {
+        r /= 255
+        g /= 255
+        b /= 255
+    }
+    return Math.floor(r * 255) * 0x10000 + Math.floor(g * 255) * 0x100 + Math.floor(b * 255)
 }
