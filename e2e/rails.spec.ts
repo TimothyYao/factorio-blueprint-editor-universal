@@ -90,8 +90,8 @@ test.describe('rail planner', () => {
         const editor = page.locator('#editor')
         await editor.tap({ position: FROM })
         const afterTap = await getState(page)
-        // Idle tap stamps one straight (manual building).
-        expect(afterTap.blueprint.entityCount).toBeGreaterThanOrEqual(1)
+        // Idle tap previews; it must not stamp a stray straight.
+        expect(afterTap.blueprint.entityCount).toBe(0)
         const before = afterTap.blueprint.entityCount
 
         await dragOneFinger(page, FROM, TO)

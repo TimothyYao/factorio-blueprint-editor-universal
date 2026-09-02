@@ -582,6 +582,7 @@ export class BlueprintContainer extends Container {
                     } else if (
                         this.paintContainer instanceof PaintRailContainer &&
                         (this.paintContainer.isPlanning ||
+                            this.paintContainer.visible ||
                             this.grabsPaintGhost(tp.startX, tp.startY))
                     ) {
                         tp.target = 'rail-plan'
@@ -896,7 +897,17 @@ export class BlueprintContainer extends Container {
             }
         } else {
             paint.moveAtCursor()
-            paint.placeEntityContainer()
+            const tile = paint.getGridPosition()
+            const onSameTile =
+                this.lastPaintTapTile !== undefined &&
+                this.lastPaintTapTile.x === tile.x &&
+                this.lastPaintTapTile.y === tile.y
+            // First tap positions/previews (same as belts). A second tap on
+            // that tile stamps one straight — not every tap, or a circular
+            // "draw" becomes a ring of islands.
+            if (onSameTile) {
+                paint.placeEntityContainer()
+            }
         }
         this.lastPaintTapTile = paint.getGridPosition()
     }

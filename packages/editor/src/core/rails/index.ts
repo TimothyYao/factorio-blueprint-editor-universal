@@ -7,6 +7,7 @@ export {
     snapIdlePose,
     snapToRails,
     successors,
+    headingFromDelta,
     type RailLayer,
     type RailMove,
     type RailPiece,

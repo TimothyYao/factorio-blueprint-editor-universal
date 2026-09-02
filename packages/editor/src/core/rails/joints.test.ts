@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
     cycleHeading,
+    headingFromDelta,
     jointsOf,
     poseKey,
     reversePose,
@@ -94,6 +95,13 @@ describe('rail joints', () => {
         expect(cycleHeading(14)).toBe(0)
     })
 
+    it('headingFromDelta is 16-way with 0 = north, y-down', () => {
+        expect(headingFromDelta(0, -2)).toBe(0)
+        expect(headingFromDelta(2, 0)).toBe(4)
+        expect(headingFromDelta(0, 2)).toBe(8)
+        expect(headingFromDelta(-2, 0)).toBe(12)
+    })
+
     it('snapIdlePose keeps first-rail even/odd parity', () => {
         const p = snapIdlePose({ x: 4.4, y: 5.6 }, 0, { x: 1, y: 1 })
         expect(Math.abs(p.x) % 2).toBe(1)
@@ -113,7 +121,8 @@ describe('rail joints', () => {
     it('snapToRails prefers the nearest joint of an existing piece', () => {
         const rail = { name: 'straight-rail', position: { x: 1, y: -1 }, direction: 0 }
         const pose = snapToRails([rail], { x: 0.2, y: 0.1 }, 0)
-        // South joint of a northbound straight at (1,-1) is (1, 0) heading 8.
-        expect(pose).toMatchObject({ x: 1, y: 0, dir: 8, layer: 'ground' })
+        // Prefer the joint that already faces north (dir 0), not the nearer
+        // south end, so a follow-up plan continues the track.
+        expect(pose).toMatchObject({ x: 1, y: -2, dir: 0, layer: 'ground' })
     })
 })

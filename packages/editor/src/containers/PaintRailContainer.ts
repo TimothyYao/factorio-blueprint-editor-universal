@@ -5,13 +5,16 @@ import {
     PLANNER_NODE_BUDGET,
     RailPlanner,
     cycleHeading,
+    headingFromDelta,
     isGroundRailName,
+    jointsOf,
     snapIdlePose,
     snapToRails,
     successors,
     type RailPiece,
     type RailPose,
 } from '../core/rails'
+import FD from '../core/factorioData'
 import { EntitySprite } from './EntitySprite'
 import { PaintContainer } from './PaintContainer'
 import { BlueprintContainer } from './BlueprintContainer'
@@ -25,6 +28,10 @@ export class PaintRailContainer extends PaintContainer {
     private heading: number
     private start: RailPose | undefined
     private goal: RailPose | undefined
+    /** After a commit, the next plan starts from this joint if the cursor is near. */
+    private continueFrom: RailPose | undefined
+    /** R while planning locks the goal heading; otherwise it follows the drag. */
+    private goalHeadingLocked = false
     private readonly planner = new RailPlanner()
     private pieces: RailPiece[] = []
     /** True once the pointer moved after beginPlan — desktop treats that as a drag-commit. */
@@ -96,6 +103,7 @@ export class PaintRailContainer extends PaintContainer {
         if (this.isPlanning) {
             if (!this.goal) return
             this.goal = { ...this.goal, dir: cycleHeading(this.goal.dir, ccw) }
+            this.goalHeadingLocked = true
             this.replan()
         } else {
             this.heading = cycleHeading(this.heading, ccw)
@@ -116,9 +124,22 @@ export class PaintRailContainer extends PaintContainer {
     }
 
     public beginPlan(): void {
-        this.start = this.poseAtCursor(this.heading)
+        const cursorDir = this.heading
+        const atCursor = this.poseAtCursor(cursorDir, true)
+        if (
+            this.continueFrom &&
+            Math.abs(this.continueFrom.x - atCursor.x) +
+                Math.abs(this.continueFrom.y - atCursor.y) <=
+                6
+        ) {
+            this.start = { ...this.continueFrom }
+        } else {
+            this.start = atCursor
+        }
+        this.heading = this.start.dir
         this.goal = { ...this.start }
         this.movedSinceBegin = false
+        this.goalHeadingLocked = false
         this.pieces = []
         this.show()
         this.replan()
@@ -129,12 +150,27 @@ export class PaintRailContainer extends PaintContainer {
         this.goal = undefined
         this.pieces = []
         this.movedSinceBegin = false
+        this.goalHeadingLocked = false
+        this.continueFrom = undefined
+        this.moveAtCursor()
+    }
+
+    private cancelPlanKeepContinue(): void {
+        this.start = undefined
+        this.goal = undefined
+        this.pieces = []
+        this.movedSinceBegin = false
+        this.goalHeadingLocked = false
+        if (this.continueFrom) this.heading = this.continueFrom.dir
         this.moveAtCursor()
     }
 
     public override moveAtCursor(): void {
         if (this.isPlanning) {
-            const next = this.poseAtCursor(this.goal?.dir ?? this.heading)
+            const dir = this.goalHeadingLocked
+                ? (this.goal?.dir ?? this.heading)
+                : this.headingFromStartToCursor()
+            const next = this.poseAtCursor(dir, false)
             if (
                 this.goal &&
                 next.x === this.goal.x &&
@@ -176,6 +212,7 @@ export class PaintRailContainer extends PaintContainer {
             return
         }
         this.commitPieces(this.pieces)
+        this.rememberContinueFrom(this.pieces)
         this.moveAtCursor()
     }
 
@@ -184,7 +221,8 @@ export class PaintRailContainer extends PaintContainer {
         if (!this.isPlanning) return false
         if (!this.planner.complete || this.pieces.length === 0) return false
         const ok = this.commitPieces(this.pieces)
-        this.cancelPlan()
+        if (ok) this.rememberContinueFrom(this.pieces)
+        this.cancelPlanKeepContinue()
         return ok
     }
 
@@ -222,19 +260,53 @@ export class PaintRailContainer extends PaintContainer {
         this.updateBlocked()
     }
 
-    private poseAtCursor(dir: number): RailPose {
+    private headingFromStartToCursor(): number {
+        if (!this.start) return this.heading
         const cursor = {
             x: this.bpc.gridData.x / 32,
             y: this.bpc.gridData.y / 32,
         }
+        return headingFromDelta(cursor.x - this.start.x, cursor.y - this.start.y)
+    }
+
+    private rememberContinueFrom(pieces: RailPiece[]): void {
+        const last = pieces[pieces.length - 1]
+        if (!last) return
+        const joints = jointsOf(last)
+        const prefer = this.goal?.dir ?? this.heading
+        let best = joints[0]
+        let bestDelta = 99
+        for (const j of joints) {
+            const d = Math.min((j.dir - prefer + 16) % 16, (prefer - j.dir + 16) % 16)
+            if (d < bestDelta) {
+                bestDelta = d
+                best = j
+            }
+        }
+        if (best) {
+            this.continueFrom = best
+            this.heading = best.dir
+        }
+    }
+
+    private existingRails(): RailPiece[] {
         const rails: RailPiece[] = []
         for (const [, e] of this.bpc.bp.entities) {
             if (isGroundRailName(e.name)) {
                 rails.push({ name: e.name, position: e.position, direction: e.direction })
             }
         }
-        const snapped = snapToRails(rails, cursor, dir)
-        if (snapped) return { ...snapped, dir: snapped.dir }
+        return rails
+    }
+
+    private poseAtCursor(dir: number, snapExisting = true): RailPose {
+        const cursor = {
+            x: this.bpc.gridData.x / 32,
+            y: this.bpc.gridData.y / 32,
+        }
+        const rails = this.existingRails()
+        const snapped = snapToRails(rails, cursor, dir, snapExisting ? 4 : 1.5)
+        if (snapped) return { ...snapped }
         const first = this.bpc.bp.getFirstRailRelatedEntityPos()
         return snapIdlePose(cursor, dir, first)
     }
@@ -293,6 +365,7 @@ export class PaintRailContainer extends PaintContainer {
             const sprites = EntitySprite.getParts(
                 {
                     name: piece.name,
+                    type: FD.entities[piece.name]?.type,
                     direction: piece.direction,
                     position: piece.position,
                     railLayer: 'ground',

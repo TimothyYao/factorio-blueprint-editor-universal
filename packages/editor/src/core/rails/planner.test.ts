@@ -1,6 +1,18 @@
 import { describe, it, expect } from 'vitest'
 import { PLANNER_NODE_BUDGET, RailPlanner } from './planner'
-import type { RailPose } from './joints'
+import { jointsOf, type RailPiece, type RailPose } from './joints'
+
+function pathJointsConnect(pieces: RailPiece[]): boolean {
+    for (let i = 0; i < pieces.length - 1; i++) {
+        const a = jointsOf(pieces[i])
+        const b = jointsOf(pieces[i + 1])
+        const ok = a.some(ja =>
+            b.some(jb => ja.x === jb.x && ja.y === jb.y && (ja.dir + 8) % 16 === jb.dir)
+        )
+        if (!ok) return false
+    }
+    return true
+}
 
 function runUntil(
     p: RailPlanner,
@@ -39,6 +51,7 @@ describe('rail planner', () => {
             'curved-rail-b',
             'curved-rail-a',
         ])
+        expect(pathJointsConnect(pieces!)).toBe(true)
     })
 
     it('step(200) never expands more than 200 nodes in one call', () => {

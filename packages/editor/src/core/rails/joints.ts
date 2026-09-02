@@ -270,8 +270,15 @@ export function isGroundRailName(name: string): boolean {
 export function snapToRails(
     rails: { name: string; position: { x: number; y: number }; direction: number }[],
     cursor: { x: number; y: number },
-    preferDir?: number
+    preferDir?: number,
+    maxDist = 4
 ): RailPose | undefined {
+    const score = (dist: number, dirDelta: number): number => {
+        // Prefer a joint that already faces our heading when we're close —
+        // nearest-only would pick the back of a stub and start a new island.
+        if (preferDir !== undefined && dist <= 3 && dirDelta <= 2) return dirDelta * 10 + dist
+        return 1000 + dist * 10 + dirDelta
+    }
     let best: { pose: RailPose; dist: number; dirDelta: number } | undefined
     for (const r of rails) {
         if (!isGroundRailName(r.name)) continue
@@ -281,12 +288,12 @@ export function snapToRails(
                 preferDir === undefined
                     ? 0
                     : Math.min((pose.dir - preferDir + 16) % 16, (preferDir - pose.dir + 16) % 16)
-            if (!best || dist < best.dist || (dist === best.dist && dirDelta < best.dirDelta)) {
+            if (!best || score(dist, dirDelta) < score(best.dist, best.dirDelta)) {
                 best = { pose, dist, dirDelta }
             }
         }
     }
-    if (!best || best.dist > 4) return undefined
+    if (!best || best.dist > maxDist) return undefined
     return best.pose
 }
 
@@ -296,8 +303,7 @@ export function snapIdlePose(
     dir: number,
     firstRail?: { x: number; y: number }
 ): RailPose {
-    const even = [0, 2, 4, 6, 8, 10, 12, 14]
-    const h = even.includes(((dir % 16) + 16) % 16) ? ((dir % 16) + 16) % 16 : even[0]
+    const h = ((dir % 16) + 16) % 16
 
     const px = firstRail ? firstRail.x : 1
     const py = firstRail ? firstRail.y : 1
@@ -309,10 +315,12 @@ export function snapIdlePose(
         x: snapParity(cursor.x, px),
         y: snapParity(cursor.y, py),
     }
-    const dummy = { name: 'straight-rail', position: ent, direction: h }
-    const front = jointsOf(dummy).find(j => j.dir === h)
-    if (front) return front
-    return { x: ent.x, y: ent.y - 1, dir: h, layer: 'ground' }
+    const dummy = { name: 'straight-rail', position: ent, direction: h % 2 === 0 ? h : 0 }
+    if (h % 2 === 0) {
+        const front = jointsOf(dummy).find(j => j.dir === h)
+        if (front) return front
+    }
+    return { x: ent.x, y: ent.y, dir: h, layer: 'ground' }
 }
 
 export function cycleHeading(dir: number, ccw = false): number {
@@ -322,4 +330,17 @@ export function cycleHeading(dir: number, ccw = false): number {
     const i = even.indexOf(((dir % 16) + 16) % 16)
     const idx = i < 0 ? 0 : i
     return even[(idx + (ccw ? 7 : 1)) % 8]
+}
+
+/**
+ * 16-way heading from a world-space delta (Factorio y-down: 0 is north,
+ * clockwise). Used so a drag's goal faces along the pointer, not the
+ * start heading — otherwise a circular sweep keeps asking for "arrive
+ * facing north" and the search drops isolated stubs.
+ */
+export function headingFromDelta(dx: number, dy: number): number {
+    if (dx === 0 && dy === 0) return 0
+    const a = Math.atan2(dx, -dy)
+    const step = Math.PI / 8
+    return ((Math.round(a / step) % 16) + 16) % 16
 }
