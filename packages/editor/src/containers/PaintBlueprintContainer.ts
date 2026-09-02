@@ -1,5 +1,6 @@
 import { Entity } from '../core/Entity'
 import { IPoint } from '../types'
+import util from '../common/util'
 import { Blueprint } from '../core/Blueprint'
 import { Tile } from '../core/Tile'
 import { inputMode } from '../common/input'
@@ -8,6 +9,7 @@ import { PaintContainer } from './PaintContainer'
 import { PaintBlueprintEntityContainer } from './PaintBlueprintEntityContainer'
 import { BlueprintContainer } from './BlueprintContainer'
 import { TileContainer } from './TileContainer'
+import { OverlayContainer } from './OverlayContainer'
 import { IConnectionPoint } from '../core/WireConnections'
 
 export class PaintBlueprintContainer extends PaintContainer {
@@ -82,7 +84,12 @@ export class PaintBlueprintContainer extends PaintContainer {
             this.entities.set(e, epc)
         }
 
-        this.children.sort(EntitySprite.compareFn)
+        this.children.sort((a, b) => {
+            if (a instanceof EntitySprite && b instanceof EntitySprite) {
+                return EntitySprite.compareFn(a, b)
+            }
+            return 0
+        })
 
         // Tile sprites go *under* the (already sorted) entity sprites — same
         // layering as the world, where the tile plane renders below entities.
@@ -99,6 +106,12 @@ export class PaintBlueprintContainer extends PaintContainer {
             for (const s of TileContainer.generateSprites(name, center, positions)) {
                 this.addChildAt(s, 0)
             }
+        }
+
+        // After sprite sort so the arrows sit on top of the ghost bodies,
+        // matching placed entities (overlay above entitySprites).
+        for (const [e] of this.entities) {
+            OverlayContainer.attachEntityInfo(this, e, util.sumprod(32, e.position))
         }
 
         for (const [e] of this.entities) {

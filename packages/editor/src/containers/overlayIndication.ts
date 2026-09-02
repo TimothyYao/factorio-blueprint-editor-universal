@@ -10,6 +10,9 @@ import { IPoint } from '../types'
  * after the 0.5 scale they land on the 32 px tile grid.
  */
 
+/** Pixi `label` on alt-mode overlay containers (placed entities + paint ghosts). */
+export const ENTITY_INFO_LABEL = 'entity-info'
+
 /** Overlay uses 64 units per tile, then scales the container by 0.5. */
 export const OVERLAY_TILE = 64
 

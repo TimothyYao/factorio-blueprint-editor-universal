@@ -20,6 +20,7 @@ import {
     vectorToPoint,
     inserterIndicationSprites,
     placeResultIndicationSprite,
+    ENTITY_INFO_LABEL,
     type IndicationKind,
 } from './overlayIndication'
 
@@ -35,6 +36,9 @@ const combinatorOperatorStyle = new TextStyle({
 })
 
 export class OverlayContainer extends Container {
+    /** Pixi label on every alt-mode overlay container (placed + ghost). */
+    public static readonly ENTITY_INFO_LABEL = ENTITY_INFO_LABEL
+
     private readonly bpc: BlueprintContainer
     private readonly entityInfos = new Container()
     /** Boxes marking the entities on a hovered entity's circuit network. */
@@ -96,8 +100,32 @@ export class OverlayContainer extends Container {
         return this.networkBoxes.children.length
     }
 
+    /**
+     * Parent the alt-mode overlay (inserter pickup/drop, miner/recycler output
+     * arrow, combinator arrows, fluid boxes, recipe/module icons, …) onto a
+     * paint ghost so it rides with the cursor. `position` is in the parent's
+     * local space — `{x:0,y:0}` for a single-entity ghost, or the entity's
+     * pixel offset inside a pasted-blueprint ghost.
+     *
+     * Kept off `entityInfos` on purpose: that layer sits *under* the paint
+     * slot, so arrows there would render behind the ghost body. Labelled so
+     * the paint container can skip ghost-tinting them (Factorio keeps the
+     * yellow indication sprites even on ghosts).
+     */
+    public static attachEntityInfo(parent: Container, entity: Entity, position: IPoint): void {
+        try {
+            const entityInfo = OverlayContainer.createEntityInfo(entity, position)
+            if (entityInfo !== undefined) {
+                parent.addChild(entityInfo)
+            }
+        } catch (e) {
+            console.warn(`Failed to create entity info for ${entity.name}:`, e)
+        }
+    }
+
     public static createEntityInfo(entity: Entity, position: IPoint): Container {
         const entityInfo = new Container()
+        entityInfo.label = OverlayContainer.ENTITY_INFO_LABEL
 
         if (
             entity.recipe &&

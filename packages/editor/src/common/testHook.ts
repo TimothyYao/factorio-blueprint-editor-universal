@@ -4,6 +4,7 @@ import { EditorMode } from '../containers/BlueprintContainer'
 import { PaintEntityContainer } from '../containers/PaintEntityContainer'
 import { PaintBlueprintContainer } from '../containers/PaintBlueprintContainer'
 import { PaintTileContainer } from '../containers/PaintTileContainer'
+import { OverlayContainer } from '../containers/OverlayContainer'
 import { Dialog } from '../UI/controls/Dialog'
 import { InventoryDialog } from '../UI/InventoryDialog'
 import { Modules } from '../UI/editors/components/Modules'
@@ -61,6 +62,11 @@ export interface EditorTestState {
          * is a tile brush".
          */
         tileSize: number | null
+        /**
+         * Alt-mode overlay containers parented onto the held ghost (inserter
+         * arrows, miner output arrows, …). 0 when idle or for tiles/wires.
+         */
+        overlayInfoCount: number
     }
     /**
      * True while a modal dialog (e.g. an entity editor overlay) is open. On touch,
@@ -136,6 +142,11 @@ export function getEditorTestState(): EditorTestState {
                 painting && G.BPC.paintContainer instanceof PaintTileContainer
                     ? G.BPC.paintContainer.brushSize
                     : null,
+            overlayInfoCount: painting
+                ? G.BPC.paintContainer.children.filter(
+                      c => c.label === OverlayContainer.ENTITY_INFO_LABEL
+                  ).length
+                : 0,
         },
         dialogOpen: Dialog.anyOpen(),
         marquee: {
