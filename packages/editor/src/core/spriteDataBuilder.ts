@@ -18,6 +18,7 @@ import FD, {
 } from './factorioData'
 import { PositionGrid } from './PositionGrid'
 import { Entity } from './Entity'
+import { prototypeHasFlippedGraphics } from './flip'
 import {
     SpriteVariations,
     EntityWithOwnerPrototype,
@@ -129,6 +130,8 @@ interface IDrawData {
     railLayer: string | undefined
     trainStopColor: ColorWithAlpha
     modules: (string | undefined)[]
+    /** Blueprint `mirror` bit — use flipped graphics / geometric sprite flip. */
+    mirror?: boolean
 }
 
 export interface ExtendedSpriteData extends SpriteData {
@@ -184,7 +187,13 @@ function getSpriteData(data: IDrawData): readonly ExtendedSpriteData[] {
                 ...graphicsFn(data),
                 ...generateCovers(entity, data),
                 ...generateConnection(entity, data),
-            ].flatMap(part => layersOf(part) as readonly ExtendedSpriteData[])
+            ]
+                .flatMap(part => layersOf(part) as readonly ExtendedSpriteData[])
+                .map(part =>
+                    data.mirror && !prototypeHasFlippedGraphics(entity)
+                        ? applyHorizontalSpriteMirror(part)
+                        : part
+                )
         } catch (err) {
             console.warn(`Error generating sprites for '${data.name}' (type: ${entity.type}):`, err)
             return SPRITE_GENERATION_FAILED as any
@@ -200,13 +209,40 @@ function generateConnection(e: EntityWithOwnerPrototype, data: IDrawData): reado
     const isLoaderInputting = () => data.dirType === 'input'
     const getBeltConnectionIndex = () =>
         getBeltWireConnectionIndex(data.positionGrid, data.position, data.dir)
-    const cc = getCircuitConnector(e, data.dir, isLoaderInputting, getBeltConnectionIndex)
+    const cc = getCircuitConnector(
+        e,
+        data.dir,
+        isLoaderInputting,
+        getBeltConnectionIndex,
+        !!data.mirror
+    )
     if (cc?.sprites) {
         const ccs = cc.sprites
         return [ccs.connector_main, ccs.wire_pins, ccs.led_blue_off]
     }
     return []
 }
+
+/**
+ * Geometric left/right sprite flip for buildings that reuse `graphics_set`
+ * when mirrored (chemical plant, refinery, …). Dedicated `graphics_set_flipped`
+ * sheets (recycler) skip this — those filenames are already the mirrored art.
+ * Mutates a duplicate so we don't invert the shared prototype layer.
+ */
+function applyHorizontalSpriteMirror(s: ExtendedSpriteData): ExtendedSpriteData {
+    const out = util.duplicate(s)
+    if (out.shift) out.shift = [-out.shift[0], out.shift[1]]
+    const sc = out.scale as number | { x?: number; y?: number } | undefined
+    if (sc == null) {
+        ;(out as { scale?: unknown }).scale = { x: -1, y: 1 }
+    } else if (typeof sc === 'number') {
+        ;(out as { scale?: unknown }).scale = { x: -sc, y: sc }
+    } else {
+        ;(out as { scale?: unknown }).scale = { x: -(sc.x ?? 1), y: sc.y ?? 1 }
+    }
+    return out
+}
+
 // UTIL FUNCTIONS
 function addToShift(shift: IPoint | readonly [number, number], tab: SpriteData): SpriteData {
     const SHIFT: readonly [number, number] = Array.isArray(shift) ? shift : [shift.x, shift.y]
@@ -1079,7 +1115,9 @@ function draw_assembling_machine(
     e: AssemblingMachinePrototype
 ): (data: IDrawData) => readonly SpriteData[] {
     return (data: IDrawData) => {
-        const gs = e.graphics_set
+        const gs =
+            (data.mirror && (e as AssemblingMachinePrototype).graphics_set_flipped) ||
+            e.graphics_set
         // idle_animation may be plain OR directional ({north,east,…}); SE's
         // casting machine is directional, so passing it whole to layersOf
         // dropped the body. getAnimation picks this direction (returns the
@@ -1559,13 +1597,24 @@ function draw_furnace(e: FurnacePrototype): (data: IDrawData) => readonly Sprite
     // (graphics_set is also optional in general). Resolve whichever exists —
     // and never read `.layers` off undefined, which previously threw at
     // build time and escaped the sprite-gen guard (#38).
-    const gs = (e as { graphics_set?: { animation?: unknown; idle_animation?: unknown } })
-        .graphics_set
-    const anim = (gs?.animation ?? gs?.idle_animation) as Animation4Way | undefined
-    if (!anim) return () => []
-    // Plain `{layers}` (stone furnace) or 4-way `{north,east,south,west}`
-    // (Space Age recycler): getAnimation picks this direction, layersOf flattens.
-    return (data: IDrawData) => layersOf(getAnimation(anim, data.dir))
+    //
+    // Recyclers also have `graphics_set_flipped`; pick it when the blueprint
+    // `mirror` bit is set so we don't geometrically flip the already-mirrored
+    // sheet. Selection happens per draw so flip can toggle without rebuilding
+    // the generator (keyed by name only).
+    return (data: IDrawData) => {
+        const proto = e as FurnacePrototype & {
+            graphics_set_flipped?: { animation?: unknown; idle_animation?: unknown }
+        }
+        const gs = ((data.mirror && proto.graphics_set_flipped) || proto.graphics_set) as
+            | { animation?: unknown; idle_animation?: unknown }
+            | undefined
+        const anim = (gs?.animation ?? gs?.idle_animation) as Animation4Way | undefined
+        if (!anim) return []
+        // Plain `{layers}` (stone furnace) or 4-way `{north,east,south,west}`
+        // (Space Age recycler): getAnimation picks this direction, layersOf flattens.
+        return layersOf(getAnimation(anim, data.dir))
+    }
 }
 function draw_fusion_generator(
     e: FusionGeneratorPrototype

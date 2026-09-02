@@ -39,6 +39,7 @@ import {
     flipDirection,
     flipPoint,
     flipSwapsSplitterPriority,
+    entityUsesMirroring,
 } from './flip'
 import U from './generators/util'
 import {
@@ -72,6 +73,8 @@ export interface EntityEvents {
     destroy: []
     position: [newValue: IPoint, oldValue: IPoint]
     direction: []
+    /** Blueprint `mirror` bit (sprite / fluid-box flip). */
+    mirror: []
     directionType: []
     recipe: [recipe: string]
     modules: [modules: (string | undefined)[]]
@@ -276,6 +279,19 @@ export class Entity extends EventEmitter<EntityEvents> {
                 this.m_BP.entityPositionGrid.setTileData(this)
                 this.emit('direction')
             })
+            .commit()
+    }
+
+    /** Blueprint `mirror` — omitted from the export when false. */
+    public get mirror(): boolean {
+        return !!this.m_rawEntity.mirror
+    }
+    public set mirror(value: boolean) {
+        const next = value ? true : undefined
+        if (this.m_rawEntity.mirror === next) return
+        this.m_BP.history
+            .updateValue(this.m_rawEntity, 'mirror', next, 'Flip entity')
+            .onDone(() => this.emit('mirror'))
             .commit()
     }
 
@@ -1685,14 +1701,18 @@ export class Entity extends EventEmitter<EntityEvents> {
         }
 
         const position = flipPoint(this.m_rawEntity.position, vertical)
+        const usesMirror = entityUsesMirroring(this.entityData)
+        const mirror = usesMirror ? !this.mirror : this.mirror
         const updatedRawEntity = {
             ...this.m_rawEntity,
             direction,
             position,
             input_priority,
             output_priority,
+            mirror: mirror || undefined,
         }
         if (direction === 0) delete updatedRawEntity.direction
+        if (!mirror) delete updatedRawEntity.mirror
 
         return new Entity(updatedRawEntity, this.m_BP)
     }
@@ -1736,11 +1756,14 @@ export class Entity extends EventEmitter<EntityEvents> {
         const newOut = swapPriority
             ? this.changePriority(this.m_rawEntity.output_priority)
             : this.m_rawEntity.output_priority
+        const usesMirror = entityUsesMirroring(this.entityData)
+        const newMirror = usesMirror ? !this.mirror : this.mirror
 
         if (
             newDir === this.direction &&
             newIn === this.m_rawEntity.input_priority &&
-            newOut === this.m_rawEntity.output_priority
+            newOut === this.m_rawEntity.output_priority &&
+            newMirror === this.mirror
         ) {
             return
         }
@@ -1749,6 +1772,7 @@ export class Entity extends EventEmitter<EntityEvents> {
         this.direction = newDir
         this.splitterInputPriority = newIn
         this.splitterOutputPriority = newOut
+        if (usesMirror) this.mirror = newMirror
         this.m_BP.history.commitTransaction()
     }
 
@@ -2005,7 +2029,13 @@ export class Entity extends EventEmitter<EntityEvents> {
         const isLoaderInputting = () => this.directionType === 'input'
         const getBeltConnectionIndex = () =>
             getBeltWireConnectionIndex(this.m_BP.entityPositionGrid, this.position, direction)
-        const cc = getCircuitConnector(e, direction, isLoaderInputting, getBeltConnectionIndex)
+        const cc = getCircuitConnector(
+            e,
+            direction,
+            isLoaderInputting,
+            getBeltConnectionIndex,
+            this.mirror
+        )
         if (cc) {
             return cc.points.wire[color]
         }

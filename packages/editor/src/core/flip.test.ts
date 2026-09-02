@@ -5,6 +5,9 @@ import {
     flipPoint,
     flipSwapsSplitterPriority,
     rotatePoint,
+    entityUsesMirroring,
+    hasOffAxisHorizontalFluidSymmetry,
+    prototypeHasFlippedGraphics,
 } from './flip'
 
 describe('flipDirection', () => {
@@ -70,5 +73,86 @@ describe('flipSwapsSplitterPriority', () => {
         expect(flipSwapsSplitterPriority(8, false)).toBe(false)
         expect(flipSwapsSplitterPriority(0, true)).toBe(false)
         expect(flipSwapsSplitterPriority(12, true)).toBe(false)
+    })
+})
+
+describe('entityUsesMirroring', () => {
+    const chemicalPlant = {
+        type: 'assembling-machine',
+        fluid_boxes: [
+            {
+                production_type: 'input',
+                pipe_connections: [{ position: [-1, -1] }, { position: [1, -1] }],
+            },
+            {
+                production_type: 'output',
+                pipe_connections: [{ position: [-1, 1] }, { position: [1, 1] }],
+            },
+        ],
+    }
+
+    it('detects chemical-plant-style off-axis fluid symmetry', () => {
+        expect(hasOffAxisHorizontalFluidSymmetry(chemicalPlant)).toBe(true)
+        expect(entityUsesMirroring(chemicalPlant)).toBe(true)
+    })
+
+    it('ignores assembling machines whose pipes sit on the centreline', () => {
+        const am2 = {
+            type: 'assembling-machine',
+            fluid_boxes: [
+                { production_type: 'input', pipe_connections: [{ position: [0, -1] }] },
+                { production_type: 'output', pipe_connections: [{ position: [0, 1] }] },
+            ],
+        }
+        expect(hasOffAxisHorizontalFluidSymmetry(am2)).toBe(false)
+        expect(entityUsesMirroring(am2)).toBe(false)
+    })
+
+    it('treats recycler flipped sheets / off-centre drop as mirroring', () => {
+        expect(
+            entityUsesMirroring({
+                type: 'furnace',
+                graphics_set_flipped: {},
+                circuit_connector_flipped: [],
+                vector_to_place_result: [-0.5, -2.3],
+            })
+        ).toBe(true)
+        expect(prototypeHasFlippedGraphics({ graphics_set_flipped: {} })).toBe(true)
+    })
+
+    it('detects boiler-style fluid_box / output_fluid_box pairs', () => {
+        expect(
+            entityUsesMirroring({
+                type: 'boiler',
+                fluid_box: {
+                    production_type: 'input',
+                    pipe_connections: [{ position: [-1, 0.5] }, { position: [1, 0.5] }],
+                },
+                output_fluid_box: {
+                    production_type: 'output',
+                    pipe_connections: [{ position: [0, -0.5] }],
+                },
+            })
+        ).toBe(true)
+    })
+
+    it('honours forced_symmetry when fluid boxes are not left-right pairs', () => {
+        expect(
+            entityUsesMirroring({
+                type: 'assembling-machine',
+                forced_symmetry: 'horizontal',
+                fluid_boxes: [
+                    {
+                        production_type: 'input',
+                        pipe_connections: [{ position: [-1.5, 0.5] }, { position: [1.5, -0.5] }],
+                    },
+                ],
+            })
+        ).toBe(true)
+    })
+
+    it('does not mirror pipes or belts', () => {
+        expect(entityUsesMirroring({ type: 'pipe' })).toBe(false)
+        expect(entityUsesMirroring({ type: 'transport-belt' })).toBe(false)
     })
 })

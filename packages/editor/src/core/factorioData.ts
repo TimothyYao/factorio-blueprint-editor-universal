@@ -147,7 +147,8 @@ export function getCircuitConnector(
     e: EntityWithOwnerPrototype,
     dir: number,
     isLoaderInputting: () => boolean,
-    getBeltConnectionIndex: () => number
+    getBeltConnectionIndex: () => number,
+    mirrored = false
 ): null | CircuitConnectorDefinition {
     switch (e.type) {
         case 'accumulator':
@@ -206,7 +207,11 @@ export function getCircuitConnector(
                 | PumpPrototype
                 | StorageTankPrototype
                 | TrainStopPrototype
-            return e_resolved.circuit_connector[dir / 4]
+            const flipped = (e_resolved as AssemblingMachinePrototype | FurnacePrototype)
+                .circuit_connector_flipped
+            const connectors =
+                mirrored && flipped && flipped.length ? flipped : e_resolved.circuit_connector
+            return connectors[dir / 4]
         }
         case 'rail-chain-signal':
         case 'rail-signal': {

@@ -6,7 +6,7 @@ import { test, expect, type Page } from '@playwright/test'
 // These drive the paint-ghost and hover paths via the `?test` hook.
 
 interface FlipState {
-    paint: { active: boolean; direction: number | null }
+    paint: { active: boolean; direction: number | null; mirrored: boolean | null }
     blueprint: { entityCount: number }
     marquee: { count: number; direction: number | null }
 }
@@ -79,5 +79,41 @@ test.describe('desktop entity flip (H / V)', () => {
         await page.keyboard.press('q')
         await expect.poll(async () => (await getState(page)).paint.active).toBe(true)
         expect((await getState(page)).paint.direction).toBe(8)
+    })
+
+    test('H toggles chemical-plant sprite mirroring without changing facing', async ({ page }) => {
+        await page.addInitScript(() => {
+            window.localStorage.setItem('quickbarItemNames', JSON.stringify(['chemical-plant']))
+        })
+        await page.goto('/?test')
+        await waitForLoaded(page)
+        await page.locator('#editor').focus()
+        await page.mouse.move(320, 360)
+        await page.keyboard.press('1')
+        await expect.poll(async () => (await getState(page)).paint.active).toBe(true)
+        expect((await getState(page)).paint.direction).toBe(0)
+        expect((await getState(page)).paint.mirrored).toBe(false)
+
+        await page.keyboard.press('h')
+        await expect.poll(async () => (await getState(page)).paint.mirrored).toBe(true)
+        expect((await getState(page)).paint.direction).toBe(0)
+
+        await page.keyboard.press('h')
+        await expect.poll(async () => (await getState(page)).paint.mirrored).toBe(false)
+    })
+
+    test('H picks the recycler flipped sprite via the mirror bit', async ({ page }) => {
+        await page.addInitScript(() => {
+            window.localStorage.setItem('quickbarItemNames', JSON.stringify(['recycler']))
+        })
+        await page.goto('/?test')
+        await waitForLoaded(page)
+        await page.locator('#editor').focus()
+        await page.mouse.move(320, 360)
+        await page.keyboard.press('1')
+        await expect.poll(async () => (await getState(page)).paint.active).toBe(true)
+
+        await page.keyboard.press('h')
+        await expect.poll(async () => (await getState(page)).paint.mirrored).toBe(true)
     })
 })

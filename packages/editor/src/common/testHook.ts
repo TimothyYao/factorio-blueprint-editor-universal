@@ -49,6 +49,8 @@ export interface EditorTestState {
         tile: { x: number; y: number } | null
         /** Held entity ghost's facing (0/4/8/12 cardinal); null for tiles/wires. */
         direction: number | null
+        /** Blueprint `mirror` bit of a held entity ghost; null if not an entity. */
+        mirrored: boolean | null
         /**
          * What the cursor holds: a single `entity`, a pasted `blueprint`
          * (multi-entity ghost, draggable/nudgeable on touch), or null when idle.
@@ -130,6 +132,10 @@ export function getEditorTestState(): EditorTestState {
             direction:
                 painting && G.BPC.paintContainer instanceof PaintEntityContainer
                     ? G.BPC.paintContainer.getDirection()
+                    : null,
+            mirrored:
+                painting && G.BPC.paintContainer instanceof PaintEntityContainer
+                    ? G.BPC.paintContainer.getMirror()
                     : null,
             kind: !painting
                 ? null

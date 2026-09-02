@@ -783,7 +783,7 @@ export class BlueprintContainer extends Container {
             const itemName = Entity.getItemName(entity.name)
             const direction =
                 entity.directionType === 'output' ? (entity.direction + 8) % 16 : entity.direction
-            this.spawnPaintContainer(itemName, direction)
+            this.spawnPaintContainer(itemName, direction, [], entity.mirror)
         } else if (this.mode === EditorMode.PAINT) {
             this.paintContainer.destroy()
         }
@@ -1564,7 +1564,9 @@ export class BlueprintContainer extends Container {
         direction = 0,
         // Tiles for a blueprint ghost (marquee tile Copy/Cut, pasted blueprints
         // carrying landfill/concrete). Ignored for the single-item string form.
-        tiles: Tile[] = []
+        tiles: Tile[] = [],
+        /** Mirror bit for a single-entity paint ghost (pipette / flip). */
+        mirror = false
     ): void {
         if (this.mode === EditorMode.PAINT) {
             this.paintContainer.destroy()
@@ -1599,7 +1601,7 @@ export class BlueprintContainer extends Container {
                     )
                 } else {
                     this.paintContainer = this.entityPaintSlot.addChild(
-                        new PaintEntityContainer(this, placeResult, direction)
+                        new PaintEntityContainer(this, placeResult, direction, mirror)
                     )
                 }
             } else {

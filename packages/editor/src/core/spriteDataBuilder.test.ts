@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { loadData } from './factorioData'
+import FD, { loadData } from './factorioData'
 import { havePackData, readPackData } from './packDataFiles'
 import { clearSpriteDataCache, getSpriteData } from './spriteDataBuilder'
 import { resolveSpriteFilename } from './spriteCensus'
+import { entityUsesMirroring } from './flip'
 
 /**
  * Assembling-machine sprite composition. The electromagnetic plant's coils are
@@ -104,6 +105,79 @@ describe('assembling-machine sprites (space-age)', () => {
                 files.some(f => f.includes('-mask')),
                 `recipe-tint masks should stay off without a recipe tint; got: ${files.join(', ')}`
             ).toBe(false)
+        }
+    )
+
+    it.skipIf(!havePackData('space-age'))(
+        'mirrored recycler draws the dedicated flipped-N sheet, not a scaled north sprite',
+        () => {
+            clearSpriteDataCache()
+            loadData(readPackData('space-age'))
+
+            const files = visibleFiles('recycler', { mirror: true })
+            expect(
+                files.some(f => f.includes('recycler-flipped-N.png')),
+                `flipped sheet missing; got: ${files.join(', ')}`
+            ).toBe(true)
+            expect(
+                files.some(f => /recycler-N\.png$/.test(f)),
+                `unflipped north sheet should not draw when mirrored; got: ${files.join(', ')}`
+            ).toBe(false)
+        }
+    )
+
+    it.skipIf(!havePackData('space-age'))(
+        'mirrored chemical plant geometrically flips sprite shift (no flipped sheet)',
+        () => {
+            clearSpriteDataCache()
+            loadData(readPackData('space-age'))
+
+            const bag = {
+                dir: 0,
+                name: 'chemical-plant',
+                position: { x: 0, y: 0 },
+                generateConnector: false,
+            }
+            const plain = getSpriteData(bag as Parameters<typeof getSpriteData>[0])
+            const flipped = getSpriteData({
+                ...bag,
+                mirror: true,
+            } as Parameters<typeof getSpriteData>[0])
+            expect(Array.isArray(plain) && Array.isArray(flipped)).toBe(true)
+            const p0 = (plain as unknown as { shift?: number[] }[])[0]
+            const f0 = (flipped as unknown as { shift?: number[] }[])[0]
+            expect(p0?.shift && f0?.shift).toBeTruthy()
+            expect(f0.shift[0]).toBeCloseTo(-p0.shift[0])
+            expect(f0.shift[1]).toBeCloseTo(p0.shift[1])
+        }
+    )
+
+    it.skipIf(!havePackData('space-age'))(
+        'space-age mirrorable set: recycler + fluid buildings, not belts/pipes',
+        () => {
+            clearSpriteDataCache()
+            loadData(readPackData('space-age'))
+            const names = Object.values(FD.entities)
+                .filter(e => entityUsesMirroring(e))
+                .map(e => e.name)
+            for (const n of [
+                'recycler',
+                'chemical-plant',
+                'oil-refinery',
+                'foundry',
+                'biochamber',
+                'cryogenic-plant',
+                'electromagnetic-plant',
+                'boiler',
+                'heat-exchanger',
+                'fusion-generator',
+                'fusion-reactor',
+            ]) {
+                expect(names, `expected ${n} to be mirrorable`).toContain(n)
+            }
+            for (const n of ['pipe', 'pumpjack', 'transport-belt', 'inserter', 'steam-engine']) {
+                expect(names, `expected ${n} not to use sprite mirroring`).not.toContain(n)
+            }
         }
     )
 })
