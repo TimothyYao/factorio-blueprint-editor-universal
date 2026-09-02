@@ -298,6 +298,8 @@ export class EntityContainer {
             this.m_Entity.type === 'mining-drill' ||
             this.m_Entity.type === 'boiler' ||
             this.m_Entity.type === 'generator' ||
+            this.m_Entity.type === 'fusion-generator' ||
+            this.m_Entity.type === 'fusion-reactor' ||
             this.m_Entity.type === 'pump' ||
             this.m_Entity.type === 'offshore-pump' ||
             this.m_Entity.type === 'arithmetic-combinator' ||

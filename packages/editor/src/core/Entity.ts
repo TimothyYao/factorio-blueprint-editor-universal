@@ -256,11 +256,20 @@ export class Entity extends EventEmitter<EntityEvents> {
         return this.m_rawEntity.direction === undefined ? 0 : this.m_rawEntity.direction
     }
     public set direction(direction: number) {
-        if (this.m_rawEntity.direction === direction) return
+        if (this.direction === direction) return
 
         this.m_BP.history
             .updateValue(this.m_rawEntity, 'direction', direction, 'Change direction')
-            .onDone(() => this.emit('direction'))
+            .onDone((_newValue, oldValue) => {
+                // Occupancy is keyed by the current footprint. A 90° turn of a
+                // 2×4 recycler / 3×5 fusion generator swaps width and height,
+                // so drop the old cells using the previous direction before
+                // stamping the new ones.
+                const oldDir = oldValue === undefined ? 0 : oldValue
+                this.m_BP.entityPositionGrid.removeTileData(this, this.position, oldDir)
+                this.m_BP.entityPositionGrid.setTileData(this)
+                this.emit('direction')
+            })
             .commit()
     }
 
@@ -1707,18 +1716,35 @@ export class Entity extends EventEmitter<EntityEvents> {
     private rotateDir(ccw: boolean): number {
         if (!this.canBeRotated) return this.direction
         const pr = this.possibleRotations
-        return pr[
-            (pr.indexOf(this.direction) +
-                (this.size.x !== this.size.y || this.type === 'underground-belt' ? 2 : 1) *
-                    (ccw ? 3 : 1)) %
-                pr.length
-        ]
+        // Underground belts (and 1×2 loaders) step 180° because `rotate` also
+        // flips input/output; an extra 90° would double-act. Every other
+        // building — including rectangular ones like the recycler and fusion
+        // generator — steps 90°, matching the paint ghost and the game. The
+        // direction setter refreshes occupancy so the footprint can swap.
+        const step =
+            this.type === 'underground-belt' ||
+            (this.type === 'loader' && this.size.x !== this.size.y)
+                ? 2
+                : 1
+        return pr[(pr.indexOf(this.direction) + step * (ccw ? 3 : 1)) % pr.length]
     }
 
     public rotate(ccw = false, rotateOpposingUB = false): void {
         const newDir = this.rotateDir(ccw)
 
         if (newDir === this.direction) return
+
+        const newSize = getEntitySize(this.entityData, newDir)
+        if (newSize.x !== this.size.x || newSize.y !== this.size.y) {
+            this.m_BP.entityPositionGrid.removeTileData(this)
+            const available = this.m_BP.entityPositionGrid.isAreaAvailable(
+                this.name,
+                this.position,
+                newDir
+            )
+            this.m_BP.entityPositionGrid.setTileData(this)
+            if (!available) return
+        }
 
         this.m_BP.history.startTransaction('Rotate entity')
 

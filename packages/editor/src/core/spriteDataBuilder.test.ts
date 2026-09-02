@@ -107,3 +107,43 @@ describe('assembling-machine sprites (space-age)', () => {
         }
     )
 })
+
+function visibleFilesAt(name: string, dir: number): string[] {
+    const parts = getSpriteData({
+        dir,
+        name,
+        position: { x: 0, y: 0 },
+        generateConnector: false,
+    } as Parameters<typeof getSpriteData>[0])
+    if (!Array.isArray(parts)) return []
+    return parts
+        .filter(p => p && !p.draw_as_shadow)
+        .map(p => resolveSpriteFilename(p, dir))
+        .filter((f): f is string => !!f)
+}
+
+describe('directional sprites (space-age)', () => {
+    it.skipIf(!havePackData('space-age'))(
+        'recycler, fusion generator, and fusion reactor change sprites with direction',
+        () => {
+            clearSpriteDataCache()
+            loadData(readPackData('space-age'))
+
+            const recyclerN = visibleFilesAt('recycler', 0)
+            const recyclerE = visibleFilesAt('recycler', 4)
+            expect(recyclerN.some(f => f.includes('recycler-N.png'))).toBe(true)
+            expect(recyclerE.some(f => f.includes('recycler-E.png'))).toBe(true)
+            expect(recyclerN).not.toEqual(recyclerE)
+
+            const genN = visibleFilesAt('fusion-generator', 0)
+            const genE = visibleFilesAt('fusion-generator', 4)
+            expect(genN.some(f => f.includes('/north/'))).toBe(true)
+            expect(genE.some(f => f.includes('/east/'))).toBe(true)
+            expect(genN).not.toEqual(genE)
+
+            const reactorN = visibleFilesAt('fusion-reactor', 0)
+            expect(reactorN.some(f => f.includes('fusion-reactor-main.png'))).toBe(true)
+            expect(reactorN.some(f => f.includes('fusion-reactor-connection-'))).toBe(true)
+        }
+    )
+})

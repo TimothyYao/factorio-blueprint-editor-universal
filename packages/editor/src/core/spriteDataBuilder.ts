@@ -1561,34 +1561,49 @@ function draw_furnace(e: FurnacePrototype): (data: IDrawData) => readonly Sprite
     // build time and escaped the sprite-gen guard (#38).
     const gs = (e as { graphics_set?: { animation?: unknown; idle_animation?: unknown } })
         .graphics_set
-    const anim = (gs?.animation ?? gs?.idle_animation) as
-        | (Animation & Record<string, { layers?: SpriteData[] }>)
-        | undefined
-    if (anim?.layers) {
-        return () => anim.layers as readonly SpriteData[]
-    }
-    // Directional animation (e.g. recycler has {north, east, south, west})
-    return (data: IDrawData) => anim?.[util.getDirName(data.dir)]?.layers || []
+    const anim = (gs?.animation ?? gs?.idle_animation) as Animation4Way | undefined
+    if (!anim) return () => []
+    // Plain `{layers}` (stone furnace) or 4-way `{north,east,south,west}`
+    // (Space Age recycler): getAnimation picks this direction, layersOf flattens.
+    return (data: IDrawData) => layersOf(getAnimation(anim, data.dir))
 }
 function draw_fusion_generator(
     e: FusionGeneratorPrototype
 ): (data: IDrawData) => readonly SpriteData[] {
     return (data: IDrawData) => {
         const gs = (e as any).graphics_set
-        const dirMap: Record<string, any> = {
+        if (!gs) return []
+        const dirMap: Record<string, { animation?: Animation }> = {
             north: gs.north_graphics_set,
             east: gs.east_graphics_set,
             south: gs.south_graphics_set,
             west: gs.west_graphics_set,
         }
         const dirSet = dirMap[util.getDirName(data.dir)]
-        return dirSet?.animation?.layers || []
+        return layersOf(dirSet?.animation)
     }
 }
 function draw_fusion_reactor(
     e: FusionReactorPrototype
 ): (data: IDrawData) => readonly SpriteData[] {
-    return () => (e as any).graphics_set.structure.layers
+    return (data: IDrawData) => {
+        const gs = (e as any).graphics_set
+        if (!gs) return []
+        const structure = layersOf(gs.structure)
+        const mapping: number[] | undefined =
+            gs.direction_to_connections_graphics?.[util.getDirName(data.dir)] ??
+            gs.direction_to_connections_graphics?.north
+        const connections: SpriteData[] = []
+        const cgs = gs.connections_graphics as { pictures?: SpriteData }[] | undefined
+        if (cgs) {
+            const indices = mapping && mapping.length > 0 ? mapping : cgs.map((_, i) => i + 1)
+            for (const idx of indices) {
+                const cg = cgs[idx - 1]
+                if (cg?.pictures) connections.push(...layersOf(cg.pictures))
+            }
+        }
+        return [...structure, ...connections]
+    }
 }
 function draw_gate(e: GatePrototype): (data: IDrawData) => readonly SpriteData[] {
     return (data: IDrawData) => {
