@@ -513,6 +513,22 @@ do
     output.inventoryLayout = inventoryLayout
 end
 
+-- QUALITY TIERS
+-- Factorio 2.0 always defines `normal` (and `quality-unknown`); the quality
+-- mod adds uncommon/rare/epic/legendary. Dumping the prototypes pulls their
+-- `icon` / `color` / `level` into data.json so the editor can badge from the
+-- atlas. Packs that never enable the quality mod still emit `normal`.
+do
+    local qualities = {}
+    if data.raw.quality then
+        for _, quality in pairs(deep_copy(data.raw.quality)) do
+            localise(quality, 'quality')
+            qualities[quality.name] = quality
+        end
+    end
+    output.qualities = qualities
+end
+
 -- UTILITY SPRITES
 do
     output.utilitySprites = data.raw['utility-sprites'].default
