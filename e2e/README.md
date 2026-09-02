@@ -23,7 +23,7 @@ first; the initial run is slow, subsequent runs reuse the server locally
 
 The build under test fetches its pack data (`packs.json`, each pack's
 `data.json` + `.basis` atlas) from the **published data plane**,
-`https://trisiak.github.io/factorio-pack-data` — the same URL production and the
+`https://timothyyao.github.io/factorio-pack-data` — the same URL production and the
 PR previews use. Nothing pack-related is committed here or baked into `dist/`,
 so this suite is also a **canary for the data plane**: a break there (site down,
 pack renamed, format drift) fails the suite the same way an app regression does.

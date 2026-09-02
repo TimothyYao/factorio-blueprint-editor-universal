@@ -72,7 +72,7 @@ Known limits / deliberate deferrals, roughly in priority order:
       `placeableEntityPrototypes`) doesn't include `resource` prototypes, so no
       `mining_time`/results ship; and the ore under a drill isn't in the
       blueprint anyway (the mod reads the map). Needs a data-plane regen in
-      `trisiak/factorio-pack-data` plus a per-drill ore choice in the UI.
+      `TimothyYao/factorio-pack-data` plus a per-drill ore choice in the UI.
 - [ ] **Electricity / power rates** — explicitly out of scope for now (feature
       owner). Would need an energy-string parser (`"375kW"`, `"1.8MW"` — port
       of `packages/exporter/src/browser/catalog.rs`'s `parse_energy`); note the

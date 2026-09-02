@@ -22,9 +22,9 @@ there is no React/Vue/framework — UI is hand-built.
 > `https://timothyyao.github.io/factorio-blueprint-editor-universal/`); see
 > `.github/workflows/pages-*.yml` and **`docs/github-pages.md`**. Don't assume
 > changes here go to teoxoy.com or the parent fork, and don't open PRs against
-> either unless asked. The pack-data plane stays
-> [`trisiak/factorio-pack-data`](https://github.com/trisiak/factorio-pack-data)
-> — this repo does not republish it.
+> either unless asked. The pack-data plane for this line is
+> [`TimothyYao/factorio-pack-data`](https://github.com/TimothyYao/factorio-pack-data)
+> — this editor repo does not republish it.
 
 ### Current focus areas
 
@@ -68,15 +68,16 @@ exporter is a separate Rust tool and is **not** a JS workspace.
   builds the atlas/data the editor consumes. Needs Factorio credentials; you
   almost never need to run it. Excluded from eslint/vitest.
     - **The generated data is NOT in this repo.** It lives in the dedicated data
-      plane, [`trisiak/factorio-pack-data`](https://github.com/trisiak/factorio-pack-data),
-      published on GitHub Pages at `https://trisiak.github.io/factorio-pack-data/`
+      plane, [`TimothyYao/factorio-pack-data`](https://github.com/TimothyYao/factorio-pack-data),
+      published on GitHub Pages at `https://timothyyao.github.io/factorio-pack-data/`
       (CORS `*`). Every build points at it via `VITE_DATA_URL` → `__DATA_URL__` →
       `DATA_ROOT` (production + PR previews set it in `.github/workflows/pages-*.yml`,
       e2e in `playwright.config.ts`); nothing is copied into `dist/`.
       `packages/exporter/data/output/` remains the exporter's local working
       directory and is **gitignored** — a local run writes there and serves it on
       `:8081`, which the dev server's `/data` proxy targets. That repo also holds
-      the **manifest of record** (`packs/packs.json`). Issue #8 tracks this move.
+      the **manifest of record** (`packs/packs.json`). Issue #8 tracked the move
+      off this repo; the live plane for this line is now TimothyYao's data repo.
     - **Data packs (modpack support):** the data plane publishes one
       sub-directory per dump — `vanilla-2.0/` (base 2.0), `space-age/` (2.0 +
       Space Age + Quality + Elevated Rails) and `space-exploration/` — each with

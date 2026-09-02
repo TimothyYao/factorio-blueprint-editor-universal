@@ -42,8 +42,8 @@ jobs:
           # appends the active pack id at runtime, so a preview fetches
           # <root>/<pack>/data.json + that pack's atlas. Nothing pack-related is
           # bundled into the preview. See
-          # https://github.com/trisiak/factorio-pack-data.
-          VITE_DATA_URL: https://trisiak.github.io/factorio-pack-data
+          # https://github.com/TimothyYao/factorio-pack-data.
+          VITE_DATA_URL: https://timothyyao.github.io/factorio-pack-data
           # Firebase web config for the blueprint library's cloud sync (Phase 6).
           # GitHub repo *variables*, not secrets — Firebase web config is public
           # (it ships in the client bundle). Unset ⇒ empty ⇒ unconfigured ⇒ a

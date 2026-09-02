@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'fs'
 
 /**
  * Test-only access to the exporter's per-pack data.json files. data/output is
- * no longer committed — the data plane (trisiak/factorio-pack-data) serves it —
+ * no longer committed — the data plane (TimothyYao/factorio-pack-data) serves it —
  * so data-driven suites gate themselves on `havePackData` and self-skip on a
  * fresh clone. CI fetches the JSON tiers before vitest (see ci.yml), so the
  * ratchets/audits always run there; locally, run the exporter or curl the

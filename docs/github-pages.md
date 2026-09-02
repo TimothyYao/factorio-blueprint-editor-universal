@@ -4,9 +4,9 @@ This repo is **`TimothyYao/factorio-blueprint-editor-universal`**, a fork of
 [`trisiak/factorio-blueprint-editor`](https://github.com/trisiak/factorio-blueprint-editor),
 itself a fork of
 [`Teoxoy/factorio-blueprint-editor`](https://github.com/Teoxoy/factorio-blueprint-editor).
-It publishes its own site. The pack-data plane stays on the parent line
-([`trisiak/factorio-pack-data`](https://github.com/trisiak/factorio-pack-data))
-and is **not** republished from here.
+It publishes its own site. The pack-data plane for this line is
+[`TimothyYao/factorio-pack-data`](https://github.com/TimothyYao/factorio-pack-data)
+and is **not** republished from this editor repo.
 
 | What        | URL                                                                                   |
 | ----------- | ------------------------------------------------------------------------------------- |
@@ -14,7 +14,7 @@ and is **not** republished from here.
 | PR preview  | `https://timothyyao.github.io/factorio-blueprint-editor-universal/pr-preview/pr-<N>/` |
 | Parent fork | https://trisiak.github.io/factorio-blueprint-editor/                                  |
 | Original    | https://fbe.teoxoy.com                                                                |
-| Pack data   | https://trisiak.github.io/factorio-pack-data/                                         |
+| Pack data   | https://timothyyao.github.io/factorio-pack-data/                                       |
 
 Vite `base` must be the project-site path (`/factorio-blueprint-editor-universal/`).
 The production and preview workflows set `PUBLIC_BASE` from
@@ -32,7 +32,7 @@ parent's `/factorio-blueprint-editor/` path.
   `pr-preview/pr-<N>/` on the same branch and comments the URL; on close, removes
   it.
 
-Both keep `VITE_DATA_URL=https://trisiak.github.io/factorio-pack-data`. Cloudflare
+Both keep `VITE_DATA_URL=https://timothyyao.github.io/factorio-pack-data`. Cloudflare
 Pages Functions (`functions/corsproxy.js`) do **not** run here, but URL-based
 blueprint import works anyway for hosts that send CORS headers (pastebin raw,
 the gist API, Google Docs exports, Dropbox's dl.dropboxusercontent.com, and the
@@ -108,9 +108,10 @@ are set. If you enable them, add `timothyyao.github.io` under Firebase
 
 ## What stays on the parent / original
 
-Do **not** retarget these at this repo:
+Do **not** retarget these at this editor repo:
 
-- Pack data and `packs.json` — `trisiak/factorio-pack-data`
+- Pack data and `packs.json` live in `TimothyYao/factorio-pack-data` (this
+  line's data plane; originally the parent `trisiak/factorio-pack-data`)
 - Historical issue numbers in `docs/` (`#28`, `#87`, …) — those tickets live
   on `trisiak/factorio-blueprint-editor`
 - Original credits, Factorio art-asset notice, and the upstream Discord

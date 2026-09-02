@@ -15,7 +15,7 @@ const debug = false
  *
  * Injected at build time by Vite's `define` (see website `vite.config.js`).
  * The data itself is not part of this repo or of `dist/`: every build points at
- * the dedicated data plane (`trisiak/factorio-pack-data` on GitHub Pages, CORS
+ * the dedicated data plane (`TimothyYao/factorio-pack-data` on GitHub Pages, CORS
  * `*`) via `VITE_DATA_URL`, while `vite` dev keeps the app-relative `<base>data`
  * that the dev server proxies to the exporter's `:8081`. The `typeof` guard
  * keeps it working outside Vite (e.g. vitest), where the constant isn't
