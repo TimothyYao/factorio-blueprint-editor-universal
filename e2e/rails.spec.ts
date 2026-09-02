@@ -64,9 +64,14 @@ test.describe('rail planner', () => {
         expect((await getState(page)).blueprint.entityCount).toBe(0)
 
         const editor = page.locator('#editor')
-        await editor.hover({ position: FROM })
+        await editor.focus()
+        const box = await editor.boundingBox()
+        expect(box).toBeTruthy()
+        // `hover({position})` hit-tests overlays (dat.gui); desktop build specs
+        // drive the canvas with page.mouse instead.
+        await page.mouse.move(box!.x + FROM.x, box!.y + FROM.y)
         await page.mouse.down()
-        await editor.hover({ position: TO })
+        await page.mouse.move(box!.x + TO.x, box!.y + TO.y)
         await expect.poll(async () => (await getState(page)).paint.railPlan?.complete).toBe(true)
         await page.mouse.up()
 
