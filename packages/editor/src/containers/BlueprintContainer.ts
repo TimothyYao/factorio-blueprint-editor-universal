@@ -732,8 +732,9 @@ export class BlueprintContainer extends Container {
         } else if (this.mode === EditorMode.PAINT) {
             if (this.paintContainer.canFlipOrRotateByCopying()) {
                 const copies = this.paintContainer.rotatedEntities(ccw)
+                const tiles = this.paintContainer.rotatedTiles(ccw)
                 this.paintContainer.destroy()
-                this.spawnPaintContainer(copies, 0)
+                this.spawnPaintContainer(copies, 0, tiles)
             } else {
                 this.paintContainer.rotate(ccw)
             }
@@ -750,17 +751,28 @@ export class BlueprintContainer extends Container {
     }
 
     public flip(vertical: boolean): void {
-        if (this.mode === EditorMode.PAINT && this.paintContainer.canFlipOrRotateByCopying()) {
-            try {
-                const copies = this.paintContainer.flippedEntities(vertical)
-                this.paintContainer.destroy()
-                this.spawnPaintContainer(copies, 0)
-            } catch (e) {
-                if (e instanceof IllegalFlipError) {
-                    G.logger({ text: e.message, type: 'warning' })
+        try {
+            if (this.mode === EditorMode.PAINT && this.paintContainer) {
+                if (this.paintContainer.canFlipOrRotateByCopying()) {
+                    const copies = this.paintContainer.flippedEntities(vertical)
+                    const tiles = this.paintContainer.flippedTiles(vertical)
+                    this.paintContainer.destroy()
+                    this.spawnPaintContainer(copies, 0, tiles)
                 } else {
-                    throw e
+                    this.paintContainer.flip(vertical)
                 }
+            } else if (this.mode === EditorMode.EDIT && this.hoverContainer) {
+                this.hoverContainer.entity.flip(vertical)
+            } else if (this.mode === EditorMode.SELECT && this.marqueeEntities.length === 1) {
+                const brokenBefore = this.countOverReach()
+                this.marqueeEntities[0].flip(vertical)
+                this.warnNewOverReach(brokenBefore)
+            }
+        } catch (e) {
+            if (e instanceof IllegalFlipError) {
+                G.logger({ text: e.message, type: 'warning' })
+            } else {
+                throw e
             }
         }
     }

@@ -3,6 +3,7 @@ import { IPoint } from '../types'
 import util from '../common/util'
 import { Blueprint } from '../core/Blueprint'
 import { Tile } from '../core/Tile'
+import { flipPoint, rotatePoint } from '../core/flip'
 import { inputMode } from '../common/input'
 import { EntitySprite } from './EntitySprite'
 import { PaintContainer } from './PaintContainer'
@@ -186,13 +187,15 @@ export class PaintBlueprintContainer extends PaintContainer {
         console.log(withOutNums)
     }
 
+    public override canFlip(): boolean {
+        return this.entities.size > 0 || this.ghostTiles.length > 0
+    }
+
     public override canFlipOrRotateByCopying(): boolean {
-        // Flip/rotate work by re-spawning the ghost from rotated/flipped entity
-        // *copies* — tiles have no copy path yet, so they'd silently vanish from
-        // the ghost. Gate the whole mechanism off while tiles are aboard (the
-        // Flip buttons hide via `cursorCanFlip`; Rotate falls through to this
-        // class's no-op `rotate`).
-        return this.ghostTiles.length === 0
+        // Re-spawn from rotated/flipped entity copies (and remapped ghost tiles).
+        // Always true for this container — even a tiles-only paste has a copy path
+        // (`rotatedTiles` / `flippedTiles`).
+        return true
     }
 
     public override rotatedEntities(ccw?: boolean): Entity[] {
@@ -210,6 +213,20 @@ export class PaintBlueprintContainer extends PaintContainer {
             result.push(e.getFlippedCopy(vertical))
         }
         return result
+    }
+
+    public override flippedTiles(vertical: boolean): Tile[] {
+        return this.ghostTiles.map(t => {
+            const p = flipPoint({ x: t.x, y: t.y }, vertical)
+            return new Tile(t.name, p.x, p.y)
+        })
+    }
+
+    public override rotatedTiles(ccw?: boolean): Tile[] {
+        return this.ghostTiles.map(t => {
+            const p = rotatePoint({ x: t.x, y: t.y }, !!ccw)
+            return new Tile(t.name, p.x, p.y)
+        })
     }
 
     public override moveAtCursor(): void {

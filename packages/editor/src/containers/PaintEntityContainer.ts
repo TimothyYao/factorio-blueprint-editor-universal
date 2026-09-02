@@ -1,6 +1,7 @@
 import { Container } from 'pixi.js'
 import { DirectionType, IPoint } from '../types'
 import FD, { getEntitySize, getPossibleRotations } from '../core/factorioData'
+import { constrainToPossibleDirections, flipDirection } from '../core/flip'
 import { UndergroundBeltPrototype } from 'factorio:prototype'
 import { Entity } from '../core/Entity'
 import { EntitySprite } from './EntitySprite'
@@ -142,6 +143,25 @@ export class PaintEntityContainer extends PaintContainer {
 
         this.redraw()
         this.moveAtCursor()
+    }
+
+    public override flip(vertical: boolean): void {
+        if (!this.visible) return
+        const pr = getPossibleRotations(FD.entities[this.name])
+        if (pr.length === 0) return
+        const next = constrainToPossibleDirections(
+            this.direction,
+            flipDirection(this.direction, vertical),
+            pr
+        )
+        if (next === this.direction) return
+        this.direction = next
+        this.redraw()
+        this.moveAtCursor()
+    }
+
+    public override canFlip(): boolean {
+        return getPossibleRotations(FD.entities[this.name]).length !== 0
     }
 
     public override canFlipOrRotateByCopying(): boolean {
