@@ -107,6 +107,7 @@ import {
     SpriteVariationsStruct,
     Animation4WayStruct,
     AnimationVariationsStruct,
+    WorkingVisualisation,
 } from 'factorio:prototype'
 import { Animation } from 'factorio:prototype'
 import { Animation4Way } from 'factorio:prototype'
@@ -742,23 +743,24 @@ function layersOf(s: SpriteData | Animation | undefined | null): readonly Sprite
  * `animation`, or a per-direction `north_animation` / … field.
  */
 function idleWorkingVisualisations(
-    gs:
-        | {
-              working_visualisations?: readonly Record<string, unknown>[]
-          }
-        | undefined,
+    gs: { working_visualisations?: readonly WorkingVisualisation[] } | undefined,
     dir: number
 ): readonly SpriteData[] {
     if (!gs?.working_visualisations) return []
     const dirName = util.getDirName(dir)
+    const dirAnim = `${dirName}_animation` as
+        | 'north_animation'
+        | 'east_animation'
+        | 'south_animation'
+        | 'west_animation'
     const out: SpriteData[] = []
     for (const vis of gs.working_visualisations) {
         if (!vis.always_draw) continue
         if (vis.enabled_by_name) continue
-        if (vis.apply_recipe_tint) continue
+        if (vis.apply_recipe_tint && vis.apply_recipe_tint !== 'none') continue
         const states = vis.draw_in_states
-        if (Array.isArray(states) && !states.includes('idle')) continue
-        const anim = vis[`${dirName}_animation`] ?? vis.animation
+        if (states && !states.includes('idle')) continue
+        const anim = vis[dirAnim] ?? vis.animation
         if (!anim) continue
         out.push(...layersOf(getAnimation(anim as Animation4Way, dir)))
     }
