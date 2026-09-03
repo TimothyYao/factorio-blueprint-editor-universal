@@ -290,6 +290,12 @@ export interface FbeTestHook {
     /** On-screen centre of "✓ Confirm", or null while it's hidden. */
     inventoryConfirmButtonPos: () => { x: number; y: number } | null
     /**
+     * On-screen centre of quality-row chip `index` in the open selector
+     * (0 = Any when the row has it, then Normal…Legendary). Null when the
+     * row isn't shown or the index is past the chips.
+     */
+    inventoryQualityChipPos: (index: number) => { x: number; y: number } | null
+    /**
      * Flip the input mode, as the settings pane's Input Mode dropdown does. Lets
      * a spec assert that live-mode-switch handling works on already-open UI.
      */
@@ -586,6 +592,10 @@ export function installTestHook(win: Window = window): void {
         inventoryConfirmButtonPos: () => {
             const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
             return inv ? inv.confirmButtonPosition() : null
+        },
+        inventoryQualityChipPos: index => {
+            const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
+            return inv ? inv.qualityChipPosition(index) : null
         },
         setInputMode: mode => {
             inputMode.mode = mode

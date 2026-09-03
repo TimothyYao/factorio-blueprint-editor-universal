@@ -50,6 +50,20 @@ export class QualityRow extends Container {
         return this.current
     }
 
+    /**
+     * On-screen centres of the quality chips only (Any if present, then tiers).
+     * Skips the comparator cycle so callers can index 0 = first chip.
+     */
+    public chipCenters(): { x: number; y: number }[] {
+        const out: { x: number; y: number }[] = []
+        for (const c of this.children) {
+            if (!(c instanceof Button) || c instanceof CycleButton) continue
+            const r = c.getBounds().rectangle
+            out.push({ x: r.x + r.width / 2, y: r.y + r.height / 2 })
+        }
+        return out
+    }
+
     public set value(next: string | undefined) {
         const n = this.opts.includeAny ? next : next && next !== 'normal' ? next : undefined
         if (n === this.current) return

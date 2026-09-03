@@ -119,6 +119,93 @@ test.describe('quality UI', () => {
             })
         ).toBe('legendary')
     })
+
+    test('splitter filter picker confirms quality-only without an item', async ({ page }) => {
+        await page.goto('/?test&pack=space-age')
+        await waitForAppReady(page)
+
+        await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__: {
+                    spawnPaintItem: (name: string) => void
+                    confirmPlacement: () => void
+                    centerView: () => void
+                }
+            }
+            w.__FBE_TEST__.spawnPaintItem('fast-splitter')
+            w.__FBE_TEST__.confirmPlacement()
+            w.__FBE_TEST__.centerView()
+        })
+
+        const slot = await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__: {
+                    openEditorSlot: (
+                        name: string,
+                        kind: 'filters',
+                        index: number
+                    ) => { x: number; y: number } | null
+                }
+            }
+            return w.__FBE_TEST__.openEditorSlot('fast-splitter', 'filters', 0)
+        })
+        expect(slot).not.toBeNull()
+
+        const box = await page.locator('#editor').boundingBox()
+        const ox = box?.x ?? 0
+        const oy = box?.y ?? 0
+        await page.mouse.click(ox + slot.x, oy + slot.y)
+
+        await expect
+            .poll(async () =>
+                page.evaluate(() =>
+                    (
+                        window as unknown as {
+                            __FBE_TEST__: { inventoryOpen: () => boolean }
+                        }
+                    ).__FBE_TEST__.inventoryOpen()
+                )
+            )
+            .toBe(true)
+
+        // Chip 0 is Any (multicolored); chip 3 is Rare.
+        const rare = await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__: {
+                    inventoryQualityChipPos: (index: number) => { x: number; y: number } | null
+                }
+            }
+            return w.__FBE_TEST__.inventoryQualityChipPos(3)
+        })
+        expect(rare, 'Rare quality chip should be locatable').not.toBeNull()
+        await page.mouse.click(ox + rare.x, oy + rare.y)
+
+        const confirm = await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__: {
+                    inventoryConfirmButtonPos: () => { x: number; y: number } | null
+                }
+            }
+            return w.__FBE_TEST__.inventoryConfirmButtonPos()
+        })
+        expect(confirm, 'Confirm should appear for a quality-only pick').not.toBeNull()
+        await page.mouse.click(ox + confirm.x, oy + confirm.y)
+
+        await expect
+            .poll(async () => {
+                return page.evaluate(() => {
+                    const w = window as unknown as {
+                        __FBE_TEST__: {
+                            serializedEntity: (name: string) => {
+                                filter?: { name?: string; quality?: string }
+                            } | null
+                        }
+                    }
+                    return w.__FBE_TEST__.serializedEntity('fast-splitter')?.filter
+                })
+            })
+            .toEqual({ quality: 'rare', comparator: '=' })
+    })
 })
 
 // Legendary beacon (2× speed-module-3) + electromagnetic plant. Equivalent to

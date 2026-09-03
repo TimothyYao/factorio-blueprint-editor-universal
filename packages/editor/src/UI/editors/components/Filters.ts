@@ -196,7 +196,10 @@ export class Filters extends Container<Slot<number>> {
                     if (!slotFilter.name && slotFilter.quality) {
                         // Quality-only: just the tier diamond (include Normal —
                         // filtering "any item of normal quality" is meaningful).
+                        // Slot content is placed at the cell centre, so pivot
+                        // like an anchored CreateIcon.
                         const badge = F.CreateQualityBadge(slotFilter.quality, 28, true)
+                        if (badge) badge.pivot.set(14, 14)
                         slot.content = badge ?? undefined
                     } else if (this.m_Amount) {
                         if (slot.content !== undefined) {

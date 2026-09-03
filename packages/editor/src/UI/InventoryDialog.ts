@@ -139,6 +139,7 @@ export class InventoryDialog extends Dialog {
     private m_pickQuality?: string
     private m_pickComparator?: string
     private readonly m_pickOptions?: InventoryPickOptions
+    private m_qualityRow?: QualityRow
 
     public constructor(
         title = 'Inventory',
@@ -344,6 +345,7 @@ export class InventoryDialog extends Dialog {
             })
             row.position.set(12, 4)
             recipePanel.addChild(row)
+            this.m_qualityRow = row
             // Filter pickers (comparator on): a tier with no item is a valid
             // quality-only filter — reveal Confirm so the user can commit
             // without picking an item (game: dots + green checkmark).
@@ -449,6 +451,15 @@ export class InventoryDialog extends Dialog {
         if (!this.m_confirmBtn?.visible) return null
         const r = this.m_confirmBtn.getBounds().rectangle
         return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
+    }
+
+    /**
+     * On-screen centre of quality-row chip `index` (0 = Any when the row has
+     * it, then Normal…Legendary). Null when the row isn't shown or the index
+     * is past the chips (the comparator cycle is not counted).
+     */
+    public qualityChipPosition(index: number): { x: number; y: number } | null {
+        return this.m_qualityRow?.chipCenters()[index] ?? null
     }
 
     /**
