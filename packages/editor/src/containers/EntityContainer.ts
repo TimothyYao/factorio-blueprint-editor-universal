@@ -35,7 +35,11 @@ export class EntityContainer {
 
         EntityContainer.mappings.set(this.m_Entity.entityNumber, this)
 
-        this.visualizationArea = G.BPC.underlayContainer.create(this.m_Entity.name, this.position)
+        this.visualizationArea = G.BPC.underlayContainer.create(
+            this.m_Entity.name,
+            this.position,
+            this.m_Entity.quality
+        )
         this.entityInfo = G.BPC.overlayContainer.createEntityInfo(this.m_Entity, this.position)
 
         this.redraw(false, sort)
@@ -89,6 +93,7 @@ export class EntityContainer {
 
         const onQualityChange = (): void => {
             this.rebuildOverlay()
+            this.rebuildVisualizationArea()
             G.UI.updateEntityInfoPanel(this.m_Entity)
         }
 
@@ -317,6 +322,22 @@ export class EntityContainer {
             this.entityInfo.destroy()
         }
         this.entityInfo = G.BPC.overlayContainer.createEntityInfo(this.m_Entity, this.position)
+    }
+
+    /**
+     * Recreate the underlay aura so a quality edit that grows/shrinks a
+     * beacon's supply area is visible immediately (the sprite's scale is
+     * baked at create time).
+     */
+    private rebuildVisualizationArea(): void {
+        const wasShowing = G.BPC.hoverContainer === this
+        this.visualizationArea.destroy()
+        this.visualizationArea = G.BPC.underlayContainer.create(
+            this.m_Entity.name,
+            this.position,
+            this.m_Entity.quality
+        )
+        if (wasShowing) this.visualizationArea.show()
     }
 
     private redrawEntityInfo(): void {

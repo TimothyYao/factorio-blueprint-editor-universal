@@ -219,6 +219,8 @@ export interface FbeTestHook {
     inventoryScrollToLastItem: () => { x: number; y: number; scroll: number } | null
     closeDialogs: () => void
     centerView: () => void
+    /** Zoom the viewport in or out (same as the scroll-wheel path). */
+    zoom: (zoomIn: boolean) => void
     /**
      * Pick up every entity in the blueprint as a paste ghost (a
      * `PaintBlueprintContainer`), the same cursor a copy/paste produces. Lets
@@ -402,6 +404,17 @@ export interface FbeTestHook {
     entityQuality: (name: string) => string | null
     setEntityQuality: (name: string, quality: string | undefined) => boolean
     entityInfoName: (name: string) => string | null
+    /**
+     * Info-panel stat lines (`Supply area: 19×19`, crafting speed, …) from the
+     * same `buildEntityInfo` projection the DOM sheet consumes.
+     */
+    entityInfoLines: (name: string) => string[] | null
+    /**
+     * Hover/tap-select `name`: show its info panel *and* its underlay aura
+     * (beacon supply area, pole coverage, …). `showEntityInfo` only fills the
+     * panel, so visual-QA screenshots of the aura go through here.
+     */
+    hoverEntity: (name: string) => boolean
     serializedEntity: (name: string) => Record<string, unknown> | null
 }
 
@@ -458,6 +471,7 @@ export function installTestHook(win: Window = window): void {
         },
         closeDialogs: () => Dialog.closeAll(),
         centerView: () => G.BPC.centerViewport(),
+        zoom: zoomIn => G.BPC.zoom(zoomIn),
         spawnPasteGhost: () => {
             const entities = G.bp.entities.valuesArray()
             if (entities.length === 0) return false
@@ -683,6 +697,22 @@ export function installTestHook(win: Window = window): void {
         entityInfoName: name => {
             const e = findEntity(name)
             return e ? buildEntityInfo(e).name : null
+        },
+        entityInfoLines: name => {
+            const e = findEntity(name)
+            return e ? buildEntityInfo(e).lines : null
+        },
+        hoverEntity: name => {
+            const e = findEntity(name)
+            if (!e) return false
+            const ec = EntityContainer.mappings.get(e.entityNumber)
+            if (!ec) return false
+            if (G.BPC.hoverContainer && G.BPC.hoverContainer !== ec) {
+                G.BPC.hoverContainer.pointerOutEventHandler()
+            }
+            G.BPC.hoverContainer = ec
+            ec.pointerOverEventHandler()
+            return true
         },
         serializedEntity: name => {
             const e = findEntity(name)

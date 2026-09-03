@@ -30,7 +30,11 @@ export class PaintBlueprintEntityContainer {
         this.bp = bp
         this.entity = entity
 
-        this.visualizationArea = this.bpc.underlayContainer.create(this.entity.name, this.position)
+        this.visualizationArea = this.bpc.underlayContainer.create(
+            this.entity.name,
+            this.position,
+            this.entity.quality
+        )
 
         this.entitySprites = EntitySprite.getParts(
             this.entity,

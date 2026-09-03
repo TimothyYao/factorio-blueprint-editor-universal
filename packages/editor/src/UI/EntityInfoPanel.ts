@@ -16,6 +16,7 @@ import {
     computeMachineEffects,
     resolveModuleNames,
 } from '../core/craftingRates'
+import { beaconSupplyAreaSize } from '../core/beaconEffects'
 import { getIngredientAmount, getProductAmountWithProductivity } from '../core/recipeAmounts'
 import { Entity } from '../core/Entity'
 import { createCircuitNetworkBadges } from './circuitNetworkBadges'
@@ -290,6 +291,10 @@ export class EntityInfoPanel extends Panel {
                 this.m_RecipeIOContainer.position.set(10, nextY)
                 nextY = this.m_RecipeIOContainer.position.y + this.m_RecipeIOContainer.height + 20
             }
+        } else if (entity.entityData.type === 'beacon') {
+            this.m_entityInfo.text = beaconSupplyAreaLine(entity)
+            this.m_entityInfo.position.set(10, nextY)
+            nextY = this.m_entityInfo.position.y + this.m_entityInfo.height + 10
         }
 
         const isBelt = (e: Entity): boolean =>
@@ -529,12 +534,19 @@ export class EntityInfoPanel extends Panel {
     }
 }
 
+/** Wiki-style "Supply area: 19×19" for the selected beacon (quality-scaled). */
+function beaconSupplyAreaLine(entity: Entity): string {
+    const proto = entity.entityData as BeaconPrototype
+    const side = beaconSupplyAreaSize(proto, entity.size.x, entity.quality)
+    return `Supply area: ${side}×${side}`
+}
+
 /**
  * Every beacon in the entity's blueprint whose supply area reaches it, resolved
  * to the shape the core rate maths consumes. The supply area is the beacon's
- * own footprint grown by its supply_area_distance on every side — beacons
- * differ wildly here (SE alone spans 2x2/range-2 compact to 5x5/range-14
- * wide), so both come from the actual beacon, not the vanilla
+ * own footprint grown by its quality-scaled supply_area_distance on every
+ * side — beacons differ wildly here (SE alone spans 2x2/range-2 compact to
+ * 5x5/range-14 wide), so both come from the actual beacon, not the vanilla
  * `FD.entities.beacon` prototype. Range semantics (shared edge = miss) live in
  * `beaconReaches`.
  */
@@ -618,6 +630,8 @@ export function buildEntityInfo(entity: Entity): EntityInfoData {
                 })),
             }
         }
+    } else if (entity.entityData.type === 'beacon') {
+        data.lines.push(beaconSupplyAreaLine(entity))
     }
 
     const isBelt =
