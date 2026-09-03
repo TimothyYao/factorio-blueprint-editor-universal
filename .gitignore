@@ -16,3 +16,6 @@ packages/exporter/target
 /playwright-report
 /playwright/.cache
 /blob-report
+
+# Local verification captures — never PR these
+artifacts/

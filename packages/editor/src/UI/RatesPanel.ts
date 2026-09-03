@@ -374,9 +374,16 @@ export class RatesPanel extends Panel {
         // Guard the icon: a foreign blueprint can reference materials this
         // pack has no prototype (and thus no icon) for.
         if (FD.items[row.name] || FD.fluids[row.name]) {
-            const icon = F.CreateIcon(row.name, ICON, false, false, row.quality)
+            const icon = F.CreateIcon(row.name, ICON, false)
             icon.position.set(PAD, y)
             this.m_Rows.addChild(icon)
+            // Same 16px dump diamond as entity overlays / QualityRow chips —
+            // CreateIcon's 40%-of-24px badge was noticeably softer.
+            const badge = F.CreateQualityBadge(row.quality, 16)
+            if (badge) {
+                badge.position.set(PAD, y + ICON - 16)
+                this.m_Rows.addChild(badge)
+            }
         } else {
             const label = new Text({ text: '?', style: styles.dialog.label })
             label.position.set(PAD + 6, y + 3)

@@ -586,8 +586,8 @@ body.mobile
         position: absolute
         left: -1px
         bottom: -1px
-        width: 10px
-        height: 10px
+        width: 16px
+        height: 16px
         background: #808080
         clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%)
         box-shadow: 0 0 0 1px #111
@@ -596,8 +596,10 @@ body.mobile
             box-shadow: none
             background-color: transparent
             background-repeat: no-repeat
-            background-size: contain
+            background-size: 16px 16px
             background-position: center
+            image-rendering: pixelated
+            image-rendering: crisp-edges
 
 // Layering contract (#89): while any Pixi dialog is open (entity editor,
 // inventory — the editor mirrors the count over `fbe:dialogs`, see index.ts),

@@ -1,10 +1,10 @@
 import { qualityBadgeDataUrl, qualityColorCss } from '@fbe/editor'
 
 /**
- * Wrap an icon with the same bottom-left quality diamond menus and blueprint
- * overlays use (`CreateQualityBadge` → dump icon via `G.getTexture`). Falls
- * back to a tinted CSS diamond when the atlas hasn't produced a data URL yet
- * (textures still loading, or a pack with no quality icons).
+ * Wrap an icon with the same 16px dump-icon diamond menus and blueprint
+ * overlays use. The data URL is the native atlas size (usually 64px); CSS
+ * scales it with `image-rendering: pixelated` so it stays as sharp as the
+ * Pixi sprite instead of a bilinear 12px extract.
  */
 export function wrapIconWithQuality(icon: HTMLElement, quality?: string): HTMLElement {
     if (!quality || quality === 'normal') return icon
@@ -13,7 +13,7 @@ export function wrapIconWithQuality(icon: HTMLElement, quality?: string): HTMLEl
     const badge = document.createElement('span')
     badge.className = 'q-overlay'
     badge.title = quality
-    const src = qualityBadgeDataUrl(quality, 12)
+    const src = qualityBadgeDataUrl(quality)
     if (src) {
         badge.classList.add('q-overlay-art')
         badge.style.backgroundImage = `url("${src}")`
