@@ -92,7 +92,7 @@ const vanillaBeacon = {
     supply_area_distance: 3,
 } as unknown as BeaconPrototype
 
-const NO_EFFECTS: MachineEffects = { speed: 0, productivity: 0, consumption: 0 }
+const NO_EFFECTS: MachineEffects = { speed: 0, productivity: 0, consumption: 0, quality: 0 }
 
 const machine = (
     prototype: CraftingMachinePrototype,
@@ -207,7 +207,12 @@ describe('craftingMachineRates', () => {
     })
 
     it('applies speed to both sides and productivity to products only', () => {
-        const effects: MachineEffects = { speed: 0.2, productivity: 0.1, consumption: 0 }
+        const effects: MachineEffects = {
+            speed: 0.2,
+            productivity: 0.1,
+            consumption: 0,
+            quality: 0,
+        }
         const { ingredients, products } = craftingMachineRates(asm2, copperCable, effects)
         // 0.75 × 1.2 / 0.5 = 1.8 crafts/s.
         expect(ingredients[0].rate).toBeCloseTo(1.8)
@@ -215,7 +220,7 @@ describe('craftingMachineRates', () => {
     })
 
     it('ignores productivity when the recipe disallows it', () => {
-        const effects: MachineEffects = { speed: 0, productivity: 0.2, consumption: 0 }
+        const effects: MachineEffects = { speed: 0, productivity: 0.2, consumption: 0, quality: 0 }
         const { products } = craftingMachineRates(asm2, ironChest, effects)
         // 0.75 / 0.5 = 1.5 crafts/s, productivity NOT applied.
         expect(products[0].rate).toBeCloseTo(1.5)

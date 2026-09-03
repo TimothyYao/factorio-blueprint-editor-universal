@@ -9,7 +9,12 @@ import FD, { getModule, isCraftingMachine } from './factorioData'
 import { beaconEffectMultiplier, beaconSupplyAreaDistance } from './beaconEffects'
 import { getIngredientAmount, getProductAmountWithProductivity } from './recipeAmounts'
 import type { IModuleSlot } from './Entity'
-import { qualityCraftingSpeedMul, scalePositiveEffect } from './quality'
+import {
+    qualityCraftingSpeedMul,
+    qualityEffectChance,
+    qualityRollDistribution,
+    scalePositiveEffect,
+} from './quality'
 
 /**
  * Blueprint-wide production/consumption rate maths (issue: RateCalculator-style
@@ -42,6 +47,8 @@ export interface MachineEffects {
     speed: number
     productivity: number
     consumption: number
+    /** Total quality chance from quality modules (0–1 scale, 0 = no quality modules). */
+    quality: number
 }
 
 /** An axis-aligned footprint on the tile grid: tile-space center + size. */
@@ -73,6 +80,8 @@ export interface CraftingMachineSource {
     modules: ModuleInput[]
     /** Entity quality — scales crafting_speed by 1 + 0.3 × level. */
     quality?: string
+    /** Quality of the set recipe — non-fluid outputs inherit this quality. */
+    recipeQuality?: string
     footprint: Footprint
 }
 
@@ -122,6 +131,7 @@ export function computeMachineEffects(
     let speed = 0
     let productivity = 0
     let consumption = 0
+    let quality = 0
 
     const add = (module: ModuleInput, multiplier: number): void => {
         const r = asResolved(module)
@@ -130,6 +140,7 @@ export function computeMachineEffects(
         if (e.productivity)
             productivity += scalePositiveEffect(e.productivity, r.quality) * multiplier
         if (e.consumption) consumption += scalePositiveEffect(e.consumption, r.quality) * multiplier
+        if (e.quality) quality += qualityEffectChance(e.quality, r.quality) * multiplier
     }
 
     for (const module of machineModules) add(module, 1)
@@ -148,6 +159,7 @@ export function computeMachineEffects(
         speed: Math.max(speed, -0.8),
         productivity: Math.max(productivity, 0),
         consumption: Math.max(consumption, -0.8),
+        quality: Math.max(quality, 0),
     }
 }
 
@@ -156,6 +168,7 @@ export interface RateContribution {
     name: string
     type: 'item' | 'fluid'
     rate: number
+    quality?: string
 }
 
 /**
@@ -176,7 +189,8 @@ export function craftingMachineRates(
     machine: CraftingMachinePrototype,
     recipe: RecipePrototype,
     effects: MachineEffects,
-    machineQuality?: string
+    machineQuality?: string,
+    recipeQuality?: string
 ): { ingredients: RateContribution[]; products: RateContribution[] } {
     const energyRequired = recipe.energy_required || 0.5
     const craftsPerSecond =
@@ -184,17 +198,42 @@ export function craftingMachineRates(
         energyRequired
     const productivity = recipe.allow_productivity ? effects.productivity : 0
 
+    const products: RateContribution[] = []
+    const inputQuality = recipeQuality || undefined
+    const dist = effects.quality > 0 ? qualityRollDistribution(effects.quality, inputQuality) : null
+
+    for (const r of recipe.results ?? []) {
+        const baseRate = getProductAmountWithProductivity(r, productivity) * craftsPerSecond
+        if (r.type === 'fluid' || !dist || dist.length <= 1) {
+            // Fluids ignore quality; no quality modules → single output tier.
+            // If recipe has quality, tag non-fluid items with it.
+            products.push({
+                name: r.name,
+                type: r.type,
+                rate: baseRate,
+                quality: r.type === 'fluid' ? undefined : inputQuality,
+            })
+        } else {
+            for (const d of dist) {
+                const rate = baseRate * d.fraction
+                if (rate < 1e-10) continue
+                products.push({
+                    name: r.name,
+                    type: r.type,
+                    rate,
+                    quality: d.quality === 'normal' ? undefined : d.quality,
+                })
+            }
+        }
+    }
+
     return {
         ingredients: (recipe.ingredients ?? []).map(i => ({
             name: i.name,
             type: i.type,
             rate: getIngredientAmount(i) * craftsPerSecond,
         })),
-        products: (recipe.results ?? []).map(r => ({
-            name: r.name,
-            type: r.type,
-            rate: getProductAmountWithProductivity(r, productivity) * craftsPerSecond,
-        })),
+        products,
     }
 }
 
@@ -202,6 +241,7 @@ export function craftingMachineRates(
 export interface ItemRateTotals {
     name: string
     type: 'item' | 'fluid'
+    quality?: string
     /** Units produced per second across all machines (≥ 0). */
     production: number
     /** Units consumed per second across all machines (≥ 0). */
@@ -248,12 +288,17 @@ export function aggregateRates(
     let countedMachines = 0
     let machinesWithoutRecipe = 0
 
+    const rateKey = (name: string, quality?: string): string =>
+        quality ? `${name}:${quality}` : name
+
     const totalsFor = (c: RateContribution): ItemRateTotals => {
-        let t = rates.get(c.name)
+        const key = rateKey(c.name, c.quality)
+        let t = rates.get(key)
         if (!t) {
             t = {
                 name: c.name,
                 type: c.type,
+                quality: c.quality,
                 production: 0,
                 consumption: 0,
                 producers: 0,
@@ -261,7 +306,7 @@ export function aggregateRates(
                 producerMachines: new Map(),
                 consumerMachines: new Map(),
             }
-            rates.set(c.name, t)
+            rates.set(key, t)
         }
         return t
     }
@@ -282,7 +327,8 @@ export function aggregateRates(
             machine.prototype,
             machine.recipe,
             effects,
-            machine.quality
+            machine.quality,
+            machine.recipeQuality
         )
 
         for (const i of ingredients) {
@@ -319,6 +365,7 @@ export interface RateSource {
     size: IPoint
     recipe?: string
     quality?: string
+    recipeQuality?: string
     modules: (string | IModuleSlot | undefined)[]
 }
 
@@ -368,6 +415,7 @@ export function calculateBlueprintRates(sources: RateSource[]): BlueprintRates {
                 recipe: source.recipe ? FD.recipes[source.recipe] : undefined,
                 modules: resolveModuleNames(source.modules),
                 quality: source.quality,
+                recipeQuality: source.recipeQuality,
                 footprint,
             })
         }

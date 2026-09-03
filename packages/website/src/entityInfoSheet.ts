@@ -1,6 +1,7 @@
-import { inputMode } from '@fbe/editor'
+import { inputMode, ratePeriodLabel, rateUnit } from '@fbe/editor'
 import type { EntityInfoData, EntityInfoStack } from '@fbe/editor'
 import { applyPackIcon } from './packIcons'
+import { wrapIconWithQuality } from './qualityOverlay'
 
 // Entity-info sheet (#89 Phase 2): the mobile presentation of the entity info
 // panel. The editor dispatches a render-free `EntityInfoData` on every
@@ -32,10 +33,13 @@ export function initEntityInfoSheet(): void {
             icon.textContent = stack.name
         }
         const amount = document.createElement('span')
-        amount.textContent = String(stack.amount)
-        wrap.append(icon, amount)
+        const shown = Math.round(stack.amount * rateUnit.multiplier * 1000) / 1000
+        amount.textContent = String(shown)
+        wrap.append(wrapIconWithQuality(icon, stack.quality), amount)
         return wrap
     }
+
+    const hasQualitySplits = (stacks: EntityInfoStack[]): boolean => stacks.some(s => s.quality)
 
     const recipeRow = (
         label: string,
@@ -43,6 +47,7 @@ export function initEntityInfoSheet(): void {
         results: EntityInfoStack[],
         arrow: string
     ): HTMLElement => {
+        const wrap = document.createElement('div')
         const row = document.createElement('div')
         row.className = 'eis-row'
         const lbl = document.createElement('span')
@@ -54,8 +59,29 @@ export function initEntityInfoSheet(): void {
         arr.className = 'eis-dim'
         arr.textContent = arrow
         row.appendChild(arr)
-        for (const r of results) row.appendChild(stackSpan(r))
-        return row
+
+        if (hasQualitySplits(results)) {
+            // Quality-split results overflow horizontally; render inline
+            // non-quality items then a vertical quality breakdown list.
+            const nonQuality = results.filter(r => !r.quality && r.type === 'fluid')
+            const qualityItems = results.filter(r => r.quality || r.type !== 'fluid')
+            for (const r of nonQuality) row.appendChild(stackSpan(r))
+            wrap.appendChild(row)
+
+            const list = document.createElement('div')
+            list.className = 'eis-quality-list'
+            for (const r of qualityItems) {
+                const entry = document.createElement('div')
+                entry.className = 'eis-quality-entry'
+                entry.appendChild(stackSpan(r))
+                list.appendChild(entry)
+            }
+            wrap.appendChild(list)
+        } else {
+            for (const r of results) row.appendChild(stackSpan(r))
+            wrap.appendChild(row)
+        }
+        return wrap
     }
 
     const render = (data: EntityInfoData | null): void => {
@@ -90,10 +116,10 @@ export function initEntityInfoSheet(): void {
         if (data.effectiveRecipe) {
             sheet.appendChild(
                 recipeRow(
-                    'Per second:',
+                    `${ratePeriodLabel()}:`,
                     data.effectiveRecipe.ingredients,
                     data.effectiveRecipe.results,
-                    '>'
+                    `=1${rateUnit.unit}>`
                 )
             )
         }

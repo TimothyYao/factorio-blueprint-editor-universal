@@ -1,5 +1,5 @@
 import { Container, Text } from 'pixi.js'
-import FD from '../core/factorioData'
+import FD, { isCraftingMachine } from '../core/factorioData'
 import {
     BeaconPrototype,
     CraftingMachinePrototype,
@@ -21,8 +21,13 @@ import { getIngredientAmount, getProductAmountWithProductivity } from '../core/r
 import { Entity } from '../core/Entity'
 import { createCircuitNetworkBadges } from './circuitNetworkBadges'
 import F from './controls/functions'
-import { qualityCraftingSpeedMul, qualityDisplayName } from '../core/quality'
+import {
+    qualityCraftingSpeedMul,
+    qualityDisplayName,
+    qualityRollDistribution,
+} from '../core/quality'
 import { qualityUi } from '../common/qualityUi'
+import { ratePeriodLabel, rateUnit } from '../common/rateUnit'
 import { Panel } from './controls/Panel'
 import { fitToWidthScale } from './quickbarLayout'
 import { styles } from './style'
@@ -45,7 +50,7 @@ function template(strings: TemplateStringsArray, ...keys: (number | string)[]) {
 const entityInfoTemplate = template`
 Crafting speed: ${'craftingSpeed'} ${'speedMultiplier'}
 Power consumption: ${'energyUsage'} kW ${'energyMultiplier'}
-Productivity bonus: ${'productivityBonus'}`
+Productivity bonus: ${'productivityBonus'}${'qualityLine'}`
 
 const SIZE_OF_ITEM_ON_BELT = 0.25
 
@@ -68,6 +73,7 @@ const containerToBelt = (rotationSpeed: number, beltSpeed: number, n: number): n
 // TODO: add beltToContainer
 
 const roundToTwo = (n: number): number => Math.round(n * 100) / 100
+const roundToThree = (n: number): number => Math.round(n * 1000) / 1000
 const roundToFour = (n: number): number => Math.round(n * 10000) / 10000
 
 /** One side of a recipe row: an item/fluid token with its (resolved) amount. */
@@ -75,6 +81,7 @@ export interface EntityInfoStack {
     type: string
     name: string
     amount: number
+    quality?: string
 }
 
 /**
@@ -100,6 +107,54 @@ export interface EntityInfoData {
      * upgrading it to icon tokens is a noted follow-up.
      */
     circuit: string[]
+}
+
+/**
+ * Split a set of recipe results into quality-distributed stacks. Non-fluid
+ * outputs are multiplied by the quality roll distribution; fluids pass through
+ * unchanged (they never carry quality). When `recipeQuality` is set, non-fluid
+ * outputs inherit that quality instead of normal (the input quality floor).
+ */
+function qualitySplitResults(
+    results: EntityInfoStack[],
+    qualityChance: number,
+    recipeQuality?: string
+): EntityInfoStack[] {
+    if (qualityChance <= 0 && !recipeQuality) return results
+
+    const inputQuality = recipeQuality || undefined
+    const dist = qualityChance > 0 ? qualityRollDistribution(qualityChance, inputQuality) : null
+    const out: EntityInfoStack[] = []
+
+    for (const r of results) {
+        if (r.type === 'fluid') {
+            out.push(r)
+            continue
+        }
+
+        if (dist && dist.length > 1) {
+            for (const d of dist) {
+                const amount = roundToThree(r.amount * d.fraction)
+                const isInputTier = d.quality === (inputQuality || 'normal')
+                // Always keep the regular / input-tier row (total minus the
+                // quality upgrades) even when the remainder rounds to 0.
+                if (!isInputTier && amount < 0.0005) continue
+                out.push({
+                    type: r.type,
+                    name: r.name,
+                    amount,
+                    quality: d.quality === 'normal' ? undefined : d.quality,
+                })
+            }
+        } else {
+            // No quality modules, but recipe has quality — tag all items with it
+            out.push({
+                ...r,
+                quality: inputQuality,
+            })
+        }
+    }
+    return out
 }
 
 function entityDisplayName(entity: Entity): string {
@@ -180,12 +235,18 @@ export class EntityInfoPanel extends Panel {
         this.m_EntityName.position.set(nameX, nextY)
         nextY = this.m_EntityName.position.y + this.m_EntityName.height + 10
 
-        if (entity.entityData.type === 'assembling-machine') {
-            // Details for assembling machines with or without recipe. The
+        if (isCraftingMachine(entity.entityData)) {
+            // Details for crafting machines (assemblers, furnaces, rocket silos,
+            // chemical plants, foundries, electromagnetic plants, etc.). The
             // module/beacon effect summing (incl. the 2.0 per-beacon profile
             // falloff and the engine's -80% clamps) lives in core/craftingRates
             // so the blueprint-wide rates panel computes the exact same numbers.
-            const { speed, productivity, consumption } = computeMachineEffects(
+            const {
+                speed,
+                productivity,
+                consumption,
+                quality: qualityEffect,
+            } = computeMachineEffects(
                 resolveModuleNames(entity.modules),
                 findBeaconsReaching(entity)
             )
@@ -204,13 +265,16 @@ export class EntityInfoPanel extends Panel {
             const pct = (n: number): string =>
                 `${Math.sign(n) === -1 ? '-' : '+'}${roundToTwo(Math.abs(n) * 100)}%`
 
-            // Show modules effect and some others informations
             this.m_entityInfo.text = entityInfoTemplate({
                 craftingSpeed: roundToFour(newCraftingSpeed),
                 speedMultiplier: speed ? fmt(speed) : '',
                 energyUsage: roundToTwo(newEnergyUsage),
                 energyMultiplier: consumption ? fmt(consumption) : '',
                 productivityBonus: pct(productivity),
+                qualityLine:
+                    qualityEffect > 0
+                        ? `\nQuality chance: ${roundToTwo(qualityEffect * 100)}%`
+                        : '',
             })
 
             this.m_entityInfo.position.set(10, nextY)
@@ -243,7 +307,7 @@ export class EntityInfoPanel extends Panel {
                 // Show recipe that takes entity effects into account
                 this.m_RecipeIOContainer.addChild(
                     new Text({
-                        text: 'Recipe (takes entity effects into account):',
+                        text: `${ratePeriodLabel()} (takes entity effects into account):`,
                         style: styles.dialog.label,
                     })
                 )
@@ -266,28 +330,89 @@ export class EntityInfoPanel extends Panel {
                 // getProductAmountWithProductivity, which honours the catalyst
                 // rule (`ignored_by_productivity`) so e.g. cryonite's water output
                 // — pure catalyst — is left untouched by productivity modules.
-                F.CreateRecipe(
-                    this.m_RecipeIOContainer,
-                    0,
-                    20,
-                    recipe.ingredients.map(i => ({
-                        type: i.type,
-                        name: i.name,
-                        amount: roundToTwo(
-                            (getIngredientAmount(i) * newCraftingSpeed) / energy_required
-                        ),
-                    })),
-                    recipe.results.map(r => ({
-                        type: r.type,
-                        name: r.name,
-                        amount: roundToTwo(
-                            (getProductAmountWithProductivity(r, effectiveProductivity) *
-                                newCraftingSpeed) /
-                                energy_required
-                        ),
-                    })),
-                    1
+                const effectiveIngredients = recipe.ingredients.map(i => ({
+                    type: i.type,
+                    name: i.name,
+                    amount: roundToThree(
+                        (getIngredientAmount(i) * newCraftingSpeed) / energy_required
+                    ),
+                }))
+                const rawResults: EntityInfoStack[] = recipe.results.map(r => ({
+                    type: r.type,
+                    name: r.name,
+                    amount: roundToTwo(
+                        (getProductAmountWithProductivity(r, effectiveProductivity) *
+                            newCraftingSpeed) /
+                            energy_required
+                    ),
+                }))
+                const effectiveResults = qualitySplitResults(
+                    rawResults,
+                    qualityEffect,
+                    entity.recipeQuality
                 )
+
+                const hasQualitySplits = effectiveResults.some(r => r.quality)
+                const mul = rateUnit.multiplier
+                const shown = (n: number): number => roundToThree(n * mul)
+
+                let nextX = 0
+                const rowY = 20
+                for (const i of effectiveIngredients) {
+                    F.CreateIconWithAmount(
+                        this.m_RecipeIOContainer,
+                        nextX,
+                        rowY,
+                        i.name,
+                        shown(i.amount)
+                    )
+                    nextX += 36
+                }
+                nextX += 2
+                const timeText = `=1${rateUnit.unit}>`
+                const timeObject = new Text({ text: timeText, style: styles.dialog.label })
+                timeObject.position.set(nextX, 6 + rowY)
+                this.m_RecipeIOContainer.addChild(timeObject)
+                nextX += timeObject.width + 6
+
+                if (hasQualitySplits) {
+                    // Render quality-split results as a vertical list below the
+                    // ingredients row: one icon + amount + quality label per line.
+                    // The first row is the regular / input-tier remainder.
+                    let qY = rowY + 36
+                    for (const r of effectiveResults) {
+                        F.CreateIconWithAmount(
+                            this.m_RecipeIOContainer,
+                            0,
+                            qY,
+                            r.name,
+                            shown(r.amount),
+                            undefined,
+                            undefined,
+                            r.quality
+                        )
+                        const label = new Text({
+                            text:
+                                ` ${shown(r.amount)}` +
+                                (r.quality ? ` (${r.quality})` : ' (normal)'),
+                            style: styles.dialog.label,
+                        })
+                        label.position.set(36, qY + 8)
+                        this.m_RecipeIOContainer.addChild(label)
+                        qY += 36
+                    }
+                } else {
+                    for (const r of effectiveResults) {
+                        F.CreateIconWithAmount(
+                            this.m_RecipeIOContainer,
+                            nextX,
+                            rowY,
+                            r.name,
+                            shown(r.amount)
+                        )
+                        nextX += 36
+                    }
+                }
                 this.m_RecipeIOContainer.position.set(10, nextY)
                 nextY = this.m_RecipeIOContainer.position.y + this.m_RecipeIOContainer.height + 20
             }
@@ -577,11 +702,13 @@ export function buildEntityInfo(entity: Entity): EntityInfoData {
         circuit: [],
     }
 
-    if (entity.entityData.type === 'assembling-machine') {
-        const { speed, productivity, consumption } = computeMachineEffects(
-            resolveModuleNames(entity.modules),
-            findBeaconsReaching(entity)
-        )
+    if (isCraftingMachine(entity.entityData)) {
+        const {
+            speed,
+            productivity,
+            consumption,
+            quality: qualityEffect,
+        } = computeMachineEffects(resolveModuleNames(entity.modules), findBeaconsReaching(entity))
         const machineData = entity.entityData as CraftingMachinePrototype
         const newCraftingSpeed =
             machineData.crafting_speed * qualityCraftingSpeedMul(entity.quality) * (1 + speed)
@@ -593,6 +720,9 @@ export function buildEntityInfo(entity: Entity): EntityInfoData {
             `Power consumption: ${roundToTwo(newEnergyUsage)} kW${consumption ? fmt(consumption) : ''}`,
             `Productivity bonus: ${Math.sign(productivity) === -1 ? '-' : '+'}${roundToTwo(Math.abs(productivity) * 100)}%`
         )
+        if (qualityEffect > 0) {
+            data.lines.push(`Quality chance: ${roundToTwo(qualityEffect * 100)}%`)
+        }
 
         const recipe = entity.recipe ? FD.recipes[entity.recipe] : undefined
         if (recipe !== undefined) {
@@ -611,23 +741,28 @@ export function buildEntityInfo(entity: Entity): EntityInfoData {
                     amount: roundToTwo(getProductAmountWithProductivity(r, 0)),
                 })),
             }
+            const rawEffectiveResults: EntityInfoStack[] = recipe.results.map(r => ({
+                type: r.type,
+                name: r.name,
+                amount: roundToThree(
+                    (getProductAmountWithProductivity(r, effectiveProductivity) *
+                        newCraftingSpeed) /
+                        energy_required
+                ),
+            }))
             data.effectiveRecipe = {
                 ingredients: recipe.ingredients.map(i => ({
                     type: i.type,
                     name: i.name,
-                    amount: roundToTwo(
+                    amount: roundToThree(
                         (getIngredientAmount(i) * newCraftingSpeed) / energy_required
                     ),
                 })),
-                results: recipe.results.map(r => ({
-                    type: r.type,
-                    name: r.name,
-                    amount: roundToTwo(
-                        (getProductAmountWithProductivity(r, effectiveProductivity) *
-                            newCraftingSpeed) /
-                            energy_required
-                    ),
-                })),
+                results: qualitySplitResults(
+                    rawEffectiveResults,
+                    qualityEffect,
+                    entity.recipeQuality
+                ),
             }
         }
     } else if (entity.entityData.type === 'beacon') {

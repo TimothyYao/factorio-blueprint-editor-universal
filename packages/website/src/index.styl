@@ -471,6 +471,16 @@ body.mobile
         display: inline-flex
         align-items: center
         gap: 3px
+    .eis-icon
+        display: block
+    .eis-quality-list
+        padding-left: 24px
+        margin: 2px 0
+    .eis-quality-entry
+        display: flex
+        align-items: center
+        gap: 4px
+        margin: 2px 0
 
 // Production-rates drawer (#89 Phase 2) — the mobile presentation of the rates
 // readout (ratesDrawer.ts). Portrait: bottom-right, in the reachable band —
@@ -502,9 +512,27 @@ body.mobile
         display: flex
         align-items: center
         justify-content: space-between
+        gap: 8px
         font-weight: 600
         font-size: 14px
         margin-bottom: 2px
+    .rd-units
+        display: inline-flex
+        gap: 2px
+        margin-left: auto
+        .rd-unit
+            min-width: 28px
+            padding: 2px 4px
+            color: #b5b5b5
+            font-size: 12px
+            background: transparent
+            border: 1px solid transparent
+            border-radius: 4px
+            cursor: pointer
+            &.active
+                color: #eee
+                border-color: #888
+                background: rgba(255, 255, 255, 0.08)
         .rates-close
             width: 32px
             height: 32px
@@ -543,6 +571,35 @@ body.mobile
         gap: 3px
         color: #b5b5b5
         font-size: 12px
+    .rd-icon
+        display: block
+
+// Quality diamond overlay — same mark as the canvas CreateQualityBadge
+// (bottom-left of the icon, tinted with the tier colour). Shared by the
+// entity-info sheet and the rates drawer.
+.q-icon-wrap
+    position: relative
+    display: inline-block
+    flex-shrink: 0
+    line-height: 0
+    .q-overlay
+        position: absolute
+        left: -1px
+        bottom: -1px
+        width: 16px
+        height: 16px
+        background: #808080
+        clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%)
+        box-shadow: 0 0 0 1px #111
+        &.q-overlay-art
+            clip-path: none
+            box-shadow: none
+            background-color: transparent
+            background-repeat: no-repeat
+            background-size: 16px 16px
+            background-position: center
+            image-rendering: pixelated
+            image-rendering: crisp-edges
 
 // Layering contract (#89): while any Pixi dialog is open (entity editor,
 // inventory — the editor mirrors the count over `fbe:dialogs`, see index.ts),

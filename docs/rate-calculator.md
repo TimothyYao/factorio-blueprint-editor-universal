@@ -13,11 +13,12 @@ assemblers?") are visible at a glance without launching the game.
 **Toggle:** the `showRates` action — `T` on desktop, the **Rates** button on
 the mobile action rail — or the panel's own ✕ to dismiss (so it can't get
 stranded over the blueprint when the toggle is buried in the rail's ⋯
-overflow). The panel pins to the right edge _below_ the entity info panel's
-anchor — the top-left belongs to the website's logo/settings DOM overlay,
-which a canvas panel would sit underneath — and updates live while open:
-entity add/remove, recipe changes, module changes, undo/redo, and blueprint
-loads all recompute.
+overflow). `/s` `/m` `/h` on the panel (and the mobile drawer) switch the
+display unit; the maths stay per-second. The panel pins to the right edge
+_below_ the entity info panel's anchor — the top-left belongs to the
+website's logo/settings DOM overlay, which a canvas panel would sit
+underneath — and updates live while open: entity add/remove, recipe
+changes, module changes, undo/redo, and blueprint loads all recompute.
 
 ## How it works
 
@@ -38,7 +39,9 @@ editor reconstructs those bonuses from prototype data:
   products additionally scaled by productivity when the recipe allows it
   (honouring the 2.0 catalyst rule via `core/recipeAmounts.ts`). Positive
   module effects scale by `(1 + 0.3 × module quality level)`; negatives are
-  unchanged. Beacon transmission uses
+  unchanged. Quality-module chance is `effect.quality × next_probability`
+  (2.0 dumps store Q3 as `0.25` → 2.5%), then quality-scaled and floored
+  to 0.1% (wiki legendary Q3 = +6.2%). Beacon transmission uses
   `distribution_effectivity + distribution_effectivity_bonus_per_quality_level × beacon level`
   (vanilla 1.5 → 2.5 legendary).
 - **`UI/RatesPanel.ts`** — the PixiJS panel. Materials are bucketed the way

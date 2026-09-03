@@ -4,8 +4,11 @@ import { havePackData, readPackData } from './packDataFiles'
 import {
     BUILTIN_QUALITY_TIERS,
     pickerQualityTiers,
+    qualityColorCss,
     qualityColorHex,
     qualityCraftingSpeedMul,
+    qualityEffectChance,
+    qualityRollDistribution,
     qualityDisplayName,
     qualityLevel,
     qualityShowsBadge,
@@ -67,6 +70,59 @@ describe('builtin quality tiers', () => {
         expect(qualityColorHex({ r: 1, g: 0, b: 0 })).toBe(0xff0000)
         expect(qualityColorHex({ r: 255, g: 0, b: 0 })).toBe(0xff0000)
         expect(qualityColorHex([43, 165, 61])).toBe(qualityColorHex({ r: 43, g: 165, b: 61 }))
+    })
+
+    it('formats a quality id as a CSS #rrggbb for the DOM overlay', () => {
+        expect(qualityColorCss('legendary')).toBe('#ffa01e')
+        expect(qualityColorCss(undefined)).toBe('#808080')
+    })
+})
+
+describe('quality module chance (wiki table)', () => {
+    // Prototype encoding: Q1=0.1, Q2=0.2, Q3=0.25. Displayed chance is
+    // effect × next_probability (0.1), then × (1 + 0.3 × level), floored
+    // to 0.1%. Wiki: https://wiki.factorio.com/Quality
+    it('converts the 2.0 dump encoding to the wiki percentages', () => {
+        expect(qualityEffectChance(0.1)).toBe(0.01)
+        expect(qualityEffectChance(0.2)).toBe(0.02)
+        expect(qualityEffectChance(0.25)).toBe(0.025)
+    })
+
+    it('matches the wiki quality-module-3 row including the 0.1% floor', () => {
+        expect(qualityEffectChance(0.25, 'normal')).toBe(0.025)
+        expect(qualityEffectChance(0.25, 'uncommon')).toBe(0.032) // 3.25 → 3.2
+        expect(qualityEffectChance(0.25, 'rare')).toBe(0.04)
+        expect(qualityEffectChance(0.25, 'epic')).toBe(0.047) // 4.75 → 4.7
+        expect(qualityEffectChance(0.25, 'legendary')).toBe(0.062) // 6.25 → 6.2
+    })
+
+    it('matches the wiki quality-module-1 and -2 legendary cells', () => {
+        expect(qualityEffectChance(0.1, 'legendary')).toBe(0.025)
+        expect(qualityEffectChance(0.2, 'legendary')).toBe(0.05)
+    })
+
+    it('does not treat 5× legendary Q3 as 300%+', () => {
+        // Electromagnetic plant (5 slots): 5 × 6.2% = 31%, not 312.5%.
+        expect(5 * qualityEffectChance(0.25, 'legendary')).toBeCloseTo(0.31)
+    })
+})
+
+describe('quality roll distribution (wiki)', () => {
+    it('splits a 10% quality chance the way the wiki does', () => {
+        const dist = Object.fromEntries(
+            qualityRollDistribution(0.1).map(d => [d.quality, d.fraction])
+        )
+        expect(dist.normal).toBeCloseTo(0.9)
+        expect(dist.uncommon).toBeCloseTo(0.09)
+        expect(dist.rare).toBeCloseTo(0.009)
+        expect(dist.epic).toBeCloseTo(0.0009)
+        expect(dist.legendary).toBeCloseTo(0.0001)
+    })
+
+    it('keeps the input-tier remainder so regular output is never dropped', () => {
+        const dist = qualityRollDistribution(0.31)
+        expect(dist[0].quality).toBe('normal')
+        expect(dist[0].fraction).toBeCloseTo(0.69)
     })
 })
 

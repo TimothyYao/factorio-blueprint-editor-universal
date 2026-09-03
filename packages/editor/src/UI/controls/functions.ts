@@ -237,6 +237,68 @@ function CreateQualityBadge(
     return wrap
 }
 
+/**
+ * Rasterise the dump-icon quality diamond at **native** atlas size (usually
+ * 64px), the same `G.getTexture(q.icon)` path menus and blueprint overlays
+ * use. Callers display it smaller with `image-rendering: pixelated` so the
+ * badge isn't bilinear-smoothed down to mud (12px extract looked worse than
+ * the on-canvas 16px sprites).
+ */
+export function qualityBadgeDataUrl(quality: string | undefined): string | undefined {
+    if (!qualityUi.enabled || !quality || quality === 'normal') return undefined
+    const renderer = G.app?.renderer
+    if (!renderer) return undefined
+    const q = resolveQuality(quality)
+    const native = q?.icons?.[0]?.icon_size ?? q?.icon_size ?? 64
+    const badge = CreateQualityBadge(quality, native)
+    if (!badge) return undefined
+    try {
+        const bounds = badge.getLocalBounds()
+        if (bounds.width < 1 || bounds.height < 1) return undefined
+        const rt = RenderTexture.create({ width: native, height: native })
+        renderer.render({ container: badge, target: rt })
+        const canvas = renderer.extract.canvas(rt) as HTMLCanvasElement | undefined
+        rt.destroy(true)
+        badge.destroy({ children: true })
+        if (!canvas || canvas.width < 2) return undefined
+        const ctx = canvas.getContext('2d')
+        if (ctx) {
+            const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data
+            let visible = 0
+            for (let i = 3; i < data.length; i += 4) {
+                if (data[i] > 16) visible += 1
+            }
+            if (visible < 4) return undefined
+        }
+        return canvas.toDataURL()
+    } catch {
+        badge.destroy({ children: true })
+        return undefined
+    }
+}
+
+/** Same 16px dump diamond OverlayContainer / QualityRow chips use. */
+const MENU_BADGE_SIZE = 16
+
+function attachMenuQualityBadge(
+    icon: Container,
+    quality: string | undefined,
+    iconSize: number,
+    setAnchor: boolean
+): Container {
+    const badge = CreateQualityBadge(quality, MENU_BADGE_SIZE)
+    if (!badge) return icon
+    const wrap = new Container()
+    wrap.addChild(icon)
+    if (setAnchor) {
+        badge.position.set(-iconSize / 2, iconSize / 2 - MENU_BADGE_SIZE)
+    } else {
+        badge.position.set(0, iconSize - MENU_BADGE_SIZE)
+    }
+    wrap.addChild(badge)
+    return wrap
+}
+
 function attachQualityBadge(
     icon: Container,
     quality: string | undefined,
@@ -379,7 +441,12 @@ function CreateIconWithAmount(
     probabilityLabel?: string,
     quality?: string
 ): void {
-    const icon = CreateIcon(name, undefined, false, false, quality)
+    const icon = attachMenuQualityBadge(
+        CreateIcon(name, undefined, false, false),
+        quality,
+        32,
+        false
+    )
     icon.position.set(x, y)
     host.addChild(icon)
 

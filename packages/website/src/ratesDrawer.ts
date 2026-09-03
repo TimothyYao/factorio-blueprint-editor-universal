@@ -1,6 +1,8 @@
-import EDITOR, { formatRate, inputMode } from '@fbe/editor'
+import EDITOR, { formatRate, inputMode, rateUnit } from '@fbe/editor'
+import type { RateUnit } from '@fbe/editor'
 import type { RatesData, RatesEntryData } from '@fbe/editor'
 import { applyPackIcon } from './packIcons'
+import { wrapIconWithQuality } from './qualityOverlay'
 
 // Production-rates drawer (#89 Phase 2): the mobile presentation of the rates
 // readout (#87). The editor's RatesPanel stays the state holder and computer —
@@ -41,7 +43,7 @@ export function initRatesDrawer(): void {
     const row = (entry: RatesEntryData): HTMLElement => {
         const el = document.createElement('div')
         el.className = 'rd-row'
-        el.appendChild(iconSpan(entry.type, entry.name))
+        el.appendChild(wrapIconWithQuality(iconSpan(entry.type, entry.name), entry.quality))
 
         const isIntermediate = entry.production > 0 && entry.consumption > 0
         const rate = document.createElement('span')
@@ -76,6 +78,18 @@ export function initRatesDrawer(): void {
         header.className = 'rd-header'
         const title = document.createElement('span')
         title.textContent = 'Production rates'
+        const units = document.createElement('span')
+        units.className = 'rd-units'
+        for (const u of ['s', 'm', 'h'] as RateUnit[]) {
+            const btn = document.createElement('button')
+            btn.type = 'button'
+            btn.className = 'rd-unit' + (rateUnit.unit === u ? ' active' : '')
+            btn.textContent = `/${u}`
+            btn.addEventListener('click', () => {
+                rateUnit.unit = u
+            })
+            units.appendChild(btn)
+        }
         const close = document.createElement('button')
         close.type = 'button'
         close.className = 'rates-close'
@@ -85,7 +99,7 @@ export function initRatesDrawer(): void {
         // logical state (and its live-recompute subscriptions) stays in the
         // editor's RatesPanel where it lives.
         close.addEventListener('click', () => EDITOR.callAction('showRates'))
-        header.append(title, close)
+        header.append(title, units, close)
         drawer.appendChild(header)
 
         if (data.countedMachines === 0) {
