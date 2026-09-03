@@ -34,6 +34,13 @@ export function initEntityInfoSheet(): void {
         const amount = document.createElement('span')
         amount.textContent = String(stack.amount)
         wrap.append(icon, amount)
+        if (stack.quality) {
+            const qBadge = document.createElement('span')
+            qBadge.className = 'eis-quality'
+            qBadge.textContent = stack.quality.charAt(0).toUpperCase()
+            qBadge.title = stack.quality
+            wrap.appendChild(qBadge)
+        }
         return wrap
     }
 

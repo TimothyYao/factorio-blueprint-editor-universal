@@ -80,6 +80,7 @@ export const formatRate = (n: number): string => {
 export interface RatesEntryData {
     type: 'item' | 'fluid'
     name: string
+    quality?: string
     production: number
     consumption: number
     /** Producing machines by prototype name (largest groups first). */
@@ -258,6 +259,7 @@ export class RatesPanel extends Panel {
         const toEntry = (r: ItemRateTotals): RatesEntryData => ({
             type: r.type,
             name: r.name,
+            quality: r.quality,
             production: r.production,
             consumption: r.consumption,
             producerMachines: [...r.producerMachines.entries()]
@@ -343,7 +345,7 @@ export class RatesPanel extends Panel {
         // Guard the icon: a foreign blueprint can reference materials this
         // pack has no prototype (and thus no icon) for.
         if (FD.items[row.name] || FD.fluids[row.name]) {
-            const icon = F.CreateIcon(row.name, ICON, false)
+            const icon = F.CreateIcon(row.name, ICON, false, false, row.quality)
             icon.position.set(PAD, y)
             this.m_Rows.addChild(icon)
         } else {

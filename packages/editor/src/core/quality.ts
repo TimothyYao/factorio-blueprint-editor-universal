@@ -150,6 +150,93 @@ export function qualityDisplayName(quality: string | undefined): string | undefi
 }
 
 /**
+ * The five vanilla quality tier names in ascending order. Used by the quality
+ * roll distribution to walk from the input tier upward.
+ */
+export const QUALITY_TIER_ORDER: readonly string[] = [
+    'normal',
+    'uncommon',
+    'rare',
+    'epic',
+    'legendary',
+]
+
+/** Index of a quality name in the tier order; unknown names map to 0 (normal). */
+export function qualityTierIndex(id: string | undefined): number {
+    if (!id || id === 'normal') return 0
+    const idx = QUALITY_TIER_ORDER.indexOf(id)
+    return idx >= 0 ? idx : 0
+}
+
+/**
+ * Quality roll output distribution (Factorio wiki / FFF-375).
+ *
+ * When a machine has quality modules summing to total quality chance `Q`:
+ *   - First roll: `Q` chance to upgrade one tier from the input quality.
+ *   - Each subsequent roll: fixed 10% (`next_probability = 0.1`) chance to
+ *     upgrade one more tier, until a roll fails or legendary is reached.
+ *
+ * This produces (from the wiki's derived formula for normal-quality input):
+ *   - stays at input tier:  `1 - Q`
+ *   - +1 tier:              `Q × 0.9`
+ *   - +2 tiers:             `Q × 0.09`
+ *   - +3 tiers:             `Q × 0.009`
+ *   - +4 tiers (legendary): `Q × 0.001`  (absorbs the remaining tail)
+ *
+ * When input quality is above normal the same ladder applies upward, but the
+ * output can never drop below the input tier — so `1 - Q` stays at input, and
+ * the roll probabilities are compressed into the remaining tiers above.
+ *
+ * Returns an array of `{ quality, fraction }` for every tier that has a
+ * non-zero chance, sorted ascending by tier. Fluids ignore quality entirely
+ * (callers filter them out).
+ */
+export interface QualityDistribution {
+    quality: string
+    fraction: number
+}
+
+const NEXT_PROBABILITY = 0.1
+
+export function qualityRollDistribution(
+    totalQualityChance: number,
+    inputQuality?: string
+): QualityDistribution[] {
+    const Q = Math.max(0, Math.min(1, totalQualityChance))
+    const inputIdx = qualityTierIndex(inputQuality)
+    const maxIdx = QUALITY_TIER_ORDER.length - 1
+
+    if (Q <= 0 || inputIdx >= maxIdx) {
+        return [{ quality: QUALITY_TIER_ORDER[inputIdx], fraction: 1 }]
+    }
+
+    const result: QualityDistribution[] = []
+    let remaining = 1
+
+    // Fraction that stays at input tier
+    const stayFraction = 1 - Q
+    result.push({ quality: QUALITY_TIER_ORDER[inputIdx], fraction: stayFraction })
+    remaining -= stayFraction
+
+    // Walk upward from inputIdx+1; each step has a chain probability of 10%
+    // to continue to the next tier.
+    let chainProb = Q
+    for (let tier = inputIdx + 1; tier <= maxIdx; tier++) {
+        if (tier === maxIdx) {
+            // Legendary absorbs all remaining probability
+            result.push({ quality: QUALITY_TIER_ORDER[tier], fraction: remaining })
+        } else {
+            const tierFraction = chainProb * (1 - NEXT_PROBABILITY)
+            result.push({ quality: QUALITY_TIER_ORDER[tier], fraction: tierFraction })
+            remaining -= tierFraction
+            chainProb *= NEXT_PROBABILITY
+        }
+    }
+
+    return result.filter(d => d.fraction > 1e-10)
+}
+
+/**
  * Dump colors are either 0–1 floats or 0–255 ints (and sometimes arrays). Same
  * rule as `applyTint`: any component > 1 means the whole colour is 0–255.
  */
