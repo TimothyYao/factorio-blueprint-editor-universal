@@ -174,22 +174,41 @@ export class Filters extends Container<Slot<number>> {
             const slotIndex = slot.data
             const slotFilter = this.m_Filters[slotIndex]
 
-            if (slotFilter.name === undefined) {
+            // Empty: no item and no quality-only tier.
+            if (slotFilter.name === undefined && !slotFilter.quality) {
                 if (slot.content !== undefined) {
                     slot.content = undefined
                 }
                 slot.label = ''
+                slot.name = ''
             } else {
-                // `label` caches quality so a same-name / different-tier edit
-                // still rebuilds the badge (Pixi Container.label, unused elsewhere).
-                const qualityKey = slotFilter.quality || ''
+                // `label` caches quality (+ a quality-only marker) so a
+                // same-name / different-tier edit still rebuilds the badge.
+                const qualityKey = `${slotFilter.name ? 'i' : 'q'}:${slotFilter.quality || 'any'}:${slotFilter.comparator || ''}`
                 if (
                     slot.content === undefined ||
-                    slot.name !== slotFilter.name ||
+                    slot.name !== (slotFilter.name || '') ||
                     slot.label !== qualityKey ||
                     this.m_Amount
                 ) {
-                    if (this.m_Amount) {
+                    const badge = {
+                        anyQuality: !slotFilter.quality,
+                        comparator: slotFilter.comparator,
+                    }
+                    if (!slotFilter.name && slotFilter.quality) {
+                        // Quality-only: tier diamond (include Normal) + comparator.
+                        // Slot content is placed at the cell centre, so pivot
+                        // like an anchored CreateIcon.
+                        const mark = F.CreateFilterQualityMark(slotFilter.quality, 28, {
+                            comparator: slotFilter.comparator,
+                            includeNormal: true,
+                        })
+                        if (mark) {
+                            const b = mark.getLocalBounds()
+                            mark.pivot.set(b.x + b.width / 2, b.y + b.height / 2)
+                        }
+                        slot.content = mark ?? undefined
+                    } else if (this.m_Amount) {
                         if (slot.content !== undefined) {
                             const text = slot.children[1] as Text
                             if (text.text !== slotFilter.count.toString()) {
@@ -205,7 +224,8 @@ export class Filters extends Container<Slot<number>> {
                             slotFilter.count,
                             undefined,
                             undefined,
-                            slotFilter.quality
+                            slotFilter.quality,
+                            badge
                         )
                         slot.content = container
                     } else {
@@ -214,11 +234,12 @@ export class Filters extends Container<Slot<number>> {
                             32,
                             true,
                             false,
-                            slotFilter.quality
+                            slotFilter.quality,
+                            badge
                         )
                     }
-                    slot.name = slotFilter.name
-                    slot.label = slotFilter.quality || ''
+                    slot.name = slotFilter.name || ''
+                    slot.label = qualityKey
                 }
             }
         }
@@ -233,6 +254,7 @@ export class Filters extends Container<Slot<number>> {
      * once the filter itself is set.
      */
     private activate(index: number): void {
+        const filled = this.m_Filters[index].name !== undefined || !!this.m_Filters[index].quality
         if (this.m_Amount && this.m_Filters[index].name !== undefined) {
             this.emit('selected', index, this.m_Filters[index].count)
             return
@@ -243,6 +265,17 @@ export class Filters extends Container<Slot<number>> {
             'Select Filter',
             this.m_Entity.acceptedFilters,
             (name, quality, comparator) => {
+                // Quality-only (no item): game parity — confirm a tier without
+                // picking an item. Logistic/amount slots still need a name
+                // (CreateIconWithAmount / stack size); reject nameless there.
+                if (!name) {
+                    if (this.m_Amount || !quality) return
+                    delete this.m_Filters[index].name
+                    this.m_Filters[index].quality = quality
+                    this.m_Filters[index].comparator = (comparator as ComparatorString) || '='
+                    this.m_Entity.filters = this.m_Filters
+                    return
+                }
                 this.m_Filters[index].name = name
                 if (quality) {
                     this.m_Filters[index].quality = quality
@@ -263,14 +296,21 @@ export class Filters extends Container<Slot<number>> {
             undefined,
             // "✕ Clear" on a filled slot, "✕ Cancel" on an empty one — either way
             // it leaves the slot empty and closes.
-            { onClear: () => this.clear(index), filled: this.m_Filters[index].name !== undefined },
+            { onClear: () => this.clear(index), filled },
             {
                 quality: true,
                 comparator: true,
-                initialQuality: this.m_Filters[index].quality,
-                initialComparator: this.m_Filters[index].comparator,
+                // Empty slot: Normal, not Any — Any is only when a named item
+                // was saved keyless. A filled any-quality slot still opens on Any.
+                initialQuality: this.m_Filters[index].quality ?? (filled ? undefined : 'normal'),
+                initialComparator: this.m_Filters[index].comparator ?? '=',
             }
         )
+        // Keep a named filter on the Confirm path so tapping ✓ doesn't drop the
+        // item into an accidental quality-only write (game keeps the selection).
+        if (this.m_Filters[index].name) {
+            inv.beginPreview(this.m_Filters[index].name)
+        }
         inv.on('close', () => this.emit('selection-ended'))
     }
 

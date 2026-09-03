@@ -1,5 +1,5 @@
 import { Container, Graphics, Sprite, Text, TextStyle } from 'pixi.js'
-import { IPoint } from '../types'
+import { IPoint, ComparatorString } from '../types'
 import FD, {
     getFluidBoxes,
     isCraftingMachine,
@@ -128,6 +128,15 @@ export class OverlayContainer extends Container {
     public static createEntityInfo(entity: Entity, position: IPoint): Container {
         const entityInfo = new Container()
         entityInfo.label = OverlayContainer.ENTITY_INFO_LABEL
+
+        // Entity-level quality diamond first (Factorio bottom-left of the
+        // building) so filter / recipe / module icons draw *on top* of it —
+        // a legendary inserter's badge used to cover its filter overlay.
+        const qualityBadge = F.CreateQualityBadge(entity.quality, 16)
+        if (qualityBadge) {
+            qualityBadge.position.set(-entity.size.x * 16 + 2, entity.size.y * 16 - 18)
+            entityInfo.addChild(qualityBadge)
+        }
 
         if (
             entity.recipe &&
@@ -284,7 +293,7 @@ export class OverlayContainer extends Container {
         const filters =
             entity.filters === undefined
                 ? undefined
-                : entity.filters.filter(v => v.name !== undefined)
+                : entity.filters.filter(v => v.name !== undefined || !!v.quality)
         if (
             filters !== undefined &&
             (entity.type === 'inserter' ||
@@ -297,6 +306,19 @@ export class OverlayContainer extends Container {
                 if (i === 4) {
                     break
                 }
+                const pos = {
+                    x: (i % 2) * 32 - (filters.length === 1 ? 0 : 16),
+                    y: filters.length < 3 ? 0 : (i < 2 ? -1 : 1) * 16,
+                }
+                if (!filters[i].name && filters[i].quality) {
+                    createQualityOnlyIcon(
+                        filterInfo,
+                        filters[i].quality,
+                        pos,
+                        filters[i].comparator
+                    )
+                    continue
+                }
                 if (filters[i].name === undefined) {
                     break
                 }
@@ -304,11 +326,14 @@ export class OverlayContainer extends Container {
                 createIconWithBackground(
                     filterInfo,
                     filters[i].name,
-                    {
-                        x: (i % 2) * 32 - (filters.length === 1 ? 0 : 16),
-                        y: filters.length < 3 ? 0 : (i < 2 ? -1 : 1) * 16,
-                    },
-                    entity.type === 'infinity-pipe' ? undefined : filters[i].quality
+                    pos,
+                    entity.type === 'infinity-pipe' ? undefined : filters[i].quality,
+                    entity.type === 'infinity-pipe'
+                        ? undefined
+                        : {
+                              anyQuality: !filters[i].quality,
+                              comparator: filters[i].comparator,
+                          }
                 )
             }
             let S = 0.5
@@ -387,15 +412,19 @@ export class OverlayContainer extends Container {
             }
 
             if (entity.filters && entity.filters.length > 0) {
-                createIconWithBackground(
-                    filterInfo,
-                    entity.filters[0].name,
-                    util.rotatePointBasedOnDir(
-                        { x: entity.splitterOutputPriority === 'right' ? 32 : -32, y: 0 },
-                        entity.direction
-                    ),
-                    entity.filters[0].quality
+                const f = entity.filters[0]
+                const pos = util.rotatePointBasedOnDir(
+                    { x: entity.splitterOutputPriority === 'right' ? 32 : -32, y: 0 },
+                    entity.direction
                 )
+                if (!f.name && f.quality) {
+                    createQualityOnlyIcon(filterInfo, f.quality, pos, f.comparator)
+                } else if (f.name) {
+                    createIconWithBackground(filterInfo, f.name, pos, f.quality, {
+                        anyQuality: !f.quality,
+                        comparator: f.comparator,
+                    })
+                }
             } else if (entity.splitterOutputPriority) {
                 createArrowForDirection(entity.splitterOutputPriority, -16)
             }
@@ -464,15 +493,6 @@ export class OverlayContainer extends Container {
             entityInfo.addChild(arrows)
         }
 
-        // Entity-level quality diamond (Factorio bottom-left of the building).
-        // Added even when there is no other overlay so a quality-only machine
-        // still returns a container instead of undefined.
-        const qualityBadge = F.CreateQualityBadge(entity.quality, 16)
-        if (qualityBadge) {
-            qualityBadge.position.set(-entity.size.x * 16 + 2, entity.size.y * 16 - 18)
-            entityInfo.addChild(qualityBadge)
-        }
-
         if (entityInfo.children.length !== 0) {
             entityInfo.position.set(position.x, position.y)
             return entityInfo
@@ -482,9 +502,10 @@ export class OverlayContainer extends Container {
             container: Container,
             itemName: string,
             position?: IPoint,
-            quality?: string
+            quality?: string,
+            badge?: { anyQuality?: boolean; comparator?: ComparatorString }
         ): void {
-            const icon = F.CreateIcon(itemName, undefined, true, true, quality)
+            const icon = F.CreateIcon(itemName, undefined, true, true, quality, badge)
             const data = FD.utilitySprites.entity_info_dark_background
             const background = new Sprite(
                 G.getTexture(data.filename, data.x, data.y, data.width, data.height)
@@ -496,6 +517,39 @@ export class OverlayContainer extends Container {
             }
             const lastLength = container.children.length
             container.addChild(background, icon)
+            if (lastLength !== 0) {
+                container.swapChildren(
+                    container.getChildAt(lastLength / 2),
+                    container.getChildAt(lastLength)
+                )
+            }
+        }
+
+        /** Quality-only filter overlay: dark plate + tier diamond (incl. Normal). */
+        function createQualityOnlyIcon(
+            container: Container,
+            quality: string,
+            position?: IPoint,
+            comparator?: ComparatorString
+        ): void {
+            const mark = F.CreateFilterQualityMark(quality, 28, {
+                comparator,
+                includeNormal: true,
+            })
+            if (!mark) return
+            const data = FD.utilitySprites.entity_info_dark_background
+            const background = new Sprite(
+                G.getTexture(data.filename, data.x, data.y, data.width, data.height)
+            )
+            background.anchor.set(0.5, 0.5)
+            const b = mark.getLocalBounds()
+            mark.pivot.set(b.x + b.width / 2, b.y + b.height / 2)
+            if (position) {
+                mark.position.set(position.x, position.y)
+                background.position.set(position.x, position.y)
+            }
+            const lastLength = container.children.length
+            container.addChild(background, mark)
             if (lastLength !== 0) {
                 container.swapChildren(
                     container.getChildAt(lastLength / 2),

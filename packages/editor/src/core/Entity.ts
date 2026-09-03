@@ -61,8 +61,12 @@ export type RoboportStatSignalKey =
 export interface IFilter {
     /** Slot index (1 based ... not 0 like arrays) */
     index: number
-    /** Name of entity to be filtered */
-    name: string
+    /**
+     * Item to filter. Omitted with `quality` set = quality-only filter (any
+     * item of that tier) — game parity for inserters/splitters. Logistic
+     * requests still require a name.
+     */
+    name?: string
     /** If stacking is allowed, how many shall be stacked */
     count?: number
     /** Filter quality; omitted means any quality (not the same as normal `=`). */
@@ -630,8 +634,22 @@ export class Entity extends EventEmitter<EntityEvents> {
     }
 
     public set filters(list: IFilter[]) {
+        // Keep slots that name an item *or* set a quality (quality-only =
+        // any item of that tier). Logistic chests still require a name —
+        // their setter strips nameless entries again. Drop explicit
+        // `name: undefined` so the exported blueprint stays clean.
+        const sanitize = (f: IFilter): IFilter => {
+            const out: IFilter = { index: f.index }
+            if (f.name) out.name = f.name
+            if (f.count !== undefined) out.count = f.count
+            if (f.quality) out.quality = f.quality
+            if (f.comparator) out.comparator = f.comparator
+            return out
+        }
         const FILTERS =
-            list === undefined || list.length === 0 ? undefined : list.filter(f => !!f.name)
+            list === undefined || list.length === 0
+                ? undefined
+                : list.filter(f => !!f.name || !!f.quality).map(sanitize)
         // Mirrors the getter — logistic chests by type, everything else by name.
         if (this.type === 'logistic-container') {
             this.logisticChestFilters = FILTERS
@@ -707,12 +725,14 @@ export class Entity extends EventEmitter<EntityEvents> {
         if (typeof this.m_rawEntity.filter === 'string') {
             throw new Error('pre 2.0 format!')
         }
-        if (this.m_rawEntity.filter.name) {
-            const f = this.m_rawEntity.filter
+        const f = this.m_rawEntity.filter
+        // Named item and/or quality-only (wiki/forum: confirm quality without
+        // picking an item → any item of that tier).
+        if (f.name || f.quality) {
             return [
                 {
                     index: 1,
-                    name: f.name,
+                    ...(f.name ? { name: f.name } : {}),
                     ...(f.quality ? { quality: f.quality } : {}),
                     ...(f.comparator ? { comparator: f.comparator } : {}),
                 },
@@ -721,10 +741,9 @@ export class Entity extends EventEmitter<EntityEvents> {
         return []
     }
     private set splitterFilter(filters: IFilter[]) {
-        // `filters` arrives already stripped of nameless entries by the `filters`
-        // setter, so clearing the (single) splitter filter hands us an empty array
-        // — indexing it unguarded used to throw. Compare the full filter object
-        // (name + quality + comparator) so a quality-only edit commits.
+        // Empty array clears. Compare the full filter object (name + quality +
+        // comparator) so a quality-only edit — including nameless quality —
+        // commits rather than no-op'ing against a same-name previous value.
         const next = filters?.[0]
         const raw =
             typeof this.m_rawEntity.filter === 'string' ? undefined : this.m_rawEntity.filter
@@ -741,16 +760,17 @@ export class Entity extends EventEmitter<EntityEvents> {
 
         this.m_BP.history.startTransaction()
 
-        // Clear by removing the key outright rather than storing `{ name: undefined }`,
-        // which would serialize an empty `filter: {}` into the exported blueprint.
-        const f =
-            next?.name === undefined
-                ? undefined
-                : {
-                      name: next.name,
-                      ...(next.quality ? { quality: next.quality } : {}),
-                      ...(next.comparator ? { comparator: next.comparator } : {}),
-                  }
+        // Clear by removing the key outright rather than storing `{}`, which
+        // would serialize an empty `filter: {}` into the exported blueprint.
+        // Quality-only writes omit `name` (game parity).
+        const hasFilter = next && (next.name !== undefined || next.quality !== undefined)
+        const f = !hasFilter
+            ? undefined
+            : {
+                  ...(next.name ? { name: next.name } : {}),
+                  ...(next.quality ? { quality: next.quality } : {}),
+                  ...(next.comparator ? { comparator: next.comparator } : {}),
+              }
 
         this.m_BP.history
             .updateValue(this.m_rawEntity, 'filter', f, 'Change splitter filter')
@@ -758,7 +778,7 @@ export class Entity extends EventEmitter<EntityEvents> {
             .onDone(() => this.emit('filters'))
             .commit()
 
-        if (next?.name !== undefined) {
+        if (hasFilter) {
             if (this.splitterOutputPriority === undefined) {
                 this.splitterOutputPriority = 'left'
             }

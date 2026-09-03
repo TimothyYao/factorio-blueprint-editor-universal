@@ -19,6 +19,36 @@ strips quality from the blueprint or export.
 icons; entity-corner overlay; info-panel name + diamond. Fluids stay unbadged.
 Picker chips are icon-only (no labels) so they fit a phone editor.
 
+The leading **Any** chip uses the game's multicolored
+`__core__/graphics/icons/any-quality.png` (`utilitySprites.any_quality` /
+`signal-any-quality`), not a drawn stand-in. Named **item filters** with Any
+selected (keyless quality) get that diamond on the item too — Factorio's
+filter slot, not the entity-quality rule (omitted entity quality is Normal,
+no badge).
+
+Filter overlays and editor slots draw **on top of** the building's quality
+diamond. Comparators other than `=` (`≥`, `≠`, …) sit next to the quality
+mark; `=` is the default and is not drawn.
+
+Named item + **Normal** + `=` = no badge. Named item + **Normal** + a
+non-`=` comparator = Normal diamond next to the operator (otherwise `>`
+on its own looks un-tiered). Named item + **Any** = any-quality diamond.
+Quality-only + **Normal** = Normal diamond — otherwise an empty-looking slot.
+
+The filter picker defaults to **Normal**, not Any. Any is still offered and
+is what a keyless named filter reopens on. Tapping the currently selected
+item again clears it (quality-only via Confirm). Changing the comparator
+re-badges the item grid the same way a quality chip does.
+
+## Filter semantics
+
+- Absent `quality` on a named item = **any quality** (keyless; not the same as
+  `normal` + `=`).
+- **Quality-only** (inserter / splitter): quality set, no item name → any item
+  of that tier (wiki/forum: confirm the quality row without picking an item).
+  Slots and overlays show the tier diamond alone. Logistic requests still need
+  a name.
+
 ## Write path
 
 Opt-in quality row on `InventoryDialog` (Filters, Modules, Recipe, **and

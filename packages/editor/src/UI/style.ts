@@ -139,6 +139,15 @@ const styles = {
             fontSize: 11,
             stroke: { color: 0x000000, width: 2 },
         }),
+        // Filter comparator (`≥`, `≠`, …) next to the quality diamond — the
+        // game draws the operator with the filter, not only in the picker.
+        comparator: new TextStyle({
+            fill: colors.text.normal,
+            fontFamily,
+            fontWeight: '700',
+            fontSize: 11,
+            stroke: { color: 0x000000, width: 3 },
+        }),
     },
     debug: {
         text: new TextStyle({

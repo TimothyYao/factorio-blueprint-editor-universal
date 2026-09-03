@@ -67,7 +67,7 @@ export interface InventoryPickOptions {
 }
 
 export type InventoryPickCallback = (
-    selectedItem: string,
+    selectedItem: string | undefined,
     quality?: string,
     comparator?: string
 ) => void
@@ -139,6 +139,7 @@ export class InventoryDialog extends Dialog {
     private m_pickQuality?: string
     private m_pickComparator?: string
     private readonly m_pickOptions?: InventoryPickOptions
+    private m_qualityRow?: QualityRow
 
     public constructor(
         title = 'Inventory',
@@ -339,10 +340,17 @@ export class InventoryDialog extends Dialog {
                 },
                 onComparator: c => {
                     this.m_pickComparator = c
+                    this.retintItemButtons()
+                    this.updatePreviewBar()
                 },
             })
             row.position.set(12, 4)
             recipePanel.addChild(row)
+            this.m_qualityRow = row
+            // Filter pickers (comparator on): a tier with no item is a valid
+            // quality-only filter — reveal Confirm so the user can commit
+            // without picking an item (game: dots + green checkmark).
+            this.updatePreviewBar()
         }
 
         this.m_RecipeLabel = new Text({ text: '', style: styles.dialog.label })
@@ -382,6 +390,7 @@ export class InventoryDialog extends Dialog {
         this.m_confirmBtn.on('pointerup', e => {
             e.stopPropagation()
             if (this.m_previewName) this.commitSelect(this.m_previewName)
+            else if (this.canCommitQualityOnly()) this.commitSelect(undefined)
         })
         this.addChild(this.m_confirmBtn)
 
@@ -443,6 +452,38 @@ export class InventoryDialog extends Dialog {
         if (!this.m_confirmBtn?.visible) return null
         const r = this.m_confirmBtn.getBounds().rectangle
         return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
+    }
+
+    /**
+     * On-screen centre of quality-row chip `index` (0 = Any when the row has
+     * it, then Normal…Legendary). Null when the row isn't shown or the index
+     * is past the chips (the comparator cycle is not counted).
+     */
+    public qualityChipPosition(index: number): { x: number; y: number } | null {
+        return this.m_qualityRow?.chipCenters()[index] ?? null
+    }
+
+    /** On-screen centre of the quality-row comparator cycle, if shown. */
+    public comparatorButtonPosition(): { x: number; y: number } | null {
+        return this.m_qualityRow?.comparatorCenter() ?? null
+    }
+
+    /**
+     * How many item icons in the open grid currently draw a non-`=` comparator
+     * glyph — used by e2e to assert that cycling the comparator re-badges.
+     */
+    public itemComparatorGlyphCount(): number {
+        const glyphs = new Set(['≠', '>', '<', '≥', '≤'])
+        let n = 0
+        const walk = (parent: Container): void => {
+            for (const child of parent.children) {
+                if (child instanceof Text && glyphs.has(child.text)) n++
+                if (child instanceof Container) walk(child)
+            }
+        }
+        walk(this.m_InventoryItems)
+        if (this.m_recentsContainer) walk(this.m_recentsContainer)
+        return n
     }
 
     /**
@@ -511,13 +552,7 @@ export class InventoryDialog extends Dialog {
     private makeItemButton(name: string): Button<Container> {
         const button = new Button<Container>(36, 36)
         button.label = name
-        button.content = F.CreateIcon(
-            name,
-            undefined,
-            true,
-            false,
-            storedQuality(this.m_pickQuality)
-        )
+        button.content = this.itemIcon(name)
 
         button.on('pointerdown', e => {
             e.stopPropagation()
@@ -533,6 +568,13 @@ export class InventoryDialog extends Dialog {
             if (this.m_pressTimer) {
                 // released before the long-press fired → quick tap.
                 this.clearPressTimer()
+                // Filter pickers: tapping the already-selected item again drops
+                // it (quality-only remains via Confirm) — same toggle on
+                // desktop and touch.
+                if (this.m_previewName === name && this.canDeselectToQualityOnly()) {
+                    this.clearPreview()
+                    return
+                }
                 if (inputMode.mode === 'desktop' || this.m_commitOnTap) {
                     // Desktop: a click commits immediately (precise pointer).
                     // Commit-on-tap selectors do the same on touch — see below.
@@ -640,20 +682,13 @@ export class InventoryDialog extends Dialog {
         }
     }
 
-    /** Re-badge item icons when the quality row changes. */
+    /** Re-badge item icons when quality or comparator changes. */
     private retintItemButtons(): void {
-        const q = storedQuality(this.m_pickQuality)
         const apply = (parent: Container): void => {
             for (const child of parent.children) {
                 if (child instanceof Button && child.label) {
                     try {
-                        ;(child as Button<Container>).content = F.CreateIcon(
-                            child.label,
-                            undefined,
-                            true,
-                            false,
-                            q
-                        )
+                        ;(child as Button<Container>).content = this.itemIcon(child.label)
                     } catch {
                         // Group icons / anything CreateIcon can't render.
                     }
@@ -666,16 +701,55 @@ export class InventoryDialog extends Dialog {
         if (this.m_recentsContainer) apply(this.m_recentsContainer)
     }
 
+    /**
+     * Item icon for this picker. Filter selectors (comparator on) badge Any
+     * with the game's any-quality diamond and draw the comparator next to a
+     * chosen tier — same cluster the filter slot shows.
+     */
+    private itemIcon(name: string): Container {
+        const filterPicker = !!this.m_pickOptions?.comparator
+        // Filter pickers keep Normal (storedQuality would drop it) so `>` +
+        // Normal can still badge; the Items/recipe pickers stay unbadged.
+        const quality = filterPicker ? this.m_pickQuality : storedQuality(this.m_pickQuality)
+        return F.CreateIcon(name, undefined, true, false, quality, {
+            anyQuality: filterPicker && this.m_pickQuality === undefined,
+            comparator:
+                filterPicker && this.m_pickQuality && this.m_pickComparator !== '='
+                    ? (this.m_pickComparator as ComparatorString)
+                    : undefined,
+        })
+    }
+
     /** Quick-tap path: record + commit the selection and close. */
-    private commitSelect(name: string): void {
-        if (this.m_recentsKey) recordRecent(this.m_recentsKey, name)
+    private commitSelect(name: string | undefined): void {
+        if (name && this.m_recentsKey) recordRecent(this.m_recentsKey, name)
         this.m_selectedCallBack?.(name, this.m_pickQuality, this.m_pickComparator)
         this.close()
+    }
+
+    /**
+     * Filter pickers (`comparator`) can confirm a quality with no item —
+     * Factorio's quality-only filter. Needs a concrete tier (including Normal);
+     * the leading Any chip leaves quality unset and is not enough on its own.
+     */
+    private canCommitQualityOnly(): boolean {
+        return !!this.m_pickOptions?.comparator && this.m_pickQuality !== undefined
+    }
+
+    /** Same gate as quality-only Confirm — only those pickers can toggle an item off. */
+    private canDeselectToQualityOnly(): boolean {
+        return this.canCommitQualityOnly()
     }
 
     /** Long-press path: hold the item as a pending selection without closing. */
     public beginPreview(name: string, button?: Button<Container>): void {
         if (this.destroyed) return
+        // Second tap / long-press on the same item clears it so Confirm can
+        // write a quality-only filter (empty slot still has the tier).
+        if (this.m_previewName === name && this.canDeselectToQualityOnly()) {
+            this.clearPreview()
+            return
+        }
         if (this.m_previewButton && !this.m_previewButton.destroyed)
             this.m_previewButton.active = false
         this.m_previewName = name
@@ -685,12 +759,23 @@ export class InventoryDialog extends Dialog {
         this.updatePreviewBar()
     }
 
+    /** Drop the previewed item (highlight + recipe strip) without closing. */
+    private clearPreview(): void {
+        if (this.m_previewButton && !this.m_previewButton.destroyed)
+            this.m_previewButton.active = false
+        this.m_previewName = undefined
+        this.m_previewButton = undefined
+        this.m_hoveredItem = undefined
+        this.updateRecipeVisualization(undefined)
+        this.updatePreviewBar()
+    }
+
     private updatePreviewBar(): void {
-        const active = !!this.m_previewName
+        const active = !!this.m_previewName || this.canCommitQualityOnly()
         if (this.m_confirmBtn) this.m_confirmBtn.visible = active
         if (this.m_pinBtn && this.m_pinText) {
             // The quickbar only holds items, so pinning is for the item selector.
-            const canPin = active && this.m_recentsKey === 'items'
+            const canPin = !!this.m_previewName && this.m_recentsKey === 'items'
             this.m_pinBtn.visible = canPin
             if (canPin) {
                 this.m_pinText.text = G.UI.quickbarPanel.hasItem(
