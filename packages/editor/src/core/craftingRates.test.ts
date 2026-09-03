@@ -293,6 +293,19 @@ describe('aggregateRates', () => {
 })
 
 describe('quality on rates', () => {
+    it('tags non-fluid ingredients with recipeQuality', () => {
+        const { ingredients, products } = craftingMachineRates(
+            asm2,
+            plasticBar,
+            NO_EFFECTS,
+            undefined,
+            'rare'
+        )
+        expect(ingredients.find(i => i.name === 'coal')?.quality).toBe('rare')
+        expect(ingredients.find(i => i.name === 'petroleum-gas')?.quality).toBeUndefined()
+        expect(products[0].quality).toBe('rare')
+    })
+
     it('scales a legendary machine crafting_speed by 2.5×', () => {
         const { products } = craftingMachineRates(asm2, electronicCircuit, NO_EFFECTS, 'legendary')
         // base 1.5 crafts/s × 2.5

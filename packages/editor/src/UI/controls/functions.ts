@@ -472,12 +472,24 @@ function CreateRecipe(
     y: number,
     ingredients: readonly IngredientPrototype[],
     results: readonly ProductPrototype[],
-    energy_required: number = 0.5
+    energy_required: number = 0.5,
+    /** Recipe input quality — badges non-fluid ingredients and results. */
+    quality?: string
 ): void {
     let nextX = x
+    const itemQuality = quality && quality !== 'normal' ? quality : undefined
 
     for (const i of ingredients) {
-        CreateIconWithAmount(host, nextX, y, i.name, getIngredientAmount(i))
+        CreateIconWithAmount(
+            host,
+            nextX,
+            y,
+            i.name,
+            getIngredientAmount(i),
+            undefined,
+            undefined,
+            i.type === 'fluid' ? undefined : itemQuality
+        )
         nextX += 36
     }
 
@@ -500,7 +512,8 @@ function CreateRecipe(
             r.name,
             getProductAmount(r),
             formatProductAmount(r),
-            formatProductProbability(r)
+            formatProductProbability(r),
+            r.type === 'fluid' ? undefined : itemQuality
         )
         nextX += 36
     }

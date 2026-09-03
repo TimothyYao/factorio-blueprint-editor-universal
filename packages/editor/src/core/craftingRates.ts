@@ -232,6 +232,8 @@ export function craftingMachineRates(
             name: i.name,
             type: i.type,
             rate: getIngredientAmount(i) * craftsPerSecond,
+            // Quality recipes consume quality ingredients; fluids never carry quality.
+            quality: i.type === 'fluid' ? undefined : inputQuality,
         })),
         products,
     }
