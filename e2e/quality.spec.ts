@@ -162,13 +162,23 @@ test.describe('beacon supply area quality', () => {
                 }
             }
             w.__FBE_TEST__.centerView()
-            for (let i = 0; i < 8; i++) w.__FBE_TEST__.zoom(false)
+            for (let i = 0; i < 4; i++) w.__FBE_TEST__.zoom(false)
             w.__FBE_TEST__.hoverEntity('beacon')
         })
 
-        await page.screenshot({
+        await expect
+            .poll(async () => {
+                return page.evaluate(() => {
+                    const w = window as unknown as {
+                        __FBE_TEST__: { getState: () => { hovered: { name: string } | null } }
+                    }
+                    return w.__FBE_TEST__.getState().hovered?.name
+                })
+            })
+            .toBe('beacon')
+
+        await page.locator('#editor').screenshot({
             path: testInfo.outputPath('legendary-beacon-supply-area.png'),
-            fullPage: true,
         })
     })
 })
