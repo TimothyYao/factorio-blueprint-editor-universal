@@ -9,6 +9,7 @@ import {
     qualityDisplayName,
     qualityLevel,
     qualityShowsBadge,
+    storedQuality,
     resolveQuality,
     scalePositiveEffect,
 } from './quality'
@@ -41,6 +42,9 @@ describe('builtin quality tiers', () => {
         expect(qualityShowsBadge('normal')).toBe(false)
         expect(qualityShowsBadge('legendary')).toBe(true)
         expect(qualityShowsBadge('my-mod-tier')).toBe(true)
+        expect(storedQuality(undefined)).toBeUndefined()
+        expect(storedQuality('normal')).toBeUndefined()
+        expect(storedQuality('legendary')).toBe('legendary')
         expect(qualityDisplayName(undefined)).toBeUndefined()
         expect(qualityDisplayName('normal')).toBeUndefined()
         expect(qualityDisplayName('legendary')).toBe('Legendary')

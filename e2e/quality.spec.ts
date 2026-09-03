@@ -82,4 +82,41 @@ test.describe('quality UI', () => {
             await expect(page.locator('.dg.main')).toContainText('Quality')
         }
     })
+
+    test('item picker quality places on the ghost without the entity editor', async ({ page }) => {
+        await page.goto('/?test&pack=space-age')
+        await waitForAppReady(page)
+
+        const ghost = await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__: QualityHook & {
+                    spawnPaintItem: (name: string, quality?: string) => void
+                    getState: () => { paint: { quality: string | null; overlayInfoCount: number } }
+                }
+            }
+            w.__FBE_TEST__.spawnPaintItem('assembling-machine-2', 'legendary')
+            return w.__FBE_TEST__.getState().paint
+        })
+        expect(ghost.quality).toBe('legendary')
+        expect(ghost.overlayInfoCount).toBeGreaterThan(0)
+
+        await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__: QualityHook & { confirmPlacement: () => void }
+            }
+            w.__FBE_TEST__.confirmPlacement()
+        })
+        expect(
+            await page.evaluate(() => {
+                const w = window as unknown as { __FBE_TEST__: QualityHook }
+                return w.__FBE_TEST__.entityQuality('assembling-machine-2')
+            })
+        ).toBe('legendary')
+        expect(
+            await page.evaluate(() => {
+                const w = window as unknown as { __FBE_TEST__: QualityHook }
+                return w.__FBE_TEST__.serializedEntity('assembling-machine-2')?.quality
+            })
+        ).toBe('legendary')
+    })
 })

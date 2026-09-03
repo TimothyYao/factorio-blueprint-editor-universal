@@ -117,6 +117,11 @@ export function qualityShowsBadge(quality: string | undefined): boolean {
     return !!quality && quality !== 'normal'
 }
 
+/** Persist / paint key: omit when the tier is Normal (or unset). */
+export function storedQuality(quality: string | undefined): string | undefined {
+    return qualityShowsBadge(quality) ? quality : undefined
+}
+
 const HIDDEN_PICKER_TIERS = new Set(['quality-unknown'])
 
 /**

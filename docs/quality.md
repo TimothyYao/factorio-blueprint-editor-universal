@@ -21,9 +21,13 @@ Picker chips are icon-only (no labels) so they fit a phone editor.
 
 ## Write path
 
-Opt-in quality row on `InventoryDialog` (Filters, Modules, Recipe) and
-`SignalPicker`. Shared entity-quality chips on every editor. Pipette / paint
-carries entity quality. Paste-settings still does **not** copy entity quality
+Opt-in quality row on `InventoryDialog` (Filters, Modules, Recipe, **and
+the Items picker** used to place entities). Shared entity-quality chips on
+every editor remain. Pick quality in Items, then tap a building — the paint
+ghost and a subsequent place carry that tier, so you don't need the recipe
+menu just to set quality. Pipette / paint still carry entity quality.
+Quickbar slots persist `{ name, quality }` (plain strings stay valid) and
+badge the icon. Paste-settings still does **not** copy entity quality
 (game parity).
 
 ## Rates
