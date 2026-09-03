@@ -147,7 +147,8 @@ export function getCircuitConnector(
     e: EntityWithOwnerPrototype,
     dir: number,
     isLoaderInputting: () => boolean,
-    getBeltConnectionIndex: () => number
+    getBeltConnectionIndex: () => number,
+    mirrored = false
 ): null | CircuitConnectorDefinition {
     switch (e.type) {
         case 'accumulator':
@@ -206,7 +207,11 @@ export function getCircuitConnector(
                 | PumpPrototype
                 | StorageTankPrototype
                 | TrainStopPrototype
-            return e_resolved.circuit_connector[dir / 4]
+            const flipped = (e_resolved as AssemblingMachinePrototype | FurnacePrototype)
+                .circuit_connector_flipped
+            const connectors =
+                mirrored && flipped && flipped.length ? flipped : e_resolved.circuit_connector
+            return connectors[dir / 4]
         }
         case 'rail-chain-signal':
         case 'rail-signal': {
@@ -855,17 +860,6 @@ function getAllowedEffects(e: EntityWithOwnerPrototype): readonly EffectTypeLimi
             return []
         default:
             throw new Error('Forgot to set a default!')
-    }
-}
-
-export function hasModuleIconsSuppressed(e: EntityWithOwnerPrototype): boolean {
-    switch (e.type) {
-        case 'beacon': {
-            const e_resolved = e as BeaconPrototype
-            return !!e_resolved.graphics_set?.module_icons_suppressed
-        }
-        default:
-            return false
     }
 }
 

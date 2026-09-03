@@ -36,6 +36,7 @@ interface IEntityData {
     trainStopColor?: ColorWithAlpha
     entityColor?: ColorWithAlpha
     modules?: string[]
+    mirror?: boolean
 }
 
 /** Z-index layer assignments inspired by Factorio's render layer ordering.
@@ -101,8 +102,13 @@ export class EntitySprite extends Sprite {
             this.position.y += data.shift[1] * 32
         }
 
-        if (data.scale) {
-            this.scale.set(data.scale)
+        if (data.scale !== undefined && data.scale !== null) {
+            const sc = data.scale as number | { x?: number; y?: number }
+            if (typeof sc === 'number') {
+                this.scale.set(sc)
+            } else {
+                this.scale.set(sc.x ?? 1, sc.y ?? 1)
+            }
         }
 
         this.anchor.x = data.anchorX === undefined ? 0.5 : data.anchorX
@@ -115,6 +121,10 @@ export class EntitySprite extends Sprite {
         if (data.rotAngle) {
             this.angle = data.rotAngle
         }
+
+        // After height/squishY (which rewrite scale.y from the texture). Same
+        // seam WiresContainer uses for copper-wire direction.
+        if (data.flipX) this.scale.x *= -1
 
         if (data.tint) {
             F.applyTint(this, getColor(data.tint))
@@ -156,7 +166,8 @@ export class EntitySprite extends Sprite {
             assemblerHasFluidOutputs: entity.assemblerHasFluidOutputs,
             railLayer: entity.railLayer,
             trainStopColor: entity.trainStopColor,
-            modules: entity.modules,
+            modules: entity instanceof Entity ? entity.modules.map(m => m?.name) : entity.modules,
+            mirror: entity instanceof Entity ? entity.mirror : !!(entity as IEntityData).mirror,
         })
 
         const rawEntityColor =

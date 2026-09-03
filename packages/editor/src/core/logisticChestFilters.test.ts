@@ -91,10 +91,42 @@ describe.skipIf(!have)('logistic chest filters', () => {
         expect(raw(e).trash_not_requested).toBe(true)
     })
 
-    it('keeps attributes the editor does not model through an edit', () => {
-        // The Filters component rebuilds its slots as bare {index,name,count}, so
-        // without merging onto the existing entry a count change would silently
-        // drop quality/comparator/max_count from an imported blueprint.
+    it('keeps unmodeled attributes through an edit, and honors quality on IFilter', () => {
+        // max_count is still merge-preserved. quality/comparator are modeled on
+        // IFilter — pass them through to keep, omit them to mean "any quality".
+        const e = makeChest('requester-chest', {
+            request_filters: {
+                sections: [
+                    {
+                        index: 1,
+                        filters: [
+                            {
+                                index: 1,
+                                name: 'iron-plate',
+                                count: 5,
+                                quality: 'rare',
+                                comparator: '=',
+                                max_count: 50,
+                            },
+                        ],
+                    },
+                ],
+            },
+        } as Partial<IEntity>)
+
+        e.filters = [{ index: 1, name: 'iron-plate', count: 42, quality: 'rare', comparator: '=' }]
+
+        expect(raw(e).sections[0].filters[0]).toEqual({
+            index: 1,
+            name: 'iron-plate',
+            count: 42,
+            quality: 'rare',
+            comparator: '=',
+            max_count: 50,
+        })
+    })
+
+    it('clears quality when the write omits it (any quality, not merge-preserve)', () => {
         const e = makeChest('requester-chest', {
             request_filters: {
                 sections: [
@@ -121,8 +153,6 @@ describe.skipIf(!have)('logistic chest filters', () => {
             index: 1,
             name: 'iron-plate',
             count: 42,
-            quality: 'rare',
-            comparator: '=',
             max_count: 50,
         })
     })

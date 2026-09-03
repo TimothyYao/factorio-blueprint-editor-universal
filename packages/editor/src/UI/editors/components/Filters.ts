@@ -6,6 +6,7 @@ import F from '../../controls/functions'
 import { Slot } from '../../controls/Slot'
 import { bindSlotGestures } from '../../controls/gestures'
 import { Entity, EntityEvents, IFilter } from '../../../core/Entity'
+import { ComparatorString } from '../../../types'
 
 /** Module Slots for Entity */
 export class Filters extends Container<Slot<number>> {
@@ -153,6 +154,8 @@ export class Filters extends Container<Slot<number>> {
                         index: item.index,
                         name: item.name,
                         count: item.count,
+                        ...(item.quality ? { quality: item.quality } : {}),
+                        ...(item.comparator ? { comparator: item.comparator } : {}),
                     }
                 }
             }
@@ -175,8 +178,17 @@ export class Filters extends Container<Slot<number>> {
                 if (slot.content !== undefined) {
                     slot.content = undefined
                 }
+                slot.label = ''
             } else {
-                if (slot.content === undefined || slot.name !== slotFilter.name || this.m_Amount) {
+                // `label` caches quality so a same-name / different-tier edit
+                // still rebuilds the badge (Pixi Container.label, unused elsewhere).
+                const qualityKey = slotFilter.quality || ''
+                if (
+                    slot.content === undefined ||
+                    slot.name !== slotFilter.name ||
+                    slot.label !== qualityKey ||
+                    this.m_Amount
+                ) {
                     if (this.m_Amount) {
                         if (slot.content !== undefined) {
                             const text = slot.children[1] as Text
@@ -190,13 +202,23 @@ export class Filters extends Container<Slot<number>> {
                             -16,
                             -16,
                             slotFilter.name,
-                            slotFilter.count
+                            slotFilter.count,
+                            undefined,
+                            undefined,
+                            slotFilter.quality
                         )
                         slot.content = container
                     } else {
-                        slot.content = F.CreateIcon(slotFilter.name)
+                        slot.content = F.CreateIcon(
+                            slotFilter.name,
+                            32,
+                            true,
+                            false,
+                            slotFilter.quality
+                        )
                     }
                     slot.name = slotFilter.name
+                    slot.label = slotFilter.quality || ''
                 }
             }
         }
@@ -220,8 +242,15 @@ export class Filters extends Container<Slot<number>> {
         const inv = G.UI.createInventory(
             'Select Filter',
             this.m_Entity.acceptedFilters,
-            name => {
+            (name, quality, comparator) => {
                 this.m_Filters[index].name = name
+                if (quality) {
+                    this.m_Filters[index].quality = quality
+                    this.m_Filters[index].comparator = (comparator as ComparatorString) || '='
+                } else {
+                    delete this.m_Filters[index].quality
+                    delete this.m_Filters[index].comparator
+                }
                 if (this.m_Amount) {
                     this.m_Filters[index].count = FD.items[name].stack_size
                 }
@@ -234,7 +263,13 @@ export class Filters extends Container<Slot<number>> {
             undefined,
             // "✕ Clear" on a filled slot, "✕ Cancel" on an empty one — either way
             // it leaves the slot empty and closes.
-            { onClear: () => this.clear(index), filled: this.m_Filters[index].name !== undefined }
+            { onClear: () => this.clear(index), filled: this.m_Filters[index].name !== undefined },
+            {
+                quality: true,
+                comparator: true,
+                initialQuality: this.m_Filters[index].quality,
+                initialComparator: this.m_Filters[index].comparator,
+            }
         )
         inv.on('close', () => this.emit('selection-ended'))
     }
@@ -242,6 +277,8 @@ export class Filters extends Container<Slot<number>> {
     /** Long-press / right-click (or the picker's ✕ Clear): empty the slot. */
     private clear(index: number): void {
         this.m_Filters[index].name = undefined
+        delete this.m_Filters[index].quality
+        delete this.m_Filters[index].comparator
         this.m_Entity.filters = this.m_Filters
         if (this.m_Amount) {
             this.emit('selected', -1, 0)

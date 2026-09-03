@@ -2,7 +2,9 @@ import { ColorSource, Container, FederatedPointerEvent } from 'pixi.js'
 import { IPoint } from '../types'
 import G from '../common/globals'
 import { Entity } from '../core/Entity'
+import { Tile } from '../core/Tile'
 import F from '../UI/controls/functions'
+import { storedQuality } from '../core/quality'
 import { BlueprintContainer } from './BlueprintContainer'
 import { ENTITY_INFO_LABEL } from './overlayIndication'
 
@@ -25,10 +27,13 @@ export abstract class PaintContainer extends Container {
     private _blocked = false
     private _posConstraint?: Axis
     private _children_tint: ColorSource
+    /** Entity quality on the held ghost (tiles/wires leave this unset). */
+    private readonly _paintQuality: string | undefined
 
-    protected constructor(bpc: BlueprintContainer, name: string) {
+    protected constructor(bpc: BlueprintContainer, name: string, quality?: string) {
         super()
         this.bpc = bpc
+        this._paintQuality = storedQuality(quality)
         this.name = name
 
         this._children_tint = F.rgbToColorSource(0.4, 1, 0.4)
@@ -70,8 +75,13 @@ export abstract class PaintContainer extends Container {
     protected set name(name: string) {
         this._name = name
         this.icon?.destroy()
-        this.icon = F.CreateIcon(this.getItemName())
+        this.icon = F.CreateIcon(this.getItemName(), 32, true, false, this._paintQuality)
         G.UI.addPaintIcon(this.icon)
+    }
+
+    /** Quality carried by the ghost / cursor icon; undefined = Normal. */
+    public getQuality(): string | undefined {
+        return this._paintQuality
     }
 
     protected get blocked(): boolean {
@@ -196,6 +206,17 @@ export abstract class PaintContainer extends Container {
     // override
     public abstract rotate(ccw?: boolean): void
 
+    /**
+     * Flip a *single-entity* paint ghost in place (direction remap). Blueprint
+     * ghosts use the copy-respawn path instead (`canFlipOrRotateByCopying`).
+     */
+    public flip(_vertical: boolean): void {}
+
+    /** True when Shift/H/V (or the rail Flip buttons) should be offered. */
+    public canFlip(): boolean {
+        return false
+    }
+
     // override
     public abstract canFlipOrRotateByCopying(): boolean
 
@@ -204,6 +225,16 @@ export abstract class PaintContainer extends Container {
 
     // override
     public abstract flippedEntities(vertical: boolean): Entity[]
+
+    /** Tiles carried by a blueprint ghost, remapped for a flip respawn. */
+    public flippedTiles(_vertical: boolean): Tile[] {
+        return []
+    }
+
+    /** Tiles carried by a blueprint ghost, remapped for a rotate respawn. */
+    public rotatedTiles(_ccw?: boolean): Tile[] {
+        return []
+    }
 
     // override
     protected abstract redraw(): void

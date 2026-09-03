@@ -266,3 +266,21 @@ describe('aggregateRates', () => {
         expect(rates.get('copper-cable').production).toBeCloseTo(4.8 + 3)
     })
 })
+
+describe('quality on rates', () => {
+    it('scales a legendary machine crafting_speed by 2.5×', () => {
+        const { products } = craftingMachineRates(asm2, electronicCircuit, NO_EFFECTS, 'legendary')
+        // base 1.5 crafts/s × 2.5
+        expect(products[0].rate).toBeCloseTo(3.75)
+    })
+
+    it('scales a legendary speed module positive effect, not a prod-module penalty', () => {
+        const legendarySpeed = { prototype: speedModule, quality: 'legendary' }
+        const legendaryProd = { prototype: prodModule, quality: 'legendary' }
+        const effects = computeMachineEffects([legendarySpeed, legendaryProd], [])
+        // speed: 0.2×2.5 + (−0.05) = 0.45
+        expect(effects.speed).toBeCloseTo(0.45)
+        expect(effects.productivity).toBeCloseTo(0.04 * 2.5)
+        expect(effects.consumption).toBeCloseTo(0.5 * 2.5 + 0.4 * 2.5)
+    })
+})

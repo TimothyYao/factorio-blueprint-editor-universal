@@ -47,7 +47,13 @@ export class SignalSlot extends Slot<undefined> {
     private updateContent(): void {
         if (this.m_signal?.name) {
             try {
-                this.content = F.CreateIcon(this.m_signal.name)
+                this.content = F.CreateIcon(
+                    this.m_signal.name,
+                    32,
+                    true,
+                    false,
+                    this.m_signal.quality
+                )
                 return
             } catch {
                 // fall through to placeholder for an unknown/iconless signal name

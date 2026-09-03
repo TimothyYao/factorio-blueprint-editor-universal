@@ -6,6 +6,8 @@ import F from './controls/functions'
 import { Button } from './controls/Button'
 import { Dialog } from './controls/Dialog'
 import { styles } from './style'
+import { qualityUi } from '../common/qualityUi'
+import { QualityRow } from './controls/QualityRow'
 
 type Category = 'item' | 'fluid' | 'virtual'
 
@@ -31,12 +33,12 @@ export interface SignalChoice {
  */
 export class SignalPicker extends Dialog {
     private static readonly W = 404
-    private static readonly H = 500
+    private static readonly H = 532
     private static readonly PAD = 12
     private static readonly TAB_Y = 40
     private static readonly GRID_Y = 84
     private static readonly STEP = 38
-    private static readonly BAR_Y = SignalPicker.H - 40
+    private static readonly BAR_Y = SignalPicker.H - 72
 
     private readonly viewW = SignalPicker.W - SignalPicker.PAD * 2 - 24
     private readonly viewH = SignalPicker.BAR_Y - SignalPicker.GRID_Y - 8
@@ -46,6 +48,7 @@ export class SignalPicker extends Dialog {
     private maxScroll = 0
 
     private preview: SignalChoice = {}
+    private pickQuality?: string
     private selectedButton?: Button
     private readonly nameLabel: Text
     private readonly confirmBtn: Container
@@ -127,6 +130,22 @@ export class SignalPicker extends Dialog {
             this.addChild(this.constantField)
         }
 
+        if (qualityUi.enabled) {
+            const row = new QualityRow({
+                includeAny: true,
+                onChange: q => {
+                    this.pickQuality = q
+                    if (this.preview.signal) {
+                        this.preview = {
+                            signal: { ...this.preview.signal, quality: q },
+                        }
+                    }
+                },
+            })
+            row.position.set(SignalPicker.PAD, SignalPicker.BAR_Y + 32)
+            this.addChild(row)
+        }
+
         this.confirmBtn = SignalPicker.barButton('✓ Confirm', 0x2f7d32, () => this.confirm())
         this.confirmBtn.position.set(SignalPicker.W - SignalPicker.PAD - 80, SignalPicker.BAR_Y + 2)
         this.confirmBtn.visible = false
@@ -199,7 +218,12 @@ export class SignalPicker extends Dialog {
         this.selectedButton = button
         button.active = true
         if (this.constantField) this.constantField.value = undefined
-        this.preview = { signal: { name, type: type as SignalType } }
+        const quality = type === 'fluid' ? undefined : this.pickQuality
+        this.preview = {
+            signal: quality
+                ? { name, type: type as SignalType, quality }
+                : { name, type: type as SignalType },
+        }
         this.nameLabel.text = SignalPicker.nameOf(name)
         this.confirmBtn.visible = true
     }

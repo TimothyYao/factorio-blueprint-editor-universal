@@ -1,8 +1,12 @@
 import { Entity } from '../../core/Entity'
-import { SelectorCombinatorOperation } from '../../types'
+import { ComparatorString, SelectorCombinatorOperation } from '../../types'
 import { Switch } from '../controls/Switch'
 import { Enable } from '../controls/Enable'
 import { CycleButton } from '../controls/CycleButton'
+import { Checkbox } from '../controls/Checkbox'
+import { QualityRow } from '../controls/QualityRow'
+import { SignalSlot } from './components/SignalSlot'
+import { qualityUi } from '../../common/qualityUi'
 import { Editor } from './Editor'
 
 const OPERATIONS: SelectorCombinatorOperation[] = [
@@ -16,22 +20,36 @@ const OPERATIONS: SelectorCombinatorOperation[] = [
 ]
 
 /**
- * Selector combinator editor. Lets you pick the operation; for `select` it also
- * exposes the min/max toggle. The per-operation parameters (index signal,
- * quality, …) are intentionally minimal for now — this keeps the most common
- * knobs editable rather than leaving selectors with no editor at all.
+ * Selector combinator editor. Operation picker plus the quality-filter /
+ * quality-transfer knobs (issue #5 slice 4).
  */
 export class SelectorCombinatorEditor extends Editor {
     public constructor(entity: Entity) {
-        super(420, 150, entity)
+        super(420, qualityUi.enabled ? 230 : 150, entity)
 
         const x = 140
         this.addLabel(x, 50, 'Operation:')
+        const extras = new (class {
+            filter?: QualityRow
+            fromSignal?: Checkbox
+            source?: QualityRow
+            dest?: SignalSlot
+        })()
+
+        const refreshExtras = (): void => {
+            const op = (entity.operator as SelectorCombinatorOperation) ?? 'select'
+            if (extras.filter) extras.filter.visible = op === 'quality-filter'
+            if (extras.fromSignal) extras.fromSignal.visible = op === 'quality-transfer'
+            if (extras.source) extras.source.visible = op === 'quality-transfer'
+            if (extras.dest) extras.dest.visible = op === 'quality-transfer'
+        }
+
         const op = new CycleButton<SelectorCombinatorOperation>(
             OPERATIONS,
             (entity.operator as SelectorCombinatorOperation) ?? 'select',
             v => {
                 entity.selectorOperation = v
+                refreshExtras()
             },
             150
         )
@@ -56,5 +74,60 @@ export class SelectorCombinatorEditor extends Editor {
         const maxLabel = new Enable(isMax, 'Max')
         maxLabel.position.set(x + 100, 116)
         this.addChild(maxLabel)
+
+        if (qualityUi.enabled) {
+            extras.filter = new QualityRow({
+                value: entity.selectorQualityFilter.quality,
+                includeAny: true,
+                showComparator: true,
+                comparator: entity.selectorQualityFilter.comparator ?? '=',
+                onChange: q => {
+                    entity.selectorQualityFilter = {
+                        ...entity.selectorQualityFilter,
+                        quality: q,
+                    }
+                },
+                onComparator: (c: ComparatorString) => {
+                    entity.selectorQualityFilter = {
+                        ...entity.selectorQualityFilter,
+                        comparator: c,
+                    }
+                },
+            })
+            extras.filter.position.set(12, 150)
+            this.addChild(extras.filter)
+
+            extras.fromSignal = new Checkbox(
+                entity.selectorQualityFromSignal,
+                'Quality from signal'
+            )
+            extras.fromSignal.position.set(12, 182)
+            extras.fromSignal.on('changed', () => {
+                entity.selectorQualityFromSignal = extras.fromSignal!.checked
+            })
+            this.addChild(extras.fromSignal)
+
+            extras.source = new QualityRow({
+                value: entity.selectorQualitySourceStatic,
+                onChange: q => {
+                    entity.selectorQualitySourceStatic = q
+                },
+            })
+            extras.source.position.set(12, 204)
+            this.addChild(extras.source)
+
+            extras.dest = new SignalSlot(
+                entity.selectorQualityDestSignal,
+                s => {
+                    entity.selectorQualityDestSignal = s
+                },
+                false,
+                'Quality destination'
+            )
+            extras.dest.position.set(370, 182)
+            this.addChild(extras.dest)
+
+            refreshExtras()
+        }
     }
 }

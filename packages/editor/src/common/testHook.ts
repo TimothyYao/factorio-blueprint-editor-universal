@@ -1,10 +1,13 @@
 import G from './globals'
 import { inputMode, type InputMode } from './input'
+import { qualityUi } from './qualityUi'
+import { buildEntityInfo } from '../UI/EntityInfoPanel'
 import { EditorMode } from '../containers/BlueprintContainer'
 import { PaintEntityContainer } from '../containers/PaintEntityContainer'
 import { PaintBlueprintContainer } from '../containers/PaintBlueprintContainer'
 import { PaintTileContainer } from '../containers/PaintTileContainer'
 import { OverlayContainer } from '../containers/OverlayContainer'
+import { EntityContainer } from '../containers/EntityContainer'
 import { Dialog } from '../UI/controls/Dialog'
 import { InventoryDialog } from '../UI/InventoryDialog'
 import { Modules } from '../UI/editors/components/Modules'
@@ -49,6 +52,8 @@ export interface EditorTestState {
         tile: { x: number; y: number } | null
         /** Held entity ghost's facing (0/4/8/12 cardinal); null for tiles/wires. */
         direction: number | null
+        /** Blueprint `mirror` bit of a held entity ghost; null if not an entity. */
+        mirrored: boolean | null
         /**
          * What the cursor holds: a single `entity`, a pasted `blueprint`
          * (multi-entity ghost, draggable/nudgeable on touch), or null when idle.
@@ -67,6 +72,8 @@ export interface EditorTestState {
          * arrows, miner output arrows, …). 0 when idle or for tiles/wires.
          */
         overlayInfoCount: number
+        /** Quality on a held entity ghost; null when idle / Normal / not an entity. */
+        quality: string | null
     }
     /**
      * True while a modal dialog (e.g. an entity editor overlay) is open. On touch,
@@ -102,6 +109,11 @@ export interface EditorTestState {
     infoPanelVisible: boolean
     /** Whether the top-left blueprint-wide production rates panel is showing. */
     ratesPanelVisible: boolean
+    /**
+     * Hovered / tap-selected entity (EDIT). Direction + blueprint `mirror` bit
+     * so Flip tests can assert in-place flip without re-pipetting.
+     */
+    hovered: { name: string; direction: number; mirrored: boolean } | null
 }
 
 export function getEditorTestState(): EditorTestState {
@@ -131,6 +143,10 @@ export function getEditorTestState(): EditorTestState {
                 painting && G.BPC.paintContainer instanceof PaintEntityContainer
                     ? G.BPC.paintContainer.getDirection()
                     : null,
+            mirrored:
+                painting && G.BPC.paintContainer instanceof PaintEntityContainer
+                    ? G.BPC.paintContainer.getMirror()
+                    : null,
             kind: !painting
                 ? null
                 : G.BPC.paintContainer instanceof PaintBlueprintContainer
@@ -147,6 +163,10 @@ export function getEditorTestState(): EditorTestState {
                       c => c.label === OverlayContainer.ENTITY_INFO_LABEL
                   ).length
                 : 0,
+            quality:
+                painting && G.BPC.paintContainer instanceof PaintEntityContainer
+                    ? (G.BPC.paintContainer.getQuality() ?? null)
+                    : null,
         },
         dialogOpen: Dialog.anyOpen(),
         marquee: {
@@ -157,6 +177,13 @@ export function getEditorTestState(): EditorTestState {
         },
         infoPanelVisible: G.UI.entityInfoPanelVisible,
         ratesPanelVisible: G.UI.ratesPanelVisible,
+        hovered: G.BPC.hoverContainer
+            ? {
+                  name: G.BPC.hoverContainer.entity.name,
+                  direction: G.BPC.hoverContainer.entity.direction,
+                  mirrored: G.BPC.hoverContainer.entity.mirror,
+              }
+            : null,
     }
 }
 
@@ -233,6 +260,13 @@ export interface FbeTestHook {
     entityModules: (name: string) => (string | null)[] | null
     entityFilters: (name: string) => (string | null)[] | null
     entityRecipe: (name: string) => string | null
+    /**
+     * How many children the entity's alt-mode overlay currently has (recipe /
+     * module / filter icons, arrows, quality badge, …). 0 when the overlay was
+     * never created. Lets specs assert beacons draw module icons the same way
+     * assembling machines draw recipe icons.
+     */
+    entityOverlayChildCount: (name: string) => number | null
     /**
      * Open `name`'s editor and return the on-screen centre (canvas-relative CSS
      * px, the same frame as `dragOneFinger`) of its module or filter slot `index`
@@ -359,7 +393,16 @@ export interface FbeTestHook {
      * Seed quickbar slot 0 with a known item, so a spec has something to clear
      * without driving the assign flow (which is not what those tests are about).
      */
-    quickbarAssign: (name?: string) => void
+    quickbarAssign: (name?: string, quality?: string) => void
+    /** Put `name` on the cursor with optional quality (skips the inventory). */
+    spawnPaintItem: (name: string, quality?: string) => void
+    confirmPlacement: () => void
+    qualityEnabled: () => boolean
+    setQualityEnabled: (enabled: boolean) => void
+    entityQuality: (name: string) => string | null
+    setEntityQuality: (name: string, quality: string | undefined) => boolean
+    entityInfoName: (name: string) => string | null
+    serializedEntity: (name: string) => Record<string, unknown> | null
 }
 
 /** Approximate per-channel match against a target colour (tolerant of AA edges). */
@@ -409,7 +452,7 @@ export function installTestHook(win: Window = window): void {
             return G.UI.createInventory(
                 'Inventory',
                 undefined,
-                name => G.BPC.spawnPaintContainer(name),
+                (name, quality) => G.BPC.spawnPaintContainer(name, 0, [], false, quality),
                 'items'
             ).scrollToLastItem()
         },
@@ -486,13 +529,20 @@ export function installTestHook(win: Window = window): void {
         // `Array.from` visits every index, so holes normalize to `null`.
         entityModules: name => {
             const mods = findEntity(name)?.modules
-            return mods ? Array.from(mods, m => m ?? null) : null
+            return mods ? Array.from(mods, m => (m ? m.name : null)) : null
         },
         entityFilters: name => {
             const filters = findEntity(name)?.filters
             return filters ? Array.from(filters, f => f?.name ?? null) : null
         },
         entityRecipe: name => findEntity(name)?.recipe ?? null,
+        entityOverlayChildCount: name => {
+            const e = findEntity(name)
+            if (!e) return null
+            const ec = EntityContainer.mappings.get(e.entityNumber)
+            if (!ec) return null
+            return ec.overlayInfo?.children.length ?? 0
+        },
         openEditorSlot: (name, kind, index) => {
             const e = findEntity(name)
             if (!e) return null
@@ -595,7 +645,10 @@ export function installTestHook(win: Window = window): void {
             }
         },
         quickbarItems: () =>
-            G.UI.quickbarPanel.serialize().map(itemName => itemName ?? null) as (string | null)[],
+            G.UI.quickbarPanel.serialize().map(item => {
+                if (!item) return null
+                return typeof item === 'string' ? item : item.name
+            }) as (string | null)[],
         quickbarSlotPos: index => {
             const slot = G.UI.quickbarPanel.slotAt(index)
             if (!slot) return null
@@ -603,8 +656,37 @@ export function installTestHook(win: Window = window): void {
             if (r.width === 0 || r.height === 0) return null
             return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
         },
-        quickbarAssign: (name = 'fast-inserter') => {
-            G.UI.quickbarPanel.slotAt(0)?.assignItem(name)
+        quickbarAssign: (name = 'fast-inserter', quality?: string) => {
+            G.UI.quickbarPanel.slotAt(0)?.assignItem(name, quality)
+        },
+        spawnPaintItem: (name, quality) => {
+            G.BPC.spawnPaintContainer(name, 0, [], false, quality)
+        },
+        confirmPlacement: () => {
+            if (G.BPC.mode === EditorMode.PAINT && G.BPC.paintContainer) {
+                G.BPC.paintContainer.show()
+                G.BPC.paintContainer.moveAtCursor()
+            }
+            G.BPC.confirmPlacement()
+        },
+        qualityEnabled: () => qualityUi.enabled,
+        setQualityEnabled: enabled => {
+            qualityUi.enabled = enabled
+        },
+        entityQuality: name => findEntity(name)?.quality ?? null,
+        setEntityQuality: (name, quality) => {
+            const e = findEntity(name)
+            if (!e) return false
+            e.quality = quality
+            return true
+        },
+        entityInfoName: name => {
+            const e = findEntity(name)
+            return e ? buildEntityInfo(e).name : null
+        },
+        serializedEntity: name => {
+            const e = findEntity(name)
+            return e ? (JSON.parse(JSON.stringify(e.rawEntity)) as Record<string, unknown>) : null
         },
     }
     ;(win as unknown as Record<string, unknown>)[TEST_HOOK_KEY] = hook

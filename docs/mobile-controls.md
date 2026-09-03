@@ -1,8 +1,10 @@
 # Mobile / touch controls
 
 > **Companion doc:** [`mobile-layout-inventory.md`](./mobile-layout-inventory.md)
-> (the screen-space map). **Open issues:** #52 (reposition a selection without
-> breaking wires — the broader problem behind the in-place nudge).
+> (the screen-space map). Quality (unrelated to touch, but the same editor) is
+> tracked in [`quality.md`](./quality.md) / issue #5. **Open issues:** #52
+> (reposition a selection without breaking wires — the broader problem behind
+> the in-place nudge).
 > This doc is the source of truth for _what's done_ on the touch arc (it leads
 > the issue tracker) — when a slice lands, close/tick the matching issue in the
 > same change so they don't contradict each other. See CLAUDE.md "Keep issues
@@ -108,6 +110,23 @@ pipelines at once made touch taps double-act via the browser's synthetic
   `index.{styl,ts,html}`, `Editor.setViewportInsets`/`onModeChange`, `Panel`;
   e2e `actionToolbar.spec.ts` + `panels.spec.ts`. Remaining: real game-sprite
   icons (unicode glyphs for now).
+- ✅ **Flip H / Flip V work, and show on the rail** — desktop flip was bound to
+  Shift+F / Shift+G (Factorio 2.0 uses **H** / **V**) and only ran on a
+  _pasted-blueprint_ ghost, so a held entity or hovered building was a silent
+  no-op and the mobile Flip buttons stayed hidden. Now: H/V (aliases kept),
+  a held entity ghost remaps facing, a hovered / single-selected entity flips
+  in place, paste ghosts take their tiles with them, and the rail shows Flip H/V
+  in PAINT / EDIT / SELECT whenever `cursorCanFlip`. Flip/Rotate from the rail
+  (or keyboard after an inventory pick) **reveal a still-hidden paint ghost**
+  instead of no-op'ing on `visible` — the ghost stays hidden until the first
+  canvas tap, which made Flip look broken on touch and after picking from E.
+  Sprite mirroring: the blueprint `mirror` bit is stored and drawn — recycler
+  uses `graphics_set_flipped` / `recycler-flipped-*.png`; chemical-plant /
+  refinery / foundry / biochamber / cryogenic-plant / electromagnetic-plant /
+  boiler / fusion-\* geometrically `flipX` (`scale.x *= -1`) `graphics_set`.
+  Alt-mode overlay (fluid arrows, fluid/recipe icons, recycler drop arrow)
+  uses the same local-X mirror so it stays glued to the flipped building.
+  `e2e/flip.spec.ts` + `actionToolbar.spec.ts`.
 - ✅ **Item-selector overhaul** (`InventoryDialog`, the shared item/recipe/module
   picker) — now touch-usable: **scrollable** group-tabs (◀▶) and item grid (▲▼),
   masked with viewport-gated hit-testing; a **Recents tab** (first/active) with
@@ -427,7 +446,8 @@ pipelines at once made touch taps double-act via the browser's synthetic
   and on entity add/remove (`editor.onBlueprintChange`, a new stable emitter that
   survives blueprint swaps). Mapping: **global** Items/Undo/Redo/Center +
   Copy/Paste BP/Export/New; **PAINT** Rotate/Flip H/Flip V/Pick/Cancel; **EDIT**
-  Rotate/Delete/Pick/Copy cfg/Paste cfg; **SELECT** Rotate/Cancel; **Select**
+  Rotate/Flip H/Flip V/Delete/Pick/Copy cfg/Paste cfg; **SELECT** Rotate/Flip H/
+  Flip V (single-entity) /Cancel; **Select**
   (marquee) in NONE/EDIT when non-empty. Priority order is preserved so the rail
   collapses rather than reshuffling. `actionToolbar.ts`, `Editor.onBlueprintChange`
   / `blueprintEmpty`; covered in `e2e/actionToolbar.spec.ts`.
@@ -526,9 +546,9 @@ pipelines at once made touch taps double-act via the browser's synthetic
   and the blue **rectangle now hides on release** for _all_ selections (it
   used to stay frozen over the canvas) — once held, the cursor boxes / tile
   highlight are the selection's visual. Scoped out on purpose: the entity-only
-  nudge d-pad hides for a tile selection (no group-move path for tiles); a
-  tile-carrying ghost can't flip/rotate (those re-spawn from entity copies —
-  `canFlipOrRotateByCopying` gates them off);
+  nudge d-pad hides for a tile selection (no group-move path for tiles);
+  flip/rotate of a tile-carrying paste ghost remaps the tiles with the
+  entities (`flippedTiles` / `rotatedTiles` on `PaintBlueprintContainer`);
   and desktop's modifier+drag COPY/DELETE modes remain entity-only. Seams:
   `Blueprint.getTilesInArea` + tile events, `BlueprintContainer`
   (`armMarquee(tilesOnly)`, either/or `marqueeUpdateFn`, `marqueeTiles` through

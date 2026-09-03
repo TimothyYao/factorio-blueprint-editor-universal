@@ -1,4 +1,6 @@
 import { IPoint } from '../types'
+import util from '../common/util'
+import { flipDirection, flipPoint } from '../core/flip'
 
 /**
  * Alt-mode indication sprites (the yellow drop arrow / pickup line the game
@@ -87,6 +89,31 @@ export function inserterIndicationSprites(
             kind: 'arrow',
         },
     }
+}
+
+/**
+ * Factorio's `mirror` bit is a left/right flip in **entity-local** space
+ * (negate X, remap E↔W), then the entity still faces `direction`. Overlay
+ * sprites that live in already-rotated world space (fluid arrows, recipe
+ * icon shift) go through this; children of a parent rotated by `direction`
+ * (recycler drop arrow) only need the local X flip.
+ */
+export function overlayLocalToWorld(local: IPoint, direction: number, mirrored: boolean): IPoint {
+    return util.rotatePointBasedOnDir(mirrored ? flipPoint(local, false) : local, direction)
+}
+
+export function overlayLocalDirection(
+    connectionDirection: number,
+    entityDirection: number,
+    mirrored: boolean
+): number {
+    const local = mirrored ? flipDirection(connectionDirection, false) : connectionDirection
+    return (entityDirection + local) % 16
+}
+
+/** Local drop vector with the blueprint `mirror` bit applied. */
+export function mirroredPlaceResult(vector: IPoint, mirrored: boolean): IPoint {
+    return mirrored ? flipPoint(vector, false) : vector
 }
 
 /** Output arrow for anything with `vector_to_place_result` (drills, recycler). */

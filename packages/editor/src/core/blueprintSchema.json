@@ -479,6 +479,10 @@
                                 "enum": ["input", "output"],
                                 "$comment": "direction type, only present if entity is of type underground-belt"
                             },
+                            "mirror": {
+                                "type": "boolean",
+                                "$comment": "Factorio 2.0 BlueprintEntity.mirror — whether this entity is mirrored. The game omits the key when false."
+                            },
                             "recipe": {
                                 "type": "string",
                                 "recipeName": true,
@@ -486,6 +490,10 @@
                             },
                             "recipe_quality": {
                                 "type": "string"
+                            },
+                            "quality": {
+                                "type": "string",
+                                "$comment": "entity quality; omitted means normal"
                             },
                             "bar": {
                                 "type": "integer",

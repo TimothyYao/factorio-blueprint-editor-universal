@@ -6,6 +6,7 @@ import EDITOR, {
     Editor,
     FD,
     inputMode,
+    qualityUi,
     DATA_PACK,
     setDataPack,
     loadPackManifest,
@@ -138,6 +139,17 @@ export function initSettingsPane(
         },
     }
     gui.add(inputModeProxy, 'mode', ['desktop', 'mobile']).name('Input Mode').listen()
+
+    // Quality UI (issue #5): hide badges/pickers without stripping blueprint data.
+    const qualityProxy = {
+        get enabled(): boolean {
+            return qualityUi.enabled
+        },
+        set enabled(v: boolean) {
+            qualityUi.enabled = v
+        },
+    }
+    gui.add(qualityProxy, 'enabled').name('Quality').listen()
 
     // Data pack, two axes (docs/slim-graphics.md):
     //
