@@ -149,7 +149,8 @@ export class InventoryDialog extends Dialog {
         pick?: InventoryPickOptions
     ) {
         const showQuality = qualityUi.enabled && !!(pick?.quality || recentsKey === 'items')
-        super(InventoryDialog.computeWidth(itemsFilter, recentsKey), 442, title)
+        const qualityBand = showQuality ? QualityRow.H + 8 : 0
+        super(InventoryDialog.computeWidth(itemsFilter, recentsKey), 442 + qualityBand, title)
 
         this.m_clearCallBack = clear?.onClear
         this.m_commitOnTap = recentsKey === 'modules'
@@ -306,7 +307,7 @@ export class InventoryDialog extends Dialog {
         }
 
         const recipePanel = new Container()
-        recipePanel.position.set(0, 442)
+        recipePanel.position.set(0, 442 + qualityBand)
         this.addChild(recipePanel)
 
         const recipeBackground = F.DrawRectangle(
@@ -327,8 +328,8 @@ export class InventoryDialog extends Dialog {
         this.m_RecipeContainer.position.set(12, 36)
         recipePanel.addChild(this.m_RecipeContainer)
 
-        // Quality chips live in this footer (under the dialog divider), not in
-        // the item grid — that empty strip is the recipe/preview band.
+        // Quality chips in a dedicated row between the item grid and the
+        // recipe strip — the footer grows by qualityBand to make room.
         if (showQuality) {
             const row = new QualityRow({
                 value: this.m_pickQuality,
@@ -347,11 +348,8 @@ export class InventoryDialog extends Dialog {
                     this.m_pickComparator = c
                 },
             })
-            row.position.set(12, 10)
-            recipePanel.addChild(row)
-            const inset = row.width + 8
-            this.m_RecipeLabel.position.set(12 + inset, 10)
-            this.m_RecipeContainer.position.set(12 + inset, 36)
+            row.position.set(12, 442 + 4)
+            this.addChild(row)
         }
 
         // Bottom Confirm / Pin bar (top-right of the recipe strip), revealed only
@@ -359,7 +357,7 @@ export class InventoryDialog extends Dialog {
         const pin = InventoryDialog.barButton('Pin', 0x2a5a7a)
         this.m_pinBtn = pin.container
         this.m_pinText = pin.text
-        this.m_pinBtn.position.set(this.width - 164, 446)
+        this.m_pinBtn.position.set(this.width - 164, 446 + qualityBand)
         this.m_pinBtn.on('pointerup', e => {
             e.stopPropagation()
             const name = this.m_previewName
@@ -379,7 +377,7 @@ export class InventoryDialog extends Dialog {
 
         const confirm = InventoryDialog.barButton('✓ Confirm', 0x2f7d32)
         this.m_confirmBtn = confirm.container
-        this.m_confirmBtn.position.set(this.width - 84, 446)
+        this.m_confirmBtn.position.set(this.width - 84, 446 + qualityBand)
         this.m_confirmBtn.on('pointerup', e => {
             e.stopPropagation()
             if (this.m_previewName) this.commitSelect(this.m_previewName)
