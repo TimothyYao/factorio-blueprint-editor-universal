@@ -34,6 +34,13 @@ import FD, {
 } from './factorioData'
 import { Blueprint } from './Blueprint'
 import { getBeltWireConnectionIndex } from './spriteDataBuilder'
+import {
+    constrainToPossibleDirections,
+    flipDirection,
+    flipPoint,
+    flipSwapsSplitterPriority,
+    entityUsesMirroring,
+} from './flip'
 import U from './generators/util'
 import {
     EntityWithOwnerPrototype,
@@ -58,6 +65,33 @@ export interface IFilter {
     name: string
     /** If stacking is allowed, how many shall be stacked */
     count?: number
+    /** Filter quality; omitted means any quality (not the same as normal `=`). */
+    quality?: string
+    comparator?: ComparatorString
+}
+
+/** One module inventory slot. `quality` omitted is normal. */
+export interface IModuleSlot {
+    name: string
+    quality?: string
+}
+
+export function moduleSlotName(slot: IModuleSlot | string | undefined | null): string | undefined {
+    if (!slot) return undefined
+    return typeof slot === 'string' ? slot : slot.name
+}
+
+function normalizeModuleSlot(slot: IModuleSlot | string | undefined): IModuleSlot | undefined {
+    if (!slot) return undefined
+    if (typeof slot === 'string') return slot ? { name: slot } : undefined
+    if (!slot.name) return undefined
+    return slot.quality ? { name: slot.name, quality: slot.quality } : { name: slot.name }
+}
+
+function moduleSlotsEqual(a: IModuleSlot | undefined, b: IModuleSlot | undefined): boolean {
+    if (!a && !b) return true
+    if (!a || !b) return false
+    return a.name === b.name && (a.quality || undefined) === (b.quality || undefined)
 }
 
 // TODO: Handle the modules within the class differently so that modules would stay in the same place during editing the blueprint
@@ -66,9 +100,12 @@ export interface EntityEvents {
     destroy: []
     position: [newValue: IPoint, oldValue: IPoint]
     direction: []
+    /** Blueprint `mirror` bit (sprite / fluid-box flip). */
+    mirror: []
     directionType: []
     recipe: [recipe: string]
-    modules: [modules: (string | undefined)[]]
+    quality: []
+    modules: [modules: (IModuleSlot | undefined)[]]
     splitterInputPriority: [priority: FilterPriority]
     splitterOutputPriority: [priority: FilterPriority]
     splitterFilter: []
@@ -273,6 +310,19 @@ export class Entity extends EventEmitter<EntityEvents> {
             .commit()
     }
 
+    /** Blueprint `mirror` — omitted from the export when false. */
+    public get mirror(): boolean {
+        return !!this.m_rawEntity.mirror
+    }
+    public set mirror(value: boolean) {
+        const next = value ? true : undefined
+        if (this.m_rawEntity.mirror === next) return
+        this.m_BP.history
+            .updateValue(this.m_rawEntity, 'mirror', next, 'Flip entity')
+            .onDone(() => this.emit('mirror'))
+            .commit()
+    }
+
     /** Rail layer (elevated) for rail signals on raised rails */
     public get railLayer(): string | undefined {
         return this.m_rawEntity.rail_layer
@@ -288,6 +338,23 @@ export class Entity extends EventEmitter<EntityEvents> {
         this.m_BP.history
             .updateValue(this.m_rawEntity, 'type', type, 'Change direction type')
             .onDone(() => this.emit('directionType'))
+            .commit()
+    }
+
+    /**
+     * Entity-level quality. Omitted / `normal` is the default — the key is
+     * stripped from the raw entity so exports match the game.
+     */
+    public get quality(): string | undefined {
+        const q = this.m_rawEntity.quality
+        return !q || q === 'normal' ? undefined : q
+    }
+    public set quality(value: string | undefined) {
+        const next = !value || value === 'normal' ? undefined : value
+        if ((this.m_rawEntity.quality || undefined) === next) return
+        this.m_BP.history
+            .updateValue(this.m_rawEntity, 'quality', next, 'Change quality')
+            .onDone(() => this.emit('quality'))
             .commit()
     }
 
@@ -309,7 +376,7 @@ export class Entity extends EventEmitter<EntityEvents> {
         if (recipe !== undefined) {
             this.modules = this.modules.map(m => {
                 if (!m) return
-                const module = getModule(m)
+                const module = getModule(m.name)
                 if (!recipeSupportsModule(recipe, module)) return
                 return m
             })
@@ -367,7 +434,7 @@ export class Entity extends EventEmitter<EntityEvents> {
     }
 
     /** List of all modules. Slots that are undefined don't have a populated module. */
-    public get modules(): (string | undefined)[] {
+    public get modules(): (IModuleSlot | undefined)[] {
         const items = this.m_rawEntity.items
         const out = new Array(this.moduleSlots)
         if (!items) return out
@@ -379,17 +446,19 @@ export class Entity extends EventEmitter<EntityEvents> {
             if (item.items.in_inventory) {
                 for (const inv of item.items.in_inventory) {
                     if (inv.inventory === inventory) {
-                        out[inv.stack] = item.id.name
+                        out[inv.stack] = item.id.quality
+                            ? { name: item.id.name, quality: item.id.quality }
+                            : { name: item.id.name }
                     }
                 }
             }
         }
         return out
     }
-    /** The given list can be shorter than the one returned by the getter. */
-    public set modules(_modules: (string | undefined)[]) {
-        const modules = _modules || []
-        if (this.modules.entries().every(([i, m]) => m === modules[i])) return
+    /** The given list can be shorter than the one returned by the getter. Strings are treated as un-qualitied names. */
+    public set modules(_modules: (IModuleSlot | string | undefined)[]) {
+        const modules = (_modules || []).map(normalizeModuleSlot)
+        if (this.modules.entries().every(([i, m]) => moduleSlotsEqual(m, modules[i]))) return
 
         let items = util.duplicate(this.m_rawEntity.items || [])
         if (!Array.isArray(items)) {
@@ -414,7 +483,12 @@ export class Entity extends EventEmitter<EntityEvents> {
             let found_module_entry = false
             const inv_entry = { inventory, stack: i }
             for (const item of items) {
-                if (item.id.name === module) {
+                // Group insert-plans by (name, quality), not name alone — two
+                // stacks of the same module at different qualities are distinct.
+                if (
+                    item.id.name === module.name &&
+                    (item.id.quality || undefined) === (module.quality || undefined)
+                ) {
                     found_module_entry = true
 
                     if (item.items.in_inventory) {
@@ -426,7 +500,9 @@ export class Entity extends EventEmitter<EntityEvents> {
             }
             if (!found_module_entry) {
                 items.push({
-                    id: { name: module },
+                    id: module.quality
+                        ? { name: module.name, quality: module.quality }
+                        : { name: module.name },
                     items: { in_inventory: [inv_entry] },
                 })
             }
@@ -609,26 +685,49 @@ export class Entity extends EventEmitter<EntityEvents> {
             throw new Error('pre 2.0 format!')
         }
         if (this.m_rawEntity.filter.name) {
-            return [{ index: 1, name: this.m_rawEntity.filter.name }]
+            const f = this.m_rawEntity.filter
+            return [
+                {
+                    index: 1,
+                    name: f.name,
+                    ...(f.quality ? { quality: f.quality } : {}),
+                    ...(f.comparator ? { comparator: f.comparator } : {}),
+                },
+            ]
         }
         return []
     }
     private set splitterFilter(filters: IFilter[]) {
         // `filters` arrives already stripped of nameless entries by the `filters`
         // setter, so clearing the (single) splitter filter hands us an empty array
-        // — indexing it unguarded used to throw. Compare against the raw entity's
-        // *name*, not the `{ name }` wrapper object, so an unchanged filter really
-        // does short-circuit instead of writing a redundant history entry.
-        const filter = filters?.[0]?.name
-        const current =
-            typeof this.m_rawEntity.filter === 'string' ? undefined : this.m_rawEntity.filter?.name
-        if (current === filter) return
+        // — indexing it unguarded used to throw. Compare the full filter object
+        // (name + quality + comparator) so a quality-only edit commits.
+        const next = filters?.[0]
+        const raw =
+            typeof this.m_rawEntity.filter === 'string' ? undefined : this.m_rawEntity.filter
+        const currentName = raw?.name
+        const currentQuality = raw?.quality
+        const currentComparator = raw?.comparator
+        if (
+            currentName === next?.name &&
+            (currentQuality || undefined) === (next?.quality || undefined) &&
+            (currentComparator || undefined) === (next?.comparator || undefined)
+        ) {
+            return
+        }
 
         this.m_BP.history.startTransaction()
 
         // Clear by removing the key outright rather than storing `{ name: undefined }`,
         // which would serialize an empty `filter: {}` into the exported blueprint.
-        const f = filter === undefined ? undefined : { name: filter }
+        const f =
+            next?.name === undefined
+                ? undefined
+                : {
+                      name: next.name,
+                      ...(next.quality ? { quality: next.quality } : {}),
+                      ...(next.comparator ? { comparator: next.comparator } : {}),
+                  }
 
         this.m_BP.history
             .updateValue(this.m_rawEntity, 'filter', f, 'Change splitter filter')
@@ -636,7 +735,7 @@ export class Entity extends EventEmitter<EntityEvents> {
             .onDone(() => this.emit('filters'))
             .commit()
 
-        if (filter !== undefined) {
+        if (next?.name !== undefined) {
             if (this.splitterOutputPriority === undefined) {
                 this.splitterOutputPriority = 'left'
             }
@@ -700,21 +799,28 @@ export class Entity extends EventEmitter<EntityEvents> {
      *   - **Siblings on `request_filters`** — `request_from_buffers`,
      *     `trash_not_requested`, and any further sections. Hence duplicate-then-
      *     mutate rather than replacing the object wholesale.
-     *   - **Attributes the UI doesn't model** — `quality`, `comparator`,
-     *     `max_count`, `minimum_delivery_count`, `import_from`. `Filters` rebuilds
-     *     its slots as bare `{index, name, count}`, so those would be dropped on
-     *     any edit; merging each entry onto the existing raw filter of the same
-     *     index keeps an imported blueprint's fidelity through a count change.
+     *   - **Attributes the UI doesn't model** — `max_count`,
+     *     `minimum_delivery_count`, `import_from`. Quality/comparator *are*
+     *     modeled on `IFilter` and written authoritatively (absent = delete the
+     *     key = "any quality"). Merging each entry onto the existing raw filter
+     *     of the same index keeps an imported blueprint's unmodeled fields
+     *     through a count change.
      */
     private set logisticChestFilters(filters: IFilter[]) {
         const next = (filters ?? []).filter(f => !!f.name)
         const current = this.logisticChestFilters
-        // Cheap identity check first: same slots, names and counts ⇒ no history entry.
+        // Cheap identity check first: same slots, names, counts, quality.
         if (
             current.length === next.length &&
             current.every((f, i) => {
                 const n = next[i]
-                return f.index === n.index && f.name === n.name && f.count === n.count
+                return (
+                    f.index === n.index &&
+                    f.name === n.name &&
+                    f.count === n.count &&
+                    (f.quality || undefined) === (n.quality || undefined) &&
+                    (f.comparator || undefined) === (n.comparator || undefined)
+                )
             })
         ) {
             return
@@ -734,15 +840,23 @@ export class Entity extends EventEmitter<EntityEvents> {
         const existing = new Map(current.map(f => [f.index, f]))
         obj.sections[0].filters =
             next.length > 0
-                ? next.map(f => ({
-                      ...existing.get(f.index),
-                      index: f.index,
-                      name: f.name,
-                      // `count` is required by LogisticFilter. The UI leaves it
-                      // undefined for a storage chest (one filter, no amount), so
-                      // fall back the same way the pre-2.0 import does.
-                      count: f.count ?? existing.get(f.index)?.count ?? 1,
-                  }))
+                ? next.map(f => {
+                      const prev = existing.get(f.index)
+                      const merged: LogisticFilter = {
+                          ...prev,
+                          index: f.index,
+                          name: f.name,
+                          // `count` is required by LogisticFilter. The UI leaves it
+                          // undefined for a storage chest (one filter, no amount), so
+                          // fall back the same way the pre-2.0 import does.
+                          count: f.count ?? prev?.count ?? 1,
+                      }
+                      if (f.quality) merged.quality = f.quality
+                      else delete merged.quality
+                      if (f.comparator) merged.comparator = f.comparator
+                      else delete merged.comparator
+                      return merged
+                  })
                 : undefined
 
         this.m_BP.history
@@ -1649,23 +1763,7 @@ export class Entity extends EventEmitter<EntityEvents> {
     }
 
     private constrainDirection(direction: number): number {
-        const pr = this.possibleRotations
-        const canRotate = pr.length !== 0
-
-        if (canRotate) {
-            if (!pr.includes(direction)) {
-                if (direction === 8 && pr.includes(0)) {
-                    return 0
-                } else if (direction === 12 && pr.includes(4)) {
-                    return 4
-                } else {
-                    return this.direction
-                }
-            }
-        } else {
-            return 0
-        }
-        return direction
+        return constrainToPossibleDirections(this.direction, direction, this.possibleRotations)
     }
 
     private changePriority(priority?: FilterPriority): FilterPriority | undefined {
@@ -1684,31 +1782,29 @@ export class Entity extends EventEmitter<EntityEvents> {
         if (non_flip_entities.includes(this.type))
             throw new IllegalFlipError(`${this.name} cannot be flipped`)
 
-        const axisDir = vertical ? 12 : 8
-        const direction = this.constrainDirection((axisDir * 2 - this.direction) % 16)
+        const direction = this.constrainDirection(flipDirection(this.direction, vertical))
 
         let input_priority = this.m_rawEntity.input_priority
         let output_priority = this.m_rawEntity.output_priority
 
-        if (
-            (vertical && (direction === 4 || direction === 8)) ||
-            (!vertical && (direction === 0 || direction === 12))
-        ) {
+        if (flipSwapsSplitterPriority(direction, vertical)) {
             input_priority = this.changePriority(input_priority)
             output_priority = this.changePriority(output_priority)
         }
 
-        const position = vertical
-            ? { x: this.m_rawEntity.position.x, y: -this.m_rawEntity.position.y }
-            : { x: -this.m_rawEntity.position.x, y: this.m_rawEntity.position.y }
+        const position = flipPoint(this.m_rawEntity.position, vertical)
+        const usesMirror = entityUsesMirroring(this.entityData)
+        const mirror = usesMirror ? !this.mirror : this.mirror
         const updatedRawEntity = {
             ...this.m_rawEntity,
             direction,
             position,
             input_priority,
             output_priority,
+            mirror: mirror || undefined,
         }
         if (direction === 0) delete updatedRawEntity.direction
+        if (!mirror) delete updatedRawEntity.mirror
 
         return new Entity(updatedRawEntity, this.m_BP)
     }
@@ -1727,6 +1823,49 @@ export class Entity extends EventEmitter<EntityEvents> {
                 ? 2
                 : 1
         return pr[(pr.indexOf(this.direction) + step * (ccw ? 3 : 1)) % pr.length]
+    }
+
+    /**
+     * Flip this entity in place (hovered / selected). Position stays; facing
+     * and splitter lane-priority remapped. Train stops / rail signals throw
+     * — the game refuses to flip those too.
+     */
+    public flip(vertical = false): void {
+        const non_flip_entities: EntityWithOwnerPrototype['type'][] = [
+            'train-stop',
+            'rail-chain-signal',
+            'rail-signal',
+        ]
+        if (non_flip_entities.includes(this.type)) {
+            throw new IllegalFlipError(`${this.name} cannot be flipped`)
+        }
+
+        const newDir = this.constrainDirection(flipDirection(this.direction, vertical))
+        const swapPriority = flipSwapsSplitterPriority(newDir, vertical)
+        const newIn = swapPriority
+            ? this.changePriority(this.m_rawEntity.input_priority)
+            : this.m_rawEntity.input_priority
+        const newOut = swapPriority
+            ? this.changePriority(this.m_rawEntity.output_priority)
+            : this.m_rawEntity.output_priority
+        const usesMirror = entityUsesMirroring(this.entityData)
+        const newMirror = usesMirror ? !this.mirror : this.mirror
+
+        if (
+            newDir === this.direction &&
+            newIn === this.m_rawEntity.input_priority &&
+            newOut === this.m_rawEntity.output_priority &&
+            newMirror === this.mirror
+        ) {
+            return
+        }
+
+        this.m_BP.history.startTransaction('Flip entity')
+        this.direction = newDir
+        this.splitterInputPriority = newIn
+        this.splitterOutputPriority = newOut
+        if (usesMirror) this.mirror = newMirror
+        this.m_BP.history.commitTransaction()
     }
 
     public rotate(ccw = false, rotateOpposingUB = false): void {
@@ -1808,7 +1947,7 @@ export class Entity extends EventEmitter<EntityEvents> {
         if (aM.length > 0 && sourceEntity.acceptedModules) {
             if (sourceEntity.modules && sourceEntity.modules.length > 0) {
                 this.modules = sourceEntity.modules
-                    .filter(m => aM.includes(m))
+                    .filter(m => m && aM.includes(m.name))
                     .slice(0, this.moduleSlots)
             } else {
                 this.modules = []
@@ -1982,7 +2121,13 @@ export class Entity extends EventEmitter<EntityEvents> {
         const isLoaderInputting = () => this.directionType === 'input'
         const getBeltConnectionIndex = () =>
             getBeltWireConnectionIndex(this.m_BP.entityPositionGrid, this.position, direction)
-        const cc = getCircuitConnector(e, direction, isLoaderInputting, getBeltConnectionIndex)
+        const cc = getCircuitConnector(
+            e,
+            direction,
+            isLoaderInputting,
+            getBeltConnectionIndex,
+            this.mirror
+        )
         if (cc) {
             return cc.points.wire[color]
         }

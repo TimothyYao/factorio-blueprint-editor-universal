@@ -2,6 +2,7 @@ import { ColorSource, Container, FederatedPointerEvent } from 'pixi.js'
 import { IPoint } from '../types'
 import G from '../common/globals'
 import { Entity } from '../core/Entity'
+import { Tile } from '../core/Tile'
 import F from '../UI/controls/functions'
 import { BlueprintContainer } from './BlueprintContainer'
 import { ENTITY_INFO_LABEL } from './overlayIndication'
@@ -196,6 +197,17 @@ export abstract class PaintContainer extends Container {
     // override
     public abstract rotate(ccw?: boolean): void
 
+    /**
+     * Flip a *single-entity* paint ghost in place (direction remap). Blueprint
+     * ghosts use the copy-respawn path instead (`canFlipOrRotateByCopying`).
+     */
+    public flip(_vertical: boolean): void {}
+
+    /** True when Shift/H/V (or the rail Flip buttons) should be offered. */
+    public canFlip(): boolean {
+        return false
+    }
+
     // override
     public abstract canFlipOrRotateByCopying(): boolean
 
@@ -204,6 +216,16 @@ export abstract class PaintContainer extends Container {
 
     // override
     public abstract flippedEntities(vertical: boolean): Entity[]
+
+    /** Tiles carried by a blueprint ghost, remapped for a flip respawn. */
+    public flippedTiles(_vertical: boolean): Tile[] {
+        return []
+    }
+
+    /** Tiles carried by a blueprint ghost, remapped for a rotate respawn. */
+    public rotatedTiles(_ccw?: boolean): Tile[] {
+        return []
+    }
 
     // override
     protected abstract redraw(): void

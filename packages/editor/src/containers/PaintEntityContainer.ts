@@ -1,6 +1,7 @@
 import { Container } from 'pixi.js'
 import { DirectionType, IPoint } from '../types'
 import FD, { getEntitySize, getPossibleRotations } from '../core/factorioData'
+import { constrainToPossibleDirections, entityUsesMirroring, flipDirection } from '../core/flip'
 import { UndergroundBeltPrototype } from 'factorio:prototype'
 import { Entity } from '../core/Entity'
 import { EntitySprite } from './EntitySprite'
@@ -13,13 +14,15 @@ export class PaintEntityContainer extends PaintContainer {
     private visualizationArea: VisualizationArea
     private directionType: DirectionType
     private direction: number
+    private mirrored: boolean
     /** This is only a reference */
     private undergroundLine: Container
 
-    public constructor(bpc: BlueprintContainer, name: string, direction: number) {
+    public constructor(bpc: BlueprintContainer, name: string, direction: number, mirror = false) {
         super(bpc, name)
 
         this.direction = direction
+        this.mirrored = mirror
         this.directionType = FD.entities[name].type === 'loader' ? 'output' : 'input'
 
         this.visualizationArea = this.bpc.underlayContainer.create(this.name, this.position)
@@ -34,6 +37,11 @@ export class PaintEntityContainer extends PaintContainer {
     /** The held ghost's current facing (0/4/8/12 for cardinal). Exposed for tests. */
     public getDirection(): number {
         return this.direction
+    }
+
+    /** Blueprint `mirror` bit of the held ghost. Exposed for tests. */
+    public getMirror(): boolean {
+        return this.mirrored
     }
 
     private get size(): IPoint {
@@ -134,14 +142,33 @@ export class PaintEntityContainer extends PaintContainer {
     }
 
     public override rotate(ccw = false): void {
-        if (!this.visible) return
-
         const pr = getPossibleRotations(FD.entities[this.name])
         if (pr.length === 0) return
         this.direction = pr[(pr.indexOf(this.direction) + (ccw ? 3 : 1)) % pr.length]
 
         this.redraw()
         this.moveAtCursor()
+    }
+
+    public override flip(vertical: boolean): void {
+        const fd = FD.entities[this.name]
+        if (entityUsesMirroring(fd)) this.mirrored = !this.mirrored
+        const pr = getPossibleRotations(fd)
+        if (pr.length !== 0) {
+            const next = constrainToPossibleDirections(
+                this.direction,
+                flipDirection(this.direction, vertical),
+                pr
+            )
+            this.direction = next
+        }
+        this.redraw()
+        this.moveAtCursor()
+    }
+
+    public override canFlip(): boolean {
+        const fd = FD.entities[this.name]
+        return getPossibleRotations(fd).length !== 0 || entityUsesMirroring(fd)
     }
 
     public override canFlipOrRotateByCopying(): boolean {
@@ -164,6 +191,7 @@ export class PaintEntityContainer extends PaintContainer {
             name: this.name,
             direction,
             directionType: this.directionType,
+            mirror: this.mirrored,
         })
         this.addChild(...sprites)
         // Same alt-mode overlay placed entities get (drop/pickup arrows on
@@ -178,6 +206,7 @@ export class PaintEntityContainer extends PaintContainer {
                     name: this.name,
                     position: { x: 0, y: 0 },
                     direction,
+                    mirror: this.mirrored || undefined,
                     type:
                         FD.entities[this.name].type === 'underground-belt' ||
                         FD.entities[this.name].type === 'loader'
@@ -260,6 +289,7 @@ export class PaintEntityContainer extends PaintContainer {
         )
         if (snEnt) {
             snEnt.direction = direction
+            snEnt.mirror = this.mirrored
             return
         }
 
@@ -273,6 +303,7 @@ export class PaintEntityContainer extends PaintContainer {
                         fd.type === 'underground-belt' || fd.type === 'loader'
                             ? this.directionType
                             : undefined,
+                    mirror: this.mirrored || undefined,
                 },
                 true
             )

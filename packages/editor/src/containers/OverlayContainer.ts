@@ -20,6 +20,9 @@ import {
     vectorToPoint,
     inserterIndicationSprites,
     placeResultIndicationSprite,
+    overlayLocalToWorld,
+    overlayLocalDirection,
+    mirroredPlaceResult,
     ENTITY_INFO_LABEL,
     type IndicationKind,
 } from './overlayIndication'
@@ -138,12 +141,15 @@ export class OverlayContainer extends Container {
             // unscaled — without the guard, setting any recipe on those
             // machines threw here, breaking their info panel and editor (#35).
             const spec = entity.entityData.icon_draw_specification ?? {}
-            const shift = spec.shift || [0, 0]
+            const shift = vectorToPoint(spec.shift) ?? { x: 0, y: 0 }
             const scale = spec.scale || 1
             const recipeInfo = new Container()
             createIconWithBackground(recipeInfo, entity.recipe)
             recipeInfo.scale.set(scale)
-            recipeInfo.position.set(shift[0] * 32, shift[1] * 32)
+            // shift is entity-local; rotate + mirror so the icon stays on the
+            // building (the glyph itself is not flipX'd — it must stay readable).
+            const recipePos = overlayLocalToWorld(shift, entity.direction, entity.mirror)
+            recipeInfo.position.set(recipePos.x * 32, recipePos.y * 32)
             entityInfo.addChild(recipeInfo)
         }
 
@@ -186,10 +192,19 @@ export class OverlayContainer extends Container {
                     )
                         continue
 
-                    const dir = (entity.direction + connection.direction) % 16
-                    const offset = connection.position
-                        ? util.rotatePointBasedOnDir(connection.position, entity.direction)
-                        : util.Point(connection.positions[entity.direction / 4])
+                    const dir = overlayLocalDirection(
+                        connection.direction,
+                        entity.direction,
+                        entity.mirror
+                    )
+                    const localPos = connection.position
+                        ? util.Point(connection.position)
+                        : overlayLocalToWorld(
+                              util.Point(connection.positions[entity.direction / 4]),
+                              (16 - entity.direction) % 16,
+                              false
+                          )
+                    const offset = overlayLocalToWorld(localPos, entity.direction, entity.mirror)
                     const offset2 = util.rotatePointBasedOnDir([0, -0.5], dir)
                     offset2.x += offset.x
                     offset2.y += offset.y
@@ -240,21 +255,22 @@ export class OverlayContainer extends Container {
                     ip => ip.inventory_index === getModuleInventoryIndex(e)
                 )
 
-                const shift = module_icon_positioning?.shift || [0, 0.7]
+                const shift = vectorToPoint(module_icon_positioning?.shift) ?? { x: 0, y: 0.7 }
                 const scale = module_icon_positioning?.scale || 0.5
                 const separation_multiplier = module_icon_positioning?.separation_multiplier || 1.1
                 for (let slot = 0; slot < module_slots; slot++) {
                     if (modules[slot]) {
-                        createIconWithBackground(moduleInfo, modules[slot], {
+                        createIconWithBackground(moduleInfo, modules[slot].name, {
                             x: slot * 32 * separation_multiplier,
                             y: 0,
                         })
                     }
                 }
                 moduleInfo.scale.set(scale)
+                const modulePos = overlayLocalToWorld(shift, entity.direction, entity.mirror)
                 moduleInfo.position.set(
-                    shift[0] * 32 - module_slots * 8 * separation_multiplier + 8,
-                    shift[1] * 32
+                    modulePos.x * 32 - module_slots * 8 * separation_multiplier + 8,
+                    modulePos.y * 32
                 )
                 entityInfo.addChild(moduleInfo)
             }
@@ -427,7 +443,9 @@ export class OverlayContainer extends Container {
             (entity.entityData as { vector_to_place_result?: unknown }).vector_to_place_result
         )
         if (placeResult && (placeResult.x !== 0 || placeResult.y !== 0)) {
-            const sprite = placeResultIndicationSprite(placeResult)
+            const sprite = placeResultIndicationSprite(
+                mirroredPlaceResult(placeResult, entity.mirror)
+            )
             const arrows = new Container()
             arrows.addChild(createIndicationSprite({ x: sprite.x, y: sprite.y }, sprite.kind))
             arrows.rotation = entity.direction * Math.PI * 0.125

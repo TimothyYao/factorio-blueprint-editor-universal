@@ -92,7 +92,9 @@ const BUTTONS: ToolbarButton[] = [
     },
     // Cursor actions — only where they do something. Rotate works on a held
     // ghost, an edited entity, and a *single*-entity selection (group rotation
-    // isn't supported yet — #52); flip only works on a pasted-blueprint ghost.
+    // isn't supported yet — #52). Flip is the same set: a held entity or
+    // pasted-blueprint ghost, a hovered entity, or a lone selection. (Factorio
+    // 2.0: H / V.)
     {
         action: 'rotate',
         glyph: '↻',
@@ -104,14 +106,14 @@ const BUTTONS: ToolbarButton[] = [
         action: 'flipHorizontal',
         glyph: '⇄',
         label: 'Flip H',
-        modes: [EM.PAINT],
+        modes: [EM.PAINT, EM.EDIT, EM.SELECT],
         when: e => e.cursorCanFlip,
     },
     {
         action: 'flipVertical',
         glyph: '⇅',
         label: 'Flip V',
-        modes: [EM.PAINT],
+        modes: [EM.PAINT, EM.EDIT, EM.SELECT],
         when: e => e.cursorCanFlip,
     },
     { action: 'pipette', glyph: '⊙', label: 'Pick', modes: [EM.PAINT, EM.EDIT] },

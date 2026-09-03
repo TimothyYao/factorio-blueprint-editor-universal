@@ -1,0 +1,223 @@
+import { test, expect, type Page } from '@playwright/test'
+
+// Desktop H/V flip (Factorio 2.0 bindings). Shift+F/G used to be the binds
+// and *only* flipped a pasted-blueprint ghost — a held entity or hovered
+// building was a silent no-op, which is why "flip isn't working" on desktop.
+// These drive the paint-ghost and hover paths via the `?test` hook.
+
+interface FlipState {
+    paint: {
+        active: boolean
+        visible: boolean
+        direction: number | null
+        mirrored: boolean | null
+    }
+    blueprint: { entityCount: number }
+    marquee: { count: number; direction: number | null }
+    hovered: { name: string; direction: number; mirrored: boolean } | null
+}
+
+const getState = (page: Page): Promise<FlipState> =>
+    page.evaluate(() =>
+        (
+            window as unknown as { __FBE_TEST__: { getState: () => FlipState } }
+        ).__FBE_TEST__.getState()
+    )
+
+async function waitForLoaded(page: Page): Promise<void> {
+    await expect(page.locator('#editor')).toBeVisible()
+    await expect(page.locator('#loadingScreen')).not.toHaveClass(/active/, { timeout: 60_000 })
+}
+
+async function gotoHoldingBelt(page: Page): Promise<void> {
+    await page.addInitScript(() => {
+        window.localStorage.setItem('quickbarItemNames', JSON.stringify(['transport-belt']))
+    })
+    await page.goto('/?test')
+    await waitForLoaded(page)
+    await page.locator('#editor').focus()
+    const at = { x: 320, y: 360 }
+    await page.mouse.move(at.x, at.y)
+    await page.keyboard.press('1')
+    await expect.poll(async () => (await getState(page)).paint.active).toBe(true)
+}
+
+test.describe('desktop entity flip (H / V)', () => {
+    test.beforeEach(() => {
+        test.skip(
+            test.info().project.name !== 'desktop-chromium',
+            'desktop keybinds run on the desktop project only'
+        )
+    })
+
+    test('V flips a north-facing paint ghost to south', async ({ page }) => {
+        await gotoHoldingBelt(page)
+        expect((await getState(page)).paint.direction).toBe(0)
+
+        await page.keyboard.press('v')
+        await expect.poll(async () => (await getState(page)).paint.direction).toBe(8)
+
+        await page.keyboard.press('v')
+        await expect.poll(async () => (await getState(page)).paint.direction).toBe(0)
+    })
+
+    test('H flips an east-facing paint ghost to west', async ({ page }) => {
+        await gotoHoldingBelt(page)
+        await page.keyboard.press('r') // 0 → 4 (east)
+        await expect.poll(async () => (await getState(page)).paint.direction).toBe(4)
+
+        await page.keyboard.press('h')
+        await expect.poll(async () => (await getState(page)).paint.direction).toBe(12)
+    })
+
+    test('V flips a placed entity under the cursor', async ({ page }) => {
+        await gotoHoldingBelt(page)
+        const at = { x: 320, y: 360 }
+        await page.mouse.click(at.x, at.y)
+        await expect.poll(async () => (await getState(page)).blueprint.entityCount).toBe(1)
+
+        await page.keyboard.press('Escape')
+        await page.mouse.move(at.x + 80, at.y + 80)
+        await page.mouse.move(at.x, at.y)
+
+        await page.keyboard.press('v')
+        // Placed-entity facing isn't on `paint`; re-pipette to read it.
+        await page.keyboard.press('q')
+        await expect.poll(async () => (await getState(page)).paint.active).toBe(true)
+        expect((await getState(page)).paint.direction).toBe(8)
+    })
+
+    test('H toggles chemical-plant sprite mirroring without changing facing', async ({ page }) => {
+        await page.addInitScript(() => {
+            window.localStorage.setItem('quickbarItemNames', JSON.stringify(['chemical-plant']))
+        })
+        await page.goto('/?test')
+        await waitForLoaded(page)
+        await page.locator('#editor').focus()
+        await page.mouse.move(320, 360)
+        await page.keyboard.press('1')
+        await expect.poll(async () => (await getState(page)).paint.active).toBe(true)
+        expect((await getState(page)).paint.direction).toBe(0)
+        expect((await getState(page)).paint.mirrored).toBe(false)
+
+        await page.keyboard.press('h')
+        await expect.poll(async () => (await getState(page)).paint.mirrored).toBe(true)
+        expect((await getState(page)).paint.direction).toBe(0)
+
+        await page.keyboard.press('h')
+        await expect.poll(async () => (await getState(page)).paint.mirrored).toBe(false)
+    })
+
+    test('H picks the recycler flipped sprite via the mirror bit', async ({ page }) => {
+        await page.addInitScript(() => {
+            window.localStorage.setItem('quickbarItemNames', JSON.stringify(['recycler']))
+        })
+        await page.goto('/?test')
+        await waitForLoaded(page)
+        await page.locator('#editor').focus()
+        await page.mouse.move(320, 360)
+        await page.keyboard.press('1')
+        await expect.poll(async () => (await getState(page)).paint.active).toBe(true)
+
+        await page.keyboard.press('h')
+        await expect.poll(async () => (await getState(page)).paint.mirrored).toBe(true)
+    })
+
+    test('H mirrors a placed chemical plant under the cursor', async ({ page }) => {
+        await page.addInitScript(() => {
+            window.localStorage.setItem('quickbarItemNames', JSON.stringify(['chemical-plant']))
+        })
+        await page.goto('/?test')
+        await waitForLoaded(page)
+        await page.locator('#editor').focus()
+        const at = { x: 320, y: 360 }
+        await page.mouse.move(at.x, at.y)
+        await page.keyboard.press('1')
+        await expect.poll(async () => (await getState(page)).paint.active).toBe(true)
+        await page.mouse.click(at.x, at.y)
+        await expect.poll(async () => (await getState(page)).blueprint.entityCount).toBe(1)
+
+        await page.keyboard.press('Escape')
+        await page.mouse.move(at.x + 80, at.y + 80)
+        await page.mouse.move(at.x, at.y)
+
+        await page.keyboard.press('h')
+        await page.keyboard.press('q')
+        await expect.poll(async () => (await getState(page)).paint.active).toBe(true)
+        expect((await getState(page)).paint.mirrored).toBe(true)
+        expect((await getState(page)).paint.direction).toBe(0)
+    })
+
+    test('H still flips when the paint ghost starts hidden (inventory pick)', async ({ page }) => {
+        // spawnPaintContainer hides the ghost when the pointer isn't over the
+        // canvas — picking from E / a quickbar slot. Flip used to early-return
+        // on !visible, so H was a silent no-op until the mouse re-entered.
+        await page.addInitScript(() => {
+            window.localStorage.setItem('quickbarItemNames', JSON.stringify(['transport-belt']))
+        })
+        await page.goto('/?test')
+        await waitForLoaded(page)
+        await page.locator('#editor').focus()
+        await page.keyboard.press('1')
+        await expect.poll(async () => (await getState(page)).paint.active).toBe(true)
+
+        await page.keyboard.press('r') // 0 → 4
+        await expect.poll(async () => (await getState(page)).paint.direction).toBe(4)
+        await page.keyboard.press('h')
+        await expect.poll(async () => (await getState(page)).paint.direction).toBe(12)
+    })
+})
+
+async function tapRail(page: Page, title: string): Promise<void> {
+    const toolbar = page.locator('#action-toolbar')
+    const btn = toolbar.locator(`button[title="${title}"]`)
+    if (!(await btn.isVisible())) {
+        const more = toolbar.locator('button.rail-more')
+        if (await more.count()) await more.click({ force: true })
+    }
+    await btn.click({ force: true })
+}
+
+async function gotoHoldingMobile(page: Page, item: string): Promise<void> {
+    await page.addInitScript(seed => {
+        window.localStorage.setItem('quickbarItemNames', JSON.stringify([seed]))
+    }, item)
+    await page.goto('/?test')
+    await waitForLoaded(page)
+    await page.locator('#editor').focus()
+    await page.keyboard.press('1')
+    await expect.poll(async () => (await getState(page)).paint.active).toBe(true)
+}
+
+test.describe('mobile rail Flip H / Flip V', () => {
+    test.beforeEach(() => {
+        test.skip(
+            test.info().project.name !== 'mobile-chromium',
+            'rail Flip buttons are mobile-only'
+        )
+    })
+
+    test('Flip V turns a north paint ghost south even before the first canvas tap', async ({
+        page,
+    }) => {
+        await gotoHoldingMobile(page, 'transport-belt')
+        expect((await getState(page)).paint.direction).toBe(0)
+
+        await tapRail(page, 'Flip V')
+        await expect.poll(async () => (await getState(page)).paint.direction).toBe(8)
+        expect((await getState(page)).paint.visible).toBe(true)
+    })
+
+    test('Flip H toggles chemical-plant mirroring from the rail', async ({ page }) => {
+        await gotoHoldingMobile(page, 'chemical-plant')
+        await tapRail(page, 'Flip H')
+        await expect.poll(async () => (await getState(page)).paint.mirrored).toBe(true)
+        expect((await getState(page)).paint.direction).toBe(0)
+    })
+
+    test('Flip H picks the recycler flipped sheet via the rail', async ({ page }) => {
+        await gotoHoldingMobile(page, 'recycler')
+        await tapRail(page, 'Flip H')
+        await expect.poll(async () => (await getState(page)).paint.mirrored).toBe(true)
+    })
+})

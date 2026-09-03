@@ -51,6 +51,8 @@ export interface EditorTestState {
         tile: { x: number; y: number } | null
         /** Held entity ghost's facing (0/4/8/12 cardinal); null for tiles/wires. */
         direction: number | null
+        /** Blueprint `mirror` bit of a held entity ghost; null if not an entity. */
+        mirrored: boolean | null
         /**
          * What the cursor holds: a single `entity`, a pasted `blueprint`
          * (multi-entity ghost, draggable/nudgeable on touch), or null when idle.
@@ -115,6 +117,11 @@ export interface EditorTestState {
     infoPanelVisible: boolean
     /** Whether the top-left blueprint-wide production rates panel is showing. */
     ratesPanelVisible: boolean
+    /**
+     * Hovered / tap-selected entity (EDIT). Direction + blueprint `mirror` bit
+     * so Flip tests can assert in-place flip without re-pipetting.
+     */
+    hovered: { name: string; direction: number; mirrored: boolean } | null
 }
 
 export function getEditorTestState(): EditorTestState {
@@ -146,6 +153,10 @@ export function getEditorTestState(): EditorTestState {
                     : painting && G.BPC.paintContainer instanceof PaintRailContainer
                       ? G.BPC.paintContainer.getHeading()
                       : null,
+            mirrored:
+                painting && G.BPC.paintContainer instanceof PaintEntityContainer
+                    ? G.BPC.paintContainer.getMirror()
+                    : null,
             kind: !painting
                 ? null
                 : G.BPC.paintContainer instanceof PaintBlueprintContainer
@@ -178,6 +189,13 @@ export function getEditorTestState(): EditorTestState {
         },
         infoPanelVisible: G.UI.entityInfoPanelVisible,
         ratesPanelVisible: G.UI.ratesPanelVisible,
+        hovered: G.BPC.hoverContainer
+            ? {
+                  name: G.BPC.hoverContainer.entity.name,
+                  direction: G.BPC.hoverContainer.entity.direction,
+                  mirrored: G.BPC.hoverContainer.entity.mirror,
+              }
+            : null,
     }
 }
 
@@ -517,7 +535,7 @@ export function installTestHook(win: Window = window): void {
         // `Array.from` visits every index, so holes normalize to `null`.
         entityModules: name => {
             const mods = findEntity(name)?.modules
-            return mods ? Array.from(mods, m => m ?? null) : null
+            return mods ? Array.from(mods, m => (m ? m.name : null)) : null
         },
         entityFilters: name => {
             const filters = findEntity(name)?.filters

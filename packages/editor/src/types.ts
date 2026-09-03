@@ -227,9 +227,16 @@ export interface IEntity {
     direction?: number // 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15
     /** direction type, only present if entity is of type underground-belt */
     type?: DirectionType
+    /**
+     * post 2.0 — mirrored about the building's symmetry axis (H/V flip).
+     * The game omits this when false.
+     */
+    mirror?: boolean
     /** recipe name, only present if entity is of type assembling-machine or has fixed_recipe */
     recipe?: string
     recipe_quality?: string
+    /** entity quality; omitted means normal */
+    quality?: string
     /** inventory size limitation, only present if entity has inventory_size */
     bar?: number
     /**
@@ -576,8 +583,6 @@ export interface IEntity {
     // - 68, 69 no changes
 
     // remaining keys of BlueprintEntity from 'factorio:runtime'
-    // mirror: unknown
-    // quality: unknown
     // tags: unknown
     // wires: unknown
     // burner_fuel_inventory: unknown

@@ -199,16 +199,15 @@ test.describe('action toolbar', () => {
             await expect(page.locator('#action-toolbar button[title="Select"]')).toBeVisible()
         })
 
-        test('PAINT mode surfaces rotate/pick/cancel; flip is cursor-aware', async ({ page }) => {
+        test('PAINT mode surfaces rotate/flip/pick/cancel for a held entity', async ({ page }) => {
             await gotoAndEnterPaint(page) // holding a single item (transport-belt)
 
             const toolbar = page.locator('#action-toolbar')
-            for (const title of ['Rotate', 'Pick', 'Cancel']) {
+            for (const title of ['Rotate', 'Flip H', 'Flip V', 'Pick', 'Cancel']) {
                 await expect(toolbar.locator(`button[title="${title}"]`)).toBeVisible()
             }
-            // Flip only works on a pasted-blueprint ghost, not a single held item,
-            // so it's hidden here; EDIT-only actions are hidden too.
-            for (const title of ['Flip H', 'Flip V', 'Delete', 'Copy cfg', 'Paste cfg']) {
+            // EDIT-only actions are hidden while painting.
+            for (const title of ['Delete', 'Copy cfg', 'Paste cfg']) {
                 await expect(toolbar.locator(`button[title="${title}"]`)).toHaveCount(0)
             }
         })
@@ -240,7 +239,7 @@ test.describe('action toolbar', () => {
 
             // PAINT-mode rail actions exist now; exercise the callAction seam.
             const toolbar = page.locator('#action-toolbar')
-            for (const title of ['Rotate', 'Pick', 'Undo', 'Redo', 'Center']) {
+            for (const title of ['Rotate', 'Flip H', 'Flip V', 'Pick', 'Undo', 'Redo', 'Center']) {
                 await toolbar.locator(`button[title="${title}"]`).click({ force: true })
             }
 
