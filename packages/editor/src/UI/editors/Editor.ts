@@ -10,6 +10,8 @@ import { Modules } from './components/Modules'
 import { Filters } from './components/Filters'
 import { CircuitCondition } from './components/CircuitCondition'
 import { createCircuitNetworkBadges } from '../circuitNetworkBadges'
+import { qualityUi } from '../../common/qualityUi'
+import { QualityRow } from '../controls/QualityRow'
 
 /** Editor */
 export abstract class Editor extends Dialog {
@@ -63,14 +65,36 @@ export abstract class Editor extends Dialog {
         this.addChild(this.m_Preview)
 
         // Red/green circuit-network ids (top-right, by the title) when wired.
+        let rightReserve = 12
         const badges = createCircuitNetworkBadges(this.m_Entity)
         if (badges.children.length > 0) {
             badges.position.set(this.width - badges.width - 12, 14)
             this.addChild(badges)
+            rightReserve = badges.width + 16
         }
 
         // Close on entity destroy
         this.m_Entity.once('destroy', () => this.close())
+
+        // Entity-level quality chips (issue #5 slice 3). Icon-only, right-
+        // aligned so a long localised_name isn't covered the way the old
+        // Nrm/Nor/Unc… labelled row covered "Electromagnetic plant".
+        if (qualityUi.enabled) {
+            const row = new QualityRow({
+                value: this.m_Entity.quality,
+                onChange: q => {
+                    this.m_Entity.quality = q
+                },
+            })
+            row.position.set(Math.max(12, this.width - row.width - rightReserve), 10)
+            this.addChild(this.registerControl('entityQuality', row))
+            if (this.m_title) {
+                const maxW = row.x - 20
+                if (maxW > 0 && this.m_title.width > maxW) {
+                    this.m_title.scale.set(maxW / this.m_title.width)
+                }
+            }
+        }
     }
 
     /**

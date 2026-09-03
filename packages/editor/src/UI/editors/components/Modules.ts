@@ -1,7 +1,7 @@
 import { Container } from 'pixi.js'
 import EventEmitter from 'eventemitter3'
 import G from '../../../common/globals'
-import { Entity, EntityEvents } from '../../../core/Entity'
+import { Entity, EntityEvents, IModuleSlot } from '../../../core/Entity'
 import { Slot } from '../../controls/Slot'
 import { bindSlotGestures } from '../../controls/gestures'
 import F from '../../controls/functions'
@@ -12,7 +12,7 @@ export class Modules extends Container<Slot<number>> {
     private readonly m_Entity: Entity
 
     /** Field to hold data for module visualization */
-    private readonly m_Modules: string[]
+    private readonly m_Modules: (IModuleSlot | undefined)[]
 
     public constructor(entity: Entity, columns?: number) {
         super()
@@ -39,7 +39,13 @@ export class Modules extends Container<Slot<number>> {
                 () => this.clear(slotIndex)
             )
             if (this.m_Modules[slotIndex] !== undefined) {
-                slot.content = F.CreateIcon(this.m_Modules[slotIndex])
+                slot.content = F.CreateIcon(
+                    this.m_Modules[slotIndex].name,
+                    32,
+                    true,
+                    false,
+                    this.m_Modules[slotIndex].quality
+                )
             }
             this.addChild(slot)
         }
@@ -61,13 +67,13 @@ export class Modules extends Container<Slot<number>> {
     }
 
     /** Update Content Icon */
-    private updateContent(slot: Slot<number>, module: string): void {
+    private updateContent(slot: Slot<number>, module: IModuleSlot | undefined): void {
         if (module === undefined) {
             if (slot.content !== undefined) {
                 slot.content = undefined
             }
         } else {
-            slot.content = F.CreateIcon(module)
+            slot.content = F.CreateIcon(module.name, 32, true, false, module.quality)
         }
         this.emit('changed')
     }
@@ -77,14 +83,15 @@ export class Modules extends Container<Slot<number>> {
         G.UI.createInventory(
             'Select Module',
             this.m_Entity.acceptedModules,
-            name => {
-                this.m_Modules[index] = name
+            (name, quality) => {
+                this.m_Modules[index] = quality ? { name, quality } : { name }
                 this.m_Entity.modules = this.m_Modules
             },
             'modules',
             // "✕ Clear" on a filled slot, "✕ Cancel" on an empty one — either way
             // it leaves the slot empty and closes.
-            { onClear: () => this.clear(index), filled: this.m_Modules[index] !== undefined }
+            { onClear: () => this.clear(index), filled: this.m_Modules[index] !== undefined },
+            { quality: true, initialQuality: this.m_Modules[index]?.quality }
         )
     }
 

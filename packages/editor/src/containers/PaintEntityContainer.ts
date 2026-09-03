@@ -23,8 +23,9 @@ export class PaintEntityContainer extends PaintContainer {
     private mirrored: boolean
     /**
      * Placeable settings cloned from Q-pick / copy (recipe, modules, filters,
-     * combinator conditions, inserter vectors, …). Identity fields are filled
-     * in at redraw/place. Empty object = a hotbar pick with prototype defaults.
+     * combinator conditions, inserter vectors, quality, …). Identity fields
+     * are filled in at redraw/place. Empty object = a hotbar pick with
+     * prototype defaults.
      */
     private readonly settings: IEntity
     /** This is only a reference */

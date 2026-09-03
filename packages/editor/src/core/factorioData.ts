@@ -863,17 +863,6 @@ function getAllowedEffects(e: EntityWithOwnerPrototype): readonly EffectTypeLimi
     }
 }
 
-export function hasModuleIconsSuppressed(e: EntityWithOwnerPrototype): boolean {
-    switch (e.type) {
-        case 'beacon': {
-            const e_resolved = e as BeaconPrototype
-            return !!e_resolved.graphics_set?.module_icons_suppressed
-        }
-        default:
-            return false
-    }
-}
-
 export function getModuleInventoryIndex(e: EntityWithOwnerPrototype): null | number {
     switch (e.type) {
         case 'lab':

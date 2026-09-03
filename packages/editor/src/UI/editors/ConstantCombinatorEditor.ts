@@ -95,7 +95,7 @@ export class ConstantCombinatorEditor extends Editor {
             index: i + 1,
             name: signal.name,
             type,
-            quality: 'normal',
+            ...(signal.quality && signal.quality !== 'normal' ? { quality: signal.quality } : {}),
             comparator: '=',
             count: this.m_filters[i]?.count ?? 1,
         }
@@ -126,7 +126,16 @@ export class ConstantCombinatorEditor extends Editor {
             }
             const container = new Container()
             try {
-                F.CreateIconWithAmount(container, -16, -16, f.name, f.count)
+                F.CreateIconWithAmount(
+                    container,
+                    -16,
+                    -16,
+                    f.name,
+                    f.count,
+                    undefined,
+                    undefined,
+                    f.quality
+                )
             } catch {
                 // ignore an iconless modded signal; the slot stays usable
             }

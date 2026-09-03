@@ -1,10 +1,13 @@
 import G from './globals'
 import { inputMode, type InputMode } from './input'
+import { qualityUi } from './qualityUi'
+import { buildEntityInfo } from '../UI/EntityInfoPanel'
 import { EditorMode } from '../containers/BlueprintContainer'
 import { PaintEntityContainer } from '../containers/PaintEntityContainer'
 import { PaintBlueprintContainer } from '../containers/PaintBlueprintContainer'
 import { PaintTileContainer } from '../containers/PaintTileContainer'
 import { OverlayContainer } from '../containers/OverlayContainer'
+import { EntityContainer } from '../containers/EntityContainer'
 import { Dialog } from '../UI/controls/Dialog'
 import { InventoryDialog } from '../UI/InventoryDialog'
 import { Modules } from '../UI/editors/components/Modules'
@@ -282,6 +285,13 @@ export interface FbeTestHook {
     entityFilters: (name: string) => (string | null)[] | null
     entityRecipe: (name: string) => string | null
     /**
+     * How many children the entity's alt-mode overlay currently has (recipe /
+     * module / filter icons, arrows, quality badge, …). 0 when the overlay was
+     * never created. Lets specs assert beacons draw module icons the same way
+     * assembling machines draw recipe icons.
+     */
+    entityOverlayChildCount: (name: string) => number | null
+    /**
      * Open `name`'s editor and return the on-screen centre (canvas-relative CSS
      * px, the same frame as `dragOneFinger`) of its module or filter slot `index`
      * — so the spec can right-click / long-press the slot *for real* instead of
@@ -408,6 +418,13 @@ export interface FbeTestHook {
      * without driving the assign flow (which is not what those tests are about).
      */
     quickbarAssign: (name?: string) => void
+    /** Quality UI gate (`fbe:quality`). */
+    qualityEnabled: () => boolean
+    setQualityEnabled: (enabled: boolean) => void
+    entityQuality: (name: string) => string | null
+    setEntityQuality: (name: string, quality: string | undefined) => boolean
+    entityInfoName: (name: string) => string | null
+    serializedEntity: (name: string) => Record<string, unknown> | null
 }
 
 /** Approximate per-channel match against a target colour (tolerant of AA edges). */
@@ -551,13 +568,20 @@ export function installTestHook(win: Window = window): void {
         // `Array.from` visits every index, so holes normalize to `null`.
         entityModules: name => {
             const mods = findEntity(name)?.modules
-            return mods ? Array.from(mods, m => m ?? null) : null
+            return mods ? Array.from(mods, m => (m ? m.name : null)) : null
         },
         entityFilters: name => {
             const filters = findEntity(name)?.filters
             return filters ? Array.from(filters, f => f?.name ?? null) : null
         },
         entityRecipe: name => findEntity(name)?.recipe ?? null,
+        entityOverlayChildCount: name => {
+            const e = findEntity(name)
+            if (!e) return null
+            const ec = EntityContainer.mappings.get(e.entityNumber)
+            if (!ec) return null
+            return ec.overlayInfo?.children.length ?? 0
+        },
         openEditorSlot: (name, kind, index) => {
             const e = findEntity(name)
             if (!e) return null
@@ -670,6 +694,25 @@ export function installTestHook(win: Window = window): void {
         },
         quickbarAssign: (name = 'fast-inserter') => {
             G.UI.quickbarPanel.slotAt(0)?.assignItem(name)
+        },
+        qualityEnabled: () => qualityUi.enabled,
+        setQualityEnabled: enabled => {
+            qualityUi.enabled = enabled
+        },
+        entityQuality: name => findEntity(name)?.quality ?? null,
+        setEntityQuality: (name, quality) => {
+            const e = findEntity(name)
+            if (!e) return false
+            e.quality = quality
+            return true
+        },
+        entityInfoName: name => {
+            const e = findEntity(name)
+            return e ? buildEntityInfo(e).name : null
+        },
+        serializedEntity: name => {
+            const e = findEntity(name)
+            return e ? (JSON.parse(JSON.stringify(e.rawEntity)) as Record<string, unknown>) : null
         },
     }
     ;(win as unknown as Record<string, unknown>)[TEST_HOOK_KEY] = hook

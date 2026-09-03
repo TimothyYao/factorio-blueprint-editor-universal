@@ -49,4 +49,13 @@ describe('beaconEffectMultiplier', () => {
     it('treats a missing profile as no falloff', () => {
         expect(beaconEffectMultiplier(proto({ distribution_effectivity: 0.5 }), 3, 3)).toBe(0.5)
     })
+
+    it('adds distribution_effectivity_bonus_per_quality_level × level', () => {
+        const b = proto({
+            distribution_effectivity: 1.5,
+            distribution_effectivity_bonus_per_quality_level: 0.2,
+        } as Partial<BeaconPrototype>)
+        expect(beaconEffectMultiplier(b, 1, 1)).toBe(1.5)
+        expect(beaconEffectMultiplier(b, 1, 1, 'legendary')).toBeCloseTo(2.5)
+    })
 })

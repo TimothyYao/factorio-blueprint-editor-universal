@@ -11,6 +11,7 @@ import {
 } from './actions'
 import { Editor } from './Editor'
 import { inputMode, InputMode } from './common/input'
+import { qualityUi } from './common/qualityUi'
 import { installTestHook } from './common/testHook'
 import type { EditorTestState, FbeTestHook } from './common/testHook'
 import FD from './core/factorioData'
@@ -26,7 +27,17 @@ import { canonicalPackId, canonicalPacks, graphicsOptions } from './core/packMan
 import type { PackManifestEntry } from './core/packManifest'
 
 export * from './core/bpString'
-export { Editor, Book, Blueprint, GridPattern, EditorMode, FD, inputMode, installTestHook }
+export {
+    Editor,
+    Book,
+    Blueprint,
+    GridPattern,
+    EditorMode,
+    FD,
+    inputMode,
+    qualityUi,
+    installTestHook,
+}
 export { DATA_ROOT, DATA_PACK, DEFAULT_DATA_PACK, setDataPack }
 export { loadPackManifest, getCanonicalDataPack, canonicalPackId, canonicalPacks }
 export { graphicsOptions }

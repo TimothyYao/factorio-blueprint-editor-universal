@@ -1,4 +1,5 @@
 import { BeaconPrototype } from 'factorio:prototype'
+import { qualityLevel } from './quality'
 
 /**
  * Factorio 2.0 beacon transmission math (see `BeaconPrototype` in the
@@ -17,10 +18,15 @@ import { BeaconPrototype } from 'factorio:prototype'
 export function beaconEffectMultiplier(
     beacon: BeaconPrototype,
     sameTypeCount: number,
-    totalCount: number
+    totalCount: number,
+    quality?: string
 ): number {
     const count = beacon.beacon_counter === 'same_type' ? sameTypeCount : totalCount
     const profile = beacon.profile ?? [1]
     const index = Math.min(Math.max(count, 1), profile.length) - 1
-    return beacon.distribution_effectivity * profile[index]
+    const bonus =
+        (beacon as BeaconPrototype & { distribution_effectivity_bonus_per_quality_level?: number })
+            .distribution_effectivity_bonus_per_quality_level ?? 0
+    const effectivity = beacon.distribution_effectivity + bonus * qualityLevel(quality)
+    return effectivity * profile[index]
 }

@@ -4,7 +4,12 @@ import { inputMode } from '../common/input'
 import { DebugContainer } from './DebugContainer'
 import { QuickbarPanel } from './QuickbarPanel'
 import { EntityInfoPanel, buildEntityInfo } from './EntityInfoPanel'
-import { InventoryDialog, SlotClear } from './InventoryDialog'
+import {
+    InventoryDialog,
+    InventoryPickCallback,
+    InventoryPickOptions,
+    SlotClear,
+} from './InventoryDialog'
 import { SignalPicker, SignalChoice } from './SignalPicker'
 import { NumericKeypad } from './NumericKeypad'
 import { WiresPanel } from './WiresPanel'
@@ -128,11 +133,19 @@ export class UIContainer extends Container {
     public createInventory(
         title?: string,
         itemsFilter?: string[],
-        selectedCallBack?: (selectedItem: string) => void,
+        selectedCallBack?: InventoryPickCallback,
         recentsKey?: string,
-        clear?: SlotClear
+        clear?: SlotClear,
+        pick?: InventoryPickOptions
     ): InventoryDialog {
-        const inv = new InventoryDialog(title, itemsFilter, selectedCallBack, recentsKey, clear)
+        const inv = new InventoryDialog(
+            title,
+            itemsFilter,
+            selectedCallBack,
+            recentsKey,
+            clear,
+            pick
+        )
         this.dialogsContainer.addChild(inv)
         return inv
     }

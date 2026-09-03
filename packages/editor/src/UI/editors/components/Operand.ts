@@ -44,7 +44,13 @@ export class Operand extends Slot<undefined> {
     private updateContent(): void {
         if (this.m_value.signal?.name) {
             try {
-                this.content = F.CreateIcon(this.m_value.signal.name)
+                this.content = F.CreateIcon(
+                    this.m_value.signal.name,
+                    32,
+                    true,
+                    false,
+                    this.m_value.signal.quality
+                )
                 return
             } catch {
                 // fall through for an iconless signal name

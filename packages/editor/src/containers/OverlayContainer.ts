@@ -5,7 +5,6 @@ import FD, {
     isCraftingMachine,
     hasModuleFunctionality,
     getModuleInventoryIndex,
-    hasModuleIconsSuppressed,
 } from '../core/factorioData'
 import F from '../UI/controls/functions'
 import G from '../common/globals'
@@ -144,7 +143,7 @@ export class OverlayContainer extends Container {
             const shift = vectorToPoint(spec.shift) ?? { x: 0, y: 0 }
             const scale = spec.scale || 1
             const recipeInfo = new Container()
-            createIconWithBackground(recipeInfo, entity.recipe)
+            createIconWithBackground(recipeInfo, entity.recipe, undefined, entity.recipeQuality)
             recipeInfo.scale.set(scale)
             // shift is entity-local; rotate + mirror so the icon stays on the
             // building (the glyph itself is not flipX'd — it must stay readable).
@@ -240,13 +239,14 @@ export class OverlayContainer extends Container {
             }
         }
 
+        // Module-inventory icons (dark background + quality badge) — the same
+        // alt-mode treatment recipe icons get on assembling machines. Vanilla
+        // beacons set `graphics_set.module_icons_suppressed` because the 3D
+        // module visualisations already show the contents; we still draw the
+        // overlay so quality is visible and the slots stay readable at a glance.
         const modules = entity.modules
         const e = entity.entityData
-        if (
-            modules.filter(m => m).length !== 0 &&
-            hasModuleFunctionality(e) &&
-            !hasModuleIconsSuppressed(e)
-        ) {
+        if (modules.filter(m => m).length !== 0 && hasModuleFunctionality(e)) {
             const module_slots = e.module_slots
             if (module_slots > 0) {
                 const moduleInfo = new Container()
@@ -260,10 +260,15 @@ export class OverlayContainer extends Container {
                 const separation_multiplier = module_icon_positioning?.separation_multiplier || 1.1
                 for (let slot = 0; slot < module_slots; slot++) {
                     if (modules[slot]) {
-                        createIconWithBackground(moduleInfo, modules[slot], {
-                            x: slot * 32 * separation_multiplier,
-                            y: 0,
-                        })
+                        createIconWithBackground(
+                            moduleInfo,
+                            modules[slot].name,
+                            {
+                                x: slot * 32 * separation_multiplier,
+                                y: 0,
+                            },
+                            modules[slot].quality
+                        )
                     }
                 }
                 moduleInfo.scale.set(scale)
@@ -296,10 +301,15 @@ export class OverlayContainer extends Container {
                     break
                 }
 
-                createIconWithBackground(filterInfo, filters[i].name, {
-                    x: (i % 2) * 32 - (filters.length === 1 ? 0 : 16),
-                    y: filters.length < 3 ? 0 : (i < 2 ? -1 : 1) * 16,
-                })
+                createIconWithBackground(
+                    filterInfo,
+                    filters[i].name,
+                    {
+                        x: (i % 2) * 32 - (filters.length === 1 ? 0 : 16),
+                        y: filters.length < 3 ? 0 : (i < 2 ? -1 : 1) * 16,
+                    },
+                    entity.type === 'infinity-pipe' ? undefined : filters[i].quality
+                )
             }
             let S = 0.5
             if (entity.type === 'inserter' && filters.length !== 1) {
@@ -383,7 +393,8 @@ export class OverlayContainer extends Container {
                     util.rotatePointBasedOnDir(
                         { x: entity.splitterOutputPriority === 'right' ? 32 : -32, y: 0 },
                         entity.direction
-                    )
+                    ),
+                    entity.filters[0].quality
                 )
             } else if (entity.splitterOutputPriority) {
                 createArrowForDirection(entity.splitterOutputPriority, -16)
@@ -453,6 +464,15 @@ export class OverlayContainer extends Container {
             entityInfo.addChild(arrows)
         }
 
+        // Entity-level quality diamond (Factorio bottom-left of the building).
+        // Added even when there is no other overlay so a quality-only machine
+        // still returns a container instead of undefined.
+        const qualityBadge = F.CreateQualityBadge(entity.quality, 16)
+        if (qualityBadge) {
+            qualityBadge.position.set(-entity.size.x * 16 + 2, entity.size.y * 16 - 18)
+            entityInfo.addChild(qualityBadge)
+        }
+
         if (entityInfo.children.length !== 0) {
             entityInfo.position.set(position.x, position.y)
             return entityInfo
@@ -461,9 +481,10 @@ export class OverlayContainer extends Container {
         function createIconWithBackground(
             container: Container,
             itemName: string,
-            position?: IPoint
+            position?: IPoint,
+            quality?: string
         ): void {
-            const icon = F.CreateIcon(itemName, undefined, true, true)
+            const icon = F.CreateIcon(itemName, undefined, true, true, quality)
             const data = FD.utilitySprites.entity_info_dark_background
             const background = new Sprite(
                 G.getTexture(data.filename, data.x, data.y, data.width, data.height)

@@ -8,7 +8,11 @@ import { Button } from './controls/Button'
 import { fitToWidthScale } from './quickbarLayout'
 import { isItemTappable, maxItemScroll } from './inventoryScroll'
 import { getRecents, recordRecent } from './recentItems'
+import { moduleSlotName } from '../core/Entity'
 import { colors, styles } from './style'
+import { qualityUi } from '../common/qualityUi'
+import { QualityRow } from './controls/QualityRow'
+import { ComparatorString } from '../types'
 
 /*
     Cols
@@ -51,6 +55,20 @@ export interface SlotClear {
     filled: boolean
 }
 
+/** Opt-in quality / comparator row (issue #5 slice 3). */
+export interface InventoryPickOptions {
+    quality?: boolean
+    comparator?: boolean
+    initialQuality?: string
+    initialComparator?: string
+}
+
+export type InventoryPickCallback = (
+    selectedItem: string,
+    quality?: string,
+    comparator?: string
+) => void
+
 /** Inventory Dialog - Displayed to the user if there is a need to select an item */
 export class InventoryDialog extends Dialog {
     /** Container for Inventory Group Buttons */
@@ -88,7 +106,7 @@ export class InventoryDialog extends Dialog {
 
     // Long-press preview state + the bottom Confirm / Pin bar it reveals.
     private m_itemsFilter?: string[]
-    private m_selectedCallBack?: (name: string) => void
+    private m_selectedCallBack?: InventoryPickCallback
     private m_recentsKey?: string
     private m_recentsContainer?: Container
     private m_previewName?: string
@@ -115,15 +133,20 @@ export class InventoryDialog extends Dialog {
      * Long-press still previews, so the details are a hold away either way.
      */
     private readonly m_commitOnTap: boolean
+    private m_pickQuality?: string
+    private m_pickComparator?: string
+    private readonly m_pickOptions?: InventoryPickOptions
 
     public constructor(
         title = 'Inventory',
         itemsFilter?: string[],
-        selectedCallBack?: (selectedItem: string) => void,
+        selectedCallBack?: InventoryPickCallback,
         recentsKey?: string,
-        clear?: SlotClear
+        clear?: SlotClear,
+        pick?: InventoryPickOptions
     ) {
-        super(InventoryDialog.computeWidth(itemsFilter, recentsKey), 442, title)
+        const qualityBand = pick?.quality && qualityUi.enabled ? QualityRow.H + 8 : 0
+        super(InventoryDialog.computeWidth(itemsFilter, recentsKey), 442 + qualityBand, title)
 
         this.m_clearCallBack = clear?.onClear
         this.m_commitOnTap = recentsKey === 'modules'
@@ -132,6 +155,9 @@ export class InventoryDialog extends Dialog {
         this.m_itemsFilter = itemsFilter
         this.m_selectedCallBack = selectedCallBack
         this.m_recentsKey = recentsKey
+        this.m_pickOptions = pick
+        this.m_pickQuality = pick?.initialQuality
+        this.m_pickComparator = pick?.initialComparator
 
         this.m_InventoryGroups = new Container()
         this.m_InventoryGroups.position.set(12, 46)
@@ -277,7 +303,7 @@ export class InventoryDialog extends Dialog {
         }
 
         const recipePanel = new Container()
-        recipePanel.position.set(0, 442)
+        recipePanel.position.set(0, 442 + qualityBand)
         this.addChild(recipePanel)
 
         const recipeBackground = F.DrawRectangle(
@@ -303,7 +329,7 @@ export class InventoryDialog extends Dialog {
         const pin = InventoryDialog.barButton('Pin', 0x2a5a7a)
         this.m_pinBtn = pin.container
         this.m_pinText = pin.text
-        this.m_pinBtn.position.set(this.width - 164, 446)
+        this.m_pinBtn.position.set(this.width - 164, 446 + qualityBand)
         this.m_pinBtn.on('pointerup', e => {
             e.stopPropagation()
             const name = this.m_previewName
@@ -323,12 +349,29 @@ export class InventoryDialog extends Dialog {
 
         const confirm = InventoryDialog.barButton('✓ Confirm', 0x2f7d32)
         this.m_confirmBtn = confirm.container
-        this.m_confirmBtn.position.set(this.width - 84, 446)
+        this.m_confirmBtn.position.set(this.width - 84, 446 + qualityBand)
         this.m_confirmBtn.on('pointerup', e => {
             e.stopPropagation()
             if (this.m_previewName) this.commitSelect(this.m_previewName)
         })
         this.addChild(this.m_confirmBtn)
+
+        if (qualityBand > 0) {
+            const row = new QualityRow({
+                value: this.m_pickQuality,
+                includeAny: this.m_recentsKey !== 'modules' && this.m_recentsKey !== 'recipes',
+                showComparator: !!pick?.comparator,
+                comparator: (this.m_pickComparator as ComparatorString) ?? '=',
+                onChange: q => {
+                    this.m_pickQuality = q
+                },
+                onComparator: c => {
+                    this.m_pickComparator = c
+                },
+            })
+            row.position.set(12, 410)
+            this.addChild(row)
+        }
 
         // The escape hatch, shown whenever this selector was opened *from a slot*.
         //
@@ -577,7 +620,7 @@ export class InventoryDialog extends Dialog {
     /** Quick-tap path: record + commit the selection and close. */
     private commitSelect(name: string): void {
         if (this.m_recentsKey) recordRecent(this.m_recentsKey, name)
-        this.m_selectedCallBack?.(name)
+        this.m_selectedCallBack?.(name, this.m_pickQuality, this.m_pickComparator)
         this.close()
     }
 
@@ -634,7 +677,8 @@ export class InventoryDialog extends Dialog {
     private static blueprintNames(key: string): string[] {
         const ents = G.bp.entities.valuesArray()
         if (key === 'recipes') return ents.map(e => e.recipe).filter((r): r is string => !!r)
-        if (key === 'modules') return ents.flatMap(e => e.modules).filter((m): m is string => !!m)
+        if (key === 'modules')
+            return ents.flatMap(e => e.modules.map(moduleSlotName)).filter((m): m is string => !!m)
         return ents.map(e => e.name)
     }
 
