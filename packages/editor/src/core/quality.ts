@@ -75,6 +75,27 @@ export function scalePositiveEffect(value: number, quality: string | undefined):
 }
 
 /**
+ * First-roll quality chance (0–1) from a module's prototype `effect.quality`.
+ *
+ * Factorio 2.0 dumps store the pre-2.1 encoding: quality-module-3 is `0.25`,
+ * not `0.025`. The engine's displayed / rolled chance is
+ * `effect.quality × next_probability` (`next_probability` is 0.1 on every
+ * dumped quality prototype — see the Quality wiki and FFF-375). Treating
+ * `0.25` as 25% is what produced the bogus 312.5% readout (5× legendary Q3
+ * in an electromagnetic plant).
+ *
+ * Quality of the *module* then scales the displayed chance (+30% per level),
+ * and the wiki floors quality-module bonuses to the nearest 0.1%:
+ *   Q3 legendary = 2.5% × 2.5 = 6.25% → **+6.2%**
+ */
+export function qualityEffectChance(rawEffect: number, moduleQuality?: string): number {
+    if (!rawEffect || rawEffect <= 0) return 0
+    const nextP = FD.qualities?.normal?.next_probability ?? 0.1
+    const scaled = scalePositiveEffect(rawEffect * nextP, moduleQuality)
+    return Math.floor(scaled * 1000 + 1e-9) / 1000
+}
+
+/**
  * Resolved tier for badges / pickers. Dump wins (icon, color, level, locale);
  * then the built-in five; unknown names get a neutral placeholder so a modded
  * blueprint doesn't throw.

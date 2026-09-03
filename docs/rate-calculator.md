@@ -36,7 +36,9 @@ editor reconstructs those bonuses from prototype data:
   products additionally scaled by productivity when the recipe allows it
   (honouring the 2.0 catalyst rule via `core/recipeAmounts.ts`). Positive
   module effects scale by `(1 + 0.3 × module quality level)`; negatives are
-  unchanged. Beacon transmission uses
+  unchanged. Quality-module chance is `effect.quality × next_probability`
+  (2.0 dumps store Q3 as `0.25` → 2.5%), then quality-scaled and floored
+  to 0.1% (wiki legendary Q3 = +6.2%). Beacon transmission uses
   `distribution_effectivity + distribution_effectivity_bonus_per_quality_level × beacon level`
   (vanilla 1.5 → 2.5 legendary).
 - **`UI/RatesPanel.ts`** — the PixiJS panel. Materials are bucketed the way

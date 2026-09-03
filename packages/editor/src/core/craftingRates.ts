@@ -9,7 +9,12 @@ import FD, { getModule, isCraftingMachine } from './factorioData'
 import { beaconEffectMultiplier } from './beaconEffects'
 import { getIngredientAmount, getProductAmountWithProductivity } from './recipeAmounts'
 import type { IModuleSlot } from './Entity'
-import { qualityCraftingSpeedMul, qualityRollDistribution, scalePositiveEffect } from './quality'
+import {
+    qualityCraftingSpeedMul,
+    qualityEffectChance,
+    qualityRollDistribution,
+    scalePositiveEffect,
+} from './quality'
 
 /**
  * Blueprint-wide production/consumption rate maths (issue: RateCalculator-style
@@ -133,7 +138,7 @@ export function computeMachineEffects(
         if (e.productivity)
             productivity += scalePositiveEffect(e.productivity, r.quality) * multiplier
         if (e.consumption) consumption += scalePositiveEffect(e.consumption, r.quality) * multiplier
-        if (e.quality) quality += scalePositiveEffect(e.quality, r.quality) * multiplier
+        if (e.quality) quality += qualityEffectChance(e.quality, r.quality) * multiplier
     }
 
     for (const module of machineModules) add(module, 1)
