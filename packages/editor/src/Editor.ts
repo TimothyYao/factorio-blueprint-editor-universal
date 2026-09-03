@@ -22,7 +22,7 @@ import { PaintTileContainer } from './containers/PaintTileContainer'
 import { UIContainer } from './UI/UIContainer'
 import type { QuickbarStored } from './UI/quickbarSerialize'
 import { Dialog } from './UI/controls/Dialog'
-import { ActionRegistry, MouseButton } from './actions'
+import { ActionRegistry, MouseButton, historyModifiers } from './actions'
 
 export class Editor {
     // Stable mode emitter. The BlueprintContainer is swapped out on every
@@ -698,7 +698,8 @@ export class Editor {
                 trigger: {
                     code: 'KeyZ',
                 },
-                modifiers: { control: true },
+                // Command+Z on Mac, Control+Z elsewhere. Same as Factorio.
+                modifiers: historyModifiers(),
                 callbacks: {
                     onPress: () => {
                         G.bp.history.undo()
@@ -706,11 +707,26 @@ export class Editor {
                     },
                 },
             },
+            // Factorio binds redo to both Ctrl/Cmd+Y and Ctrl/Cmd+Shift+Z
+            // (FFF #412: ⌘⇧Z on Mac). Shift+Z is the primary so Mac users get
+            // the usual redo chord; Y stays as the other Factorio default.
             redo: {
+                trigger: {
+                    code: 'KeyZ',
+                },
+                modifiers: historyModifiers({ shift: true }),
+                callbacks: {
+                    onPress: () => {
+                        G.bp.history.redo()
+                        return true
+                    },
+                },
+            },
+            redoY: {
                 trigger: {
                     code: 'KeyY',
                 },
-                modifiers: { control: true },
+                modifiers: historyModifiers(),
                 callbacks: {
                     onPress: () => {
                         G.bp.history.redo()
