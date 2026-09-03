@@ -31,7 +31,11 @@ export class PaintEntityContainer extends PaintContainer {
         this.mirrored = mirror
         this.directionType = FD.entities[name].type === 'loader' ? 'output' : 'input'
 
-        this.visualizationArea = this.bpc.underlayContainer.create(this.name, this.position)
+        this.visualizationArea = this.bpc.underlayContainer.create(
+            this.name,
+            this.position,
+            this.getQuality()
+        )
         this.visualizationArea.highlight()
         this.bpc.underlayContainer.activateRelatedAreas(this.name)
 

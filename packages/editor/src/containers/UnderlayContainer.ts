@@ -1,5 +1,6 @@
 import { Sprite, Container, Texture, AlphaFilter, ColorSource } from 'pixi.js'
 import FD, { getEnergySource, getEntitySize, hasModuleFunctionality } from '../core/factorioData'
+import { beaconSupplyAreaDistance } from '../core/beaconEffects'
 import {
     BeaconPrototype,
     ElectricPolePrototype,
@@ -37,7 +38,10 @@ export class UnderlayContainer extends Container {
         this.addChild(this.logistics0, this.logistics1, this.poles, this.beacons, this.drills)
     }
 
-    private static getDataForVisualizationArea(name: string): IVisualizationData[] {
+    private static getDataForVisualizationArea(
+        name: string,
+        quality?: string
+    ): IVisualizationData[] {
         const ed = FD.entities[name]
 
         if (name === 'roboport') {
@@ -75,10 +79,13 @@ export class UnderlayContainer extends Container {
             // footprint — matching by type (not the vanilla `beacon` name)
             // and adding the real half-size covers modded beacons too (SE's
             // compact/wide beacons range from 2x2/range-2 to 5x5/range-14).
+            // Quality grows the distance by the QualityPrototype bonus
+            // (default +1 tile per level — legendary 3×3 → 19×19).
+            const proto = ed as BeaconPrototype
             return [
                 {
                     type: 'beacons',
-                    radius: (ed as BeaconPrototype).supply_area_distance + getEntitySize(ed).x / 2,
+                    radius: beaconSupplyAreaDistance(proto, quality) + getEntitySize(ed).x / 2,
                     color: 0xd9c037,
                     alpha: VisualizationArea.ALPHA,
                 },
@@ -140,19 +147,21 @@ export class UnderlayContainer extends Container {
         this.active = []
     }
 
-    public create(entityName: string, position: IPoint): VisualizationArea {
-        const sprites = UnderlayContainer.getDataForVisualizationArea(entityName).map(data => {
-            const sprite = new Sprite(Texture.WHITE)
-            sprite.tint = data.color
-            sprite.alpha = data.alpha
-            sprite.visible = this.active.includes(data.type)
-            sprite.scale.set(data.radius * 2 * 32)
-            sprite.anchor.set(0.5)
-            sprite.position.set(position.x, position.y)
+    public create(entityName: string, position: IPoint, quality?: string): VisualizationArea {
+        const sprites = UnderlayContainer.getDataForVisualizationArea(entityName, quality).map(
+            data => {
+                const sprite = new Sprite(Texture.WHITE)
+                sprite.tint = data.color
+                sprite.alpha = data.alpha
+                sprite.visible = this.active.includes(data.type)
+                sprite.scale.set(data.radius * 2 * 32)
+                sprite.anchor.set(0.5)
+                sprite.position.set(position.x, position.y)
 
-            this[data.type].addChild(sprite)
-            return sprite
-        })
+                this[data.type].addChild(sprite)
+                return sprite
+            }
+        )
         if (sprites.length === 0) return this.dummyVisualizationArea
 
         return new VisualizationArea(sprites)
