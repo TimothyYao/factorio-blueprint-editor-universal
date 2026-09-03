@@ -679,11 +679,10 @@ export class InventoryDialog extends Dialog {
         const filterPicker = !!this.m_pickOptions?.comparator
         return F.CreateIcon(name, undefined, true, false, storedQuality(this.m_pickQuality), {
             anyQuality: filterPicker && this.m_pickQuality === undefined,
-            comparator: filterPicker
-                ? this.m_pickQuality
+            comparator:
+                filterPicker && this.m_pickQuality && this.m_pickComparator !== '='
                     ? (this.m_pickComparator as ComparatorString)
-                    : undefined
-                : undefined,
+                    : undefined,
         })
     }
 

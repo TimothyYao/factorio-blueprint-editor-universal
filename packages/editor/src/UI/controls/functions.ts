@@ -310,6 +310,8 @@ function attachQualityBadge(
     opts?: { anyQuality?: boolean; comparator?: ComparatorString }
 ): Container {
     const badgeSize = Math.max(8, Math.round(iconSize * 0.4))
+    // Named items: Normal has no diamond (game `draw_sprite_by_default`); Any
+    // (keyless) gets the rainbow asset; `=` is the default and stays off-icon.
     const mark = CreateFilterQualityMark(quality, badgeSize, opts)
     if (!mark) return icon
     const wrap = new Container()
@@ -328,18 +330,25 @@ function attachQualityBadge(
 /**
  * Quality diamond (or the any-quality asset) plus an optional comparator
  * glyph — Factorio's filter slot / alt-mode cluster, not just the picker row.
+ * `=` is the default and is not drawn. Normal is drawn only when
+ * `includeNormal` (quality-only: any item of Normal); a named item of Normal
+ * stays unbadged.
  */
 function CreateFilterQualityMark(
     quality: string | undefined,
     size: number,
-    opts?: { anyQuality?: boolean; comparator?: ComparatorString }
+    opts?: {
+        anyQuality?: boolean
+        comparator?: ComparatorString
+        includeNormal?: boolean
+    }
 ): Container | undefined {
     const badge = quality
-        ? CreateQualityBadge(quality, size, quality === 'normal')
+        ? CreateQualityBadge(quality, size, !!opts?.includeNormal)
         : opts?.anyQuality && qualityUi.enabled
           ? CreateAnyQualityBadge(size)
           : undefined
-    const cmp = opts?.comparator
+    const cmp = opts?.comparator && opts.comparator !== '=' ? opts.comparator : undefined
     if (!badge && !cmp) return undefined
 
     const cluster = new Container()

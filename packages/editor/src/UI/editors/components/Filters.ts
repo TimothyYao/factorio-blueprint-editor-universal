@@ -201,6 +201,7 @@ export class Filters extends Container<Slot<number>> {
                         // like an anchored CreateIcon.
                         const mark = F.CreateFilterQualityMark(slotFilter.quality, 28, {
                             comparator: slotFilter.comparator,
+                            includeNormal: true,
                         })
                         if (mark) {
                             const b = mark.getLocalBounds()
@@ -299,8 +300,10 @@ export class Filters extends Container<Slot<number>> {
             {
                 quality: true,
                 comparator: true,
-                initialQuality: this.m_Filters[index].quality,
-                initialComparator: this.m_Filters[index].comparator,
+                // Empty slot: Normal, not Any — Any is only when a named item
+                // was saved keyless. A filled any-quality slot still opens on Any.
+                initialQuality: this.m_Filters[index].quality ?? (filled ? undefined : 'normal'),
+                initialComparator: this.m_Filters[index].comparator ?? '=',
             }
         )
         // Keep a named filter on the Confirm path so tapping ✓ doesn't drop the

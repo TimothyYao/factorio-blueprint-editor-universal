@@ -532,7 +532,10 @@ export class OverlayContainer extends Container {
             position?: IPoint,
             comparator?: ComparatorString
         ): void {
-            const mark = F.CreateFilterQualityMark(quality, 28, { comparator })
+            const mark = F.CreateFilterQualityMark(quality, 28, {
+                comparator,
+                includeNormal: true,
+            })
             if (!mark) return
             const data = FD.utilitySprites.entity_info_dark_background
             const background = new Sprite(

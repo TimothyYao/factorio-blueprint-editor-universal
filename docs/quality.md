@@ -27,8 +27,15 @@ filter slot, not the entity-quality rule (omitted entity quality is Normal,
 no badge).
 
 Filter overlays and editor slots draw **on top of** the building's quality
-diamond. A comparator other than the implicit any-quality `=` (`≥`, `≠`, …)
-sits next to the quality mark, matching the game's filter cluster.
+diamond. Comparators other than `=` (`≥`, `≠`, …) sit next to the quality
+mark; `=` is the default and is not drawn.
+
+Named item + **Normal** = no badge (same as entity quality). Named item +
+**Any** (explicit, keyless) = any-quality diamond. Quality-only + **Normal**
+= Normal diamond — otherwise an empty-looking slot.
+
+The filter picker defaults to **Normal**, not Any. Any is still offered and
+is what a keyless named filter reopens on.
 
 ## Filter semantics
 
