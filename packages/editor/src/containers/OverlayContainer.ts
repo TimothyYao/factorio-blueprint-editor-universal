@@ -5,7 +5,6 @@ import FD, {
     isCraftingMachine,
     hasModuleFunctionality,
     getModuleInventoryIndex,
-    hasModuleIconsSuppressed,
 } from '../core/factorioData'
 import F from '../UI/controls/functions'
 import G from '../common/globals'
@@ -240,13 +239,14 @@ export class OverlayContainer extends Container {
             }
         }
 
+        // Module-inventory icons (dark background + quality badge) — the same
+        // alt-mode treatment recipe icons get on assembling machines. Vanilla
+        // beacons set `graphics_set.module_icons_suppressed` because the 3D
+        // module visualisations already show the contents; we still draw the
+        // overlay so quality is visible and the slots stay readable at a glance.
         const modules = entity.modules
         const e = entity.entityData
-        if (
-            modules.filter(m => m).length !== 0 &&
-            hasModuleFunctionality(e) &&
-            !hasModuleIconsSuppressed(e)
-        ) {
+        if (modules.filter(m => m).length !== 0 && hasModuleFunctionality(e)) {
             const module_slots = e.module_slots
             if (module_slots > 0) {
                 const moduleInfo = new Container()

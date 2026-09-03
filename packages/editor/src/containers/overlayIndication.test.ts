@@ -140,6 +140,22 @@ describe('prototype vectors (space-age pack)', () => {
 
             expect(FD.utilitySprites.indication_arrow).toBeDefined()
             expect(FD.utilitySprites.indication_line).toBeDefined()
+
+            // Vanilla beacons suppress Factorio's own module-inventory overlay
+            // (`module_icons_suppressed`) because the 3D visualisations already
+            // show the contents — but they still ship `icons_positioning` so
+            // alt-mode icons land on the building. We draw those icons anyway
+            // (OverlayContainer), same treatment as recipe icons.
+            const beacon = FD.entities['beacon'] as unknown as {
+                graphics_set?: { module_icons_suppressed?: boolean }
+                icons_positioning?: readonly { inventory_index: number }[]
+            }
+            expect(beacon.graphics_set?.module_icons_suppressed).toBe(true)
+            expect(
+                beacon.icons_positioning?.some(
+                    ip => ip.inventory_index === FD.defines.inventory.beacon_modules
+                )
+            ).toBe(true)
         }
     )
 })

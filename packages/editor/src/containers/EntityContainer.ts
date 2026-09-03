@@ -250,6 +250,11 @@ export class EntityContainer {
         }
     }
 
+    /** Alt-mode overlay (recipe / module / filter icons, arrows, …), if any. */
+    public get overlayInfo(): Container | undefined {
+        return this.entityInfo
+    }
+
     public set cursorBox(type: keyof CursorBoxSpecification) {
         this.cursorBoxType = type
         if (this.cursorBoxContainer) {

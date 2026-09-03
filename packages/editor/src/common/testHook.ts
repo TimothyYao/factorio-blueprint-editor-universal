@@ -7,6 +7,7 @@ import { PaintEntityContainer } from '../containers/PaintEntityContainer'
 import { PaintBlueprintContainer } from '../containers/PaintBlueprintContainer'
 import { PaintTileContainer } from '../containers/PaintTileContainer'
 import { OverlayContainer } from '../containers/OverlayContainer'
+import { EntityContainer } from '../containers/EntityContainer'
 import { Dialog } from '../UI/controls/Dialog'
 import { InventoryDialog } from '../UI/InventoryDialog'
 import { Modules } from '../UI/editors/components/Modules'
@@ -253,6 +254,13 @@ export interface FbeTestHook {
     entityModules: (name: string) => (string | null)[] | null
     entityFilters: (name: string) => (string | null)[] | null
     entityRecipe: (name: string) => string | null
+    /**
+     * How many children the entity's alt-mode overlay currently has (recipe /
+     * module / filter icons, arrows, quality badge, …). 0 when the overlay was
+     * never created. Lets specs assert beacons draw module icons the same way
+     * assembling machines draw recipe icons.
+     */
+    entityOverlayChildCount: (name: string) => number | null
     /**
      * Open `name`'s editor and return the on-screen centre (canvas-relative CSS
      * px, the same frame as `dragOneFinger`) of its module or filter slot `index`
@@ -520,6 +528,13 @@ export function installTestHook(win: Window = window): void {
             return filters ? Array.from(filters, f => f?.name ?? null) : null
         },
         entityRecipe: name => findEntity(name)?.recipe ?? null,
+        entityOverlayChildCount: name => {
+            const e = findEntity(name)
+            if (!e) return null
+            const ec = EntityContainer.mappings.get(e.entityNumber)
+            if (!ec) return null
+            return ec.overlayInfo?.children.length ?? 0
+        },
         openEditorSlot: (name, kind, index) => {
             const e = findEntity(name)
             if (!e) return null
