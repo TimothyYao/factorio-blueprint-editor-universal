@@ -64,6 +64,16 @@ export class QualityRow extends Container {
         return out
     }
 
+    /** On-screen centre of the comparator cycle control, if shown. */
+    public comparatorCenter(): { x: number; y: number } | null {
+        for (const c of this.children) {
+            if (!(c instanceof CycleButton)) continue
+            const r = c.getBounds().rectangle
+            return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
+        }
+        return null
+    }
+
     public set value(next: string | undefined) {
         const n = this.opts.includeAny ? next : next && next !== 'normal' ? next : undefined
         if (n === this.current) return

@@ -206,6 +206,87 @@ test.describe('quality UI', () => {
             })
             .toEqual({ quality: 'rare', comparator: '=' })
     })
+
+    test('filter picker re-badges item icons when the comparator cycles', async ({ page }) => {
+        await page.goto('/?test&pack=space-age')
+        await waitForAppReady(page)
+
+        await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__: {
+                    spawnPaintItem: (name: string) => void
+                    confirmPlacement: () => void
+                    centerView: () => void
+                }
+            }
+            w.__FBE_TEST__.spawnPaintItem('fast-splitter')
+            w.__FBE_TEST__.confirmPlacement()
+            w.__FBE_TEST__.centerView()
+        })
+
+        const slot = await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__: {
+                    openEditorSlot: (
+                        name: string,
+                        kind: 'filters',
+                        index: number
+                    ) => { x: number; y: number } | null
+                }
+            }
+            return w.__FBE_TEST__.openEditorSlot('fast-splitter', 'filters', 0)
+        })
+        expect(slot).not.toBeNull()
+
+        const box = await page.locator('#editor').boundingBox()
+        const ox = box?.x ?? 0
+        const oy = box?.y ?? 0
+        await page.mouse.click(ox + slot.x, oy + slot.y)
+
+        await expect
+            .poll(async () =>
+                page.evaluate(() =>
+                    (
+                        window as unknown as {
+                            __FBE_TEST__: { inventoryOpen: () => boolean }
+                        }
+                    ).__FBE_TEST__.inventoryOpen()
+                )
+            )
+            .toBe(true)
+
+        const glyphCount = (): Promise<number> =>
+            page.evaluate(() =>
+                (
+                    window as unknown as {
+                        __FBE_TEST__: { inventoryItemComparatorGlyphCount: () => number }
+                    }
+                ).__FBE_TEST__.inventoryItemComparatorGlyphCount()
+            )
+
+        // Default comparator is `=` — no operator glyphs on items.
+        expect(await glyphCount()).toBe(0)
+
+        const cmp = await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__: {
+                    inventoryComparatorPos: () => { x: number; y: number } | null
+                }
+            }
+            return w.__FBE_TEST__.inventoryComparatorPos()
+        })
+        expect(cmp, 'Comparator cycle should be visible on filter pickers').not.toBeNull()
+        await page.mouse.click(ox + cmp.x, oy + cmp.y)
+
+        // First cycle step is `≠` — every item icon should pick up the glyph.
+        await expect.poll(glyphCount).toBeGreaterThan(0)
+
+        // Cycle back through to `=` (≠ → > → < → ≥ → ≤ → =).
+        for (let i = 0; i < 5; i++) {
+            await page.mouse.click(ox + cmp.x, oy + cmp.y)
+        }
+        await expect.poll(glyphCount).toBe(0)
+    })
 })
 
 // Legendary beacon (2× speed-module-3) + electromagnetic plant. Equivalent to

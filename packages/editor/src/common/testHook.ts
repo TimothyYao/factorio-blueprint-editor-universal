@@ -296,6 +296,16 @@ export interface FbeTestHook {
      */
     inventoryQualityChipPos: (index: number) => { x: number; y: number } | null
     /**
+     * On-screen centre of the quality-row comparator cycle in the open
+     * filter picker, or null when the row has no comparator.
+     */
+    inventoryComparatorPos: () => { x: number; y: number } | null
+    /**
+     * Count of non-`=` comparator glyphs currently drawn on item icons in
+     * the open inventory grid (0 when comparator is `=`).
+     */
+    inventoryItemComparatorGlyphCount: () => number
+    /**
      * Flip the input mode, as the settings pane's Input Mode dropdown does. Lets
      * a spec assert that live-mode-switch handling works on already-open UI.
      */
@@ -596,6 +606,14 @@ export function installTestHook(win: Window = window): void {
         inventoryQualityChipPos: index => {
             const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
             return inv ? inv.qualityChipPosition(index) : null
+        },
+        inventoryComparatorPos: () => {
+            const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
+            return inv ? inv.comparatorButtonPosition() : null
+        },
+        inventoryItemComparatorGlyphCount: () => {
+            const inv = Dialog.openDialogs.findLast(d => d instanceof InventoryDialog)
+            return inv ? inv.itemComparatorGlyphCount() : 0
         },
         setInputMode: mode => {
             inputMode.mode = mode

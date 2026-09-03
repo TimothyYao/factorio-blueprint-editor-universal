@@ -463,6 +463,29 @@ export class InventoryDialog extends Dialog {
         return this.m_qualityRow?.chipCenters()[index] ?? null
     }
 
+    /** On-screen centre of the quality-row comparator cycle, if shown. */
+    public comparatorButtonPosition(): { x: number; y: number } | null {
+        return this.m_qualityRow?.comparatorCenter() ?? null
+    }
+
+    /**
+     * How many item icons in the open grid currently draw a non-`=` comparator
+     * glyph — used by e2e to assert that cycling the comparator re-badges.
+     */
+    public itemComparatorGlyphCount(): number {
+        const glyphs = new Set(['≠', '>', '<', '≥', '≤'])
+        let n = 0
+        const walk = (parent: Container): void => {
+            for (const child of parent.children) {
+                if (child instanceof Text && glyphs.has(child.text)) n++
+                if (child instanceof Container) walk(child)
+            }
+        }
+        walk(this.m_InventoryItems)
+        if (this.m_recentsContainer) walk(this.m_recentsContainer)
+        return n
+    }
+
     /**
      * On-screen centre (CSS px) of the first item button in the active group, or
      * null if the group has none. Backs the `?test` probe so e2e can tap a real
