@@ -14,7 +14,7 @@ import { Tile } from '../core/Tile'
 import { Entity } from '../core/Entity'
 import { Blueprint } from '../core/Blueprint'
 import { IConnection } from '../core/WireConnections'
-import { IPoint } from '../types'
+import { IEntity, IPoint } from '../types'
 import { Dialog } from '../UI/controls/Dialog'
 import { Viewport } from './Viewport'
 import { PinchPanRecognizer, PinchPanUpdate } from './PointerGestures'
@@ -834,7 +834,7 @@ export class BlueprintContainer extends Container {
             const itemName = Entity.getItemName(entity.name)
             const direction =
                 entity.directionType === 'output' ? (entity.direction + 8) % 16 : entity.direction
-            this.spawnPaintContainer(itemName, direction, [], entity.mirror, entity.quality)
+            this.spawnPaintContainer(itemName, direction, [], entity.cloneForPaint())
         } else if (this.mode === EditorMode.PAINT) {
             this.paintContainer.destroy()
         }
@@ -1620,10 +1620,8 @@ export class BlueprintContainer extends Container {
         // Tiles for a blueprint ghost (marquee tile Copy/Cut, pasted blueprints
         // carrying landfill/concrete). Ignored for the single-item string form.
         tiles: Tile[] = [],
-        /** Mirror bit for a single-entity paint ghost (pipette / flip). */
-        mirror = false,
-        /** Entity quality carried by pipette / paint (issue #5). */
-        quality?: string
+        /** Q-pick / copy snapshot for a single-entity paint ghost. */
+        template?: IEntity
     ): void {
         if (this.mode === EditorMode.PAINT) {
             this.paintContainer.destroy()
@@ -1658,7 +1656,7 @@ export class BlueprintContainer extends Container {
                     )
                 } else {
                     this.paintContainer = this.entityPaintSlot.addChild(
-                        new PaintEntityContainer(this, placeResult, direction, mirror, quality)
+                        new PaintEntityContainer(this, placeResult, direction, template)
                     )
                 }
             } else {

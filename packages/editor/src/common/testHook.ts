@@ -15,6 +15,8 @@ import { Filters } from '../UI/editors/components/Filters'
 import { Recipe } from '../UI/editors/components/Recipe'
 import { Editor } from '../UI/editors/Editor'
 import { Entity } from '../core/Entity'
+import type { IEntity } from '../types'
+import FD from '../core/factorioData'
 
 /**
  * Read-only logical-state snapshot for e2e tests. The editor renders into a
@@ -72,6 +74,8 @@ export interface EditorTestState {
          * arrows, miner output arrows, …). 0 when idle or for tiles/wires.
          */
         overlayInfoCount: number
+        /** Recipe on a held single-entity ghost (Q-pick); null otherwise. */
+        recipe: string | null
     }
     /**
      * True while a modal dialog (e.g. an entity editor overlay) is open. On touch,
@@ -161,6 +165,10 @@ export function getEditorTestState(): EditorTestState {
                       c => c.label === OverlayContainer.ENTITY_INFO_LABEL
                   ).length
                 : 0,
+            recipe:
+                painting && G.BPC.paintContainer instanceof PaintEntityContainer
+                    ? (G.BPC.paintContainer.getRecipe() ?? null)
+                    : null,
         },
         dialogOpen: Dialog.anyOpen(),
         marquee: {
@@ -220,6 +228,28 @@ export interface FbeTestHook {
      * or the (not-yet-built) touch marquee. Returns false on an empty blueprint.
      */
     spawnPasteGhost: () => boolean
+    /**
+     * Place an entity at the origin for tests (recipe / direction / mirror).
+     * Returns false if the prototype isn't in the loaded pack.
+     */
+    createPlacedEntity: (data: {
+        name: string
+        recipe?: string
+        direction?: number
+        mirror?: boolean
+        items?: IEntity['items']
+        filters?: IEntity['filters']
+        pickup_position?: IEntity['pickup_position']
+        drop_position?: IEntity['drop_position']
+        input_priority?: IEntity['input_priority']
+        output_priority?: IEntity['output_priority']
+        control_behavior?: IEntity['control_behavior']
+    }) => boolean
+    /**
+     * Q-pick the first entity of `name` onto the cursor (same snapshot as the
+     * KeyQ pipette). Returns false if it isn't in the blueprint.
+     */
+    pipetteNamed: (name: string) => boolean
     /**
      * Screen-space (canvas-relative, CSS px) position of a named entity, or null
      * if absent — lets touch tests tap an entity deterministically (e.g. to enter
@@ -454,6 +484,23 @@ export function installTestHook(win: Window = window): void {
             const entities = G.bp.entities.valuesArray()
             if (entities.length === 0) return false
             G.BPC.spawnPaintContainer(entities)
+            return true
+        },
+        createPlacedEntity: data => {
+            if (!FD.entities[data.name]) return false
+            G.bp.createEntity({
+                name: data.name,
+                position: { x: 0, y: 0 },
+                ...data,
+            } as IEntity)
+            return true
+        },
+        pipetteNamed: name => {
+            const e = findEntity(name)
+            if (!e) return false
+            const itemName = Entity.getItemName(e.name)
+            const direction = e.directionType === 'output' ? (e.direction + 8) % 16 : e.direction
+            G.BPC.spawnPaintContainer(itemName, direction, [], e.cloneForPaint())
             return true
         },
         entityScreenPos: name => {

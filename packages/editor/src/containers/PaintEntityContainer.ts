@@ -1,9 +1,15 @@
 import { Container } from 'pixi.js'
-import { DirectionType, IPoint } from '../types'
+import { DirectionType, FilterPriority, IEntity, IPoint } from '../types'
 import FD, { getEntitySize, getPossibleRotations } from '../core/factorioData'
-import { constrainToPossibleDirections, entityUsesMirroring, flipDirection } from '../core/flip'
+import {
+    constrainToPossibleDirections,
+    entityUsesMirroring,
+    flipDirection,
+    flipSwapsSplitterPriority,
+} from '../core/flip'
 import { UndergroundBeltPrototype } from 'factorio:prototype'
 import { Entity } from '../core/Entity'
+import util from '../common/util'
 import { EntitySprite } from './EntitySprite'
 import { VisualizationArea } from './VisualizationArea'
 import { PaintContainer } from './PaintContainer'
@@ -15,7 +21,13 @@ export class PaintEntityContainer extends PaintContainer {
     private directionType: DirectionType
     private direction: number
     private mirrored: boolean
-    private readonly quality: string | undefined
+    /**
+     * Placeable settings cloned from Q-pick / copy (recipe, modules, filters,
+     * combinator conditions, inserter vectors, quality, …). Identity fields
+     * are filled in at redraw/place. Empty object = a hotbar pick with
+     * prototype defaults.
+     */
+    private readonly settings: IEntity
     /** This is only a reference */
     private undergroundLine: Container
 
@@ -23,15 +35,28 @@ export class PaintEntityContainer extends PaintContainer {
         bpc: BlueprintContainer,
         name: string,
         direction: number,
-        mirror = false,
-        quality?: string
+        template?: IEntity
     ) {
         super(bpc, name)
 
         this.direction = direction
-        this.mirrored = mirror
-        this.quality = quality && quality !== 'normal' ? quality : undefined
-        this.directionType = FD.entities[name].type === 'loader' ? 'output' : 'input'
+        this.settings = template
+            ? util.duplicate(template)
+            : ({ name, position: { x: 0, y: 0 } } as IEntity)
+        this.settings.name = name
+        this.settings.position = { x: 0, y: 0 }
+        this.mirrored = !!this.settings.mirror
+        const fd = FD.entities[name]
+        // Underground belts: pipette remaps output→input direction; pairing
+        // then flips `directionType` as the ghost nears another belt. Loaders
+        // keep the picked input/output. Hotbar loaders default to output.
+        if (fd.type === 'underground-belt') {
+            this.directionType = 'input'
+        } else if (fd.type === 'loader') {
+            this.directionType = this.settings.type ?? 'output'
+        } else {
+            this.directionType = this.settings.type ?? 'input'
+        }
 
         this.visualizationArea = this.bpc.underlayContainer.create(this.name, this.position)
         this.visualizationArea.highlight()
@@ -50,6 +75,40 @@ export class PaintEntityContainer extends PaintContainer {
     /** Blueprint `mirror` bit of the held ghost. Exposed for tests. */
     public getMirror(): boolean {
         return this.mirrored
+    }
+
+    /** Recipe carried on the ghost (Q-pick / copy). Exposed for tests. */
+    public getRecipe(): string | undefined {
+        return this.settings.recipe
+    }
+
+    private facingDirection(): number {
+        return this.directionType === 'input' ? this.direction : (this.direction + 8) % 16
+    }
+
+    /**
+     * Stub Entity for sprite + alt-mode overlay. Not added to the blueprint —
+     * `createEntityInfo` / `getParts` only read prototype + this snapshot.
+     */
+    private ghostEntity(): Entity {
+        const raw = util.duplicate(this.settings)
+        raw.entity_number = 0
+        raw.name = this.name
+        raw.position = { x: 0, y: 0 }
+        raw.direction = this.facingDirection()
+        raw.mirror = this.mirrored || undefined
+        if (!raw.mirror) delete raw.mirror
+        const fd = FD.entities[this.name]
+        if (fd.type === 'underground-belt' || fd.type === 'loader') {
+            raw.type = this.directionType
+        }
+        return new Entity(raw, this.bpc.bp)
+    }
+
+    private swapPriority(priority?: FilterPriority): FilterPriority | undefined {
+        if (priority === 'left') return 'right'
+        if (priority === 'right') return 'left'
+        return priority
     }
 
     private get size(): IPoint {
@@ -150,7 +209,11 @@ export class PaintEntityContainer extends PaintContainer {
     }
 
     public override rotate(ccw = false): void {
-        const pr = getPossibleRotations(FD.entities[this.name])
+        const ghost = this.ghostEntity()
+        const pr = getPossibleRotations(
+            FD.entities[this.name],
+            ghost.assemblerHasFluidInputs || ghost.assemblerHasFluidOutputs
+        )
         if (pr.length === 0) return
         this.direction = pr[(pr.indexOf(this.direction) + (ccw ? 3 : 1)) % pr.length]
 
@@ -161,7 +224,11 @@ export class PaintEntityContainer extends PaintContainer {
     public override flip(vertical: boolean): void {
         const fd = FD.entities[this.name]
         if (entityUsesMirroring(fd)) this.mirrored = !this.mirrored
-        const pr = getPossibleRotations(fd)
+        const ghost = this.ghostEntity()
+        const pr = getPossibleRotations(
+            fd,
+            ghost.assemblerHasFluidInputs || ghost.assemblerHasFluidOutputs
+        )
         if (pr.length !== 0) {
             const next = constrainToPossibleDirections(
                 this.direction,
@@ -170,13 +237,23 @@ export class PaintEntityContainer extends PaintContainer {
             )
             this.direction = next
         }
+        if (flipSwapsSplitterPriority(this.direction, vertical)) {
+            this.settings.input_priority = this.swapPriority(this.settings.input_priority)
+            this.settings.output_priority = this.swapPriority(this.settings.output_priority)
+        }
         this.redraw()
         this.moveAtCursor()
     }
 
     public override canFlip(): boolean {
         const fd = FD.entities[this.name]
-        return getPossibleRotations(fd).length !== 0 || entityUsesMirroring(fd)
+        const ghost = this.ghostEntity()
+        return (
+            getPossibleRotations(
+                fd,
+                ghost.assemblerHasFluidInputs || ghost.assemblerHasFluidOutputs
+            ).length !== 0 || entityUsesMirroring(fd)
+        )
     }
 
     public override canFlipOrRotateByCopying(): boolean {
@@ -193,39 +270,13 @@ export class PaintEntityContainer extends PaintContainer {
 
     protected override redraw(): void {
         this.removeChildren()
-        const direction =
-            this.directionType === 'input' ? this.direction : (this.direction + 8) % 16
-        const sprites = EntitySprite.getParts({
-            name: this.name,
-            direction,
-            directionType: this.directionType,
-            mirror: this.mirrored,
-        })
+        const ghost = this.ghostEntity()
+        const sprites = EntitySprite.getParts(ghost)
         this.addChild(...sprites)
-        // Same alt-mode overlay placed entities get (drop/pickup arrows on
-        // inserters, output arrow on miners/recyclers, combinator/fluid
-        // arrows). Stub Entity is not in the blueprint — createEntityInfo
-        // only reads prototype + direction.
-        OverlayContainer.attachEntityInfo(
-            this,
-            new Entity(
-                {
-                    entity_number: 0,
-                    name: this.name,
-                    position: { x: 0, y: 0 },
-                    direction,
-                    quality: this.quality,
-                    mirror: this.mirrored || undefined,
-                    type:
-                        FD.entities[this.name].type === 'underground-belt' ||
-                        FD.entities[this.name].type === 'loader'
-                            ? this.directionType
-                            : undefined,
-                },
-                this.bpc.bp
-            ),
-            { x: 0, y: 0 }
-        )
+        // Same alt-mode overlay placed entities get (recipe / modules / filters,
+        // fluid arrows, inserter pickup/drop, combinator glyphs). Ghost Entity
+        // is not in the blueprint — it only carries the Q-pick / copy snapshot.
+        OverlayContainer.attachEntityInfo(this, ghost, { x: 0, y: 0 })
     }
 
     public override moveAtCursor(): void {
@@ -303,20 +354,17 @@ export class PaintEntityContainer extends PaintContainer {
         }
 
         if (this.bpc.bp.entityPositionGrid.isAreaAvailable(this.name, position, direction)) {
-            this.bpc.bp.createEntity(
-                {
-                    name: this.name,
-                    position,
-                    direction,
-                    quality: this.quality,
-                    type:
-                        fd.type === 'underground-belt' || fd.type === 'loader'
-                            ? this.directionType
-                            : undefined,
-                    mirror: this.mirrored || undefined,
-                },
-                true
-            )
+            const raw = util.duplicate(this.settings)
+            delete raw.entity_number
+            raw.name = this.name
+            raw.position = position
+            raw.direction = direction
+            raw.mirror = this.mirrored || undefined
+            if (!raw.mirror) delete raw.mirror
+            if (fd.type === 'underground-belt' || fd.type === 'loader') {
+                raw.type = this.directionType
+            }
+            this.bpc.bp.createEntity(raw, true)
 
             if (fd.type === 'underground-belt' || this.name === 'pipe-to-ground') {
                 this.direction = (direction + 8) % 16
