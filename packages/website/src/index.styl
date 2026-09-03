@@ -553,9 +553,18 @@ body.mobile
     .rd-row
         display: flex
         align-items: center
-        flex-wrap: wrap
         gap: 6px
         margin: 3px 0
+        // Icon column: fixed width so quality-wrapped and bare icons line up.
+        > .rd-icon
+        > .q-icon-wrap
+            flex-shrink: 0
+            width: 20px
+    .rd-rate
+        margin-left: auto
+        font-variant-numeric: tabular-nums
+        text-align: right
+        white-space: nowrap
     .rd-dim
         color: #b5b5b5
         font-size: 12px
@@ -568,6 +577,7 @@ body.mobile
     .rd-machines
         display: inline-flex
         align-items: center
+        flex-shrink: 0
         gap: 3px
         color: #b5b5b5
         font-size: 12px
