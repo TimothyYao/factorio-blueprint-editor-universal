@@ -28,7 +28,7 @@ jobs:
       - uses: actions/setup-node@v4
         if: github.event.action != 'closed'
         with:
-          node-version: 22
+          node-version: 24
 
       - run: npm install --legacy-peer-deps
         if: github.event.action != 'closed'

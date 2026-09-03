@@ -124,7 +124,7 @@ exporter is a separate Rust tool and is **not** a JS workspace.
 
 ## Commands
 
-Node is pinned via `.nvmrc` (v23.x; CI uses Node 22). Install deps with the
+Node is pinned via `.nvmrc` (v24.x LTS; CI uses Node 24). Install deps with the
 legacy peer flag — a plain `npm install` will fail:
 
 ```bash
