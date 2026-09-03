@@ -560,6 +560,10 @@ body.mobile
         > .q-icon-wrap
             flex-shrink: 0
             width: 20px
+        // Kill any leftover auto margins so the icon stays left and `.rd-rate`'s
+        // margin-left: auto alone absorbs the free space (item left / rate right).
+        .rd-icon
+            margin: 0
     .rd-rate
         margin-left: auto
         font-variant-numeric: tabular-nums
