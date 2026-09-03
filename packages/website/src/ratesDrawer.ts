@@ -38,10 +38,19 @@ export function initRatesDrawer(): void {
         return wrap
     }
 
+    const qualityBadge = (quality: string): HTMLElement => {
+        const badge = document.createElement('span')
+        badge.className = 'rd-quality'
+        badge.textContent = quality.charAt(0).toUpperCase()
+        badge.title = quality
+        return badge
+    }
+
     const row = (entry: RatesEntryData): HTMLElement => {
         const el = document.createElement('div')
         el.className = 'rd-row'
         el.appendChild(iconSpan(entry.type, entry.name))
+        if (entry.quality) el.appendChild(qualityBadge(entry.quality))
 
         const isIntermediate = entry.production > 0 && entry.consumption > 0
         const rate = document.createElement('span')

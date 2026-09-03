@@ -471,6 +471,24 @@ body.mobile
         display: inline-flex
         align-items: center
         gap: 3px
+    .eis-quality
+        display: inline-block
+        font-size: 9px
+        font-weight: 700
+        padding: 1px 3px
+        border-radius: 3px
+        background: rgba(255, 255, 255, 0.15)
+        color: #ffa020
+        line-height: 1
+        vertical-align: middle
+    .eis-quality-list
+        padding-left: 24px
+        margin: 2px 0
+    .eis-quality-entry
+        display: flex
+        align-items: center
+        gap: 4px
+        margin: 2px 0
 
 // Production-rates drawer (#89 Phase 2) — the mobile presentation of the rates
 // readout (ratesDrawer.ts). Portrait: bottom-right, in the reachable band —
@@ -543,6 +561,15 @@ body.mobile
         gap: 3px
         color: #b5b5b5
         font-size: 12px
+    .rd-quality
+        display: inline-block
+        font-size: 9px
+        font-weight: 700
+        padding: 1px 3px
+        border-radius: 3px
+        background: rgba(255, 255, 255, 0.15)
+        color: #ffa020
+        line-height: 1
 
 // Layering contract (#89): while any Pixi dialog is open (entity editor,
 // inventory — the editor mirrors the count over `fbe:dialogs`, see index.ts),

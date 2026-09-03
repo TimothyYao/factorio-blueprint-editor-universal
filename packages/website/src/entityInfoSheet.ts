@@ -44,12 +44,15 @@ export function initEntityInfoSheet(): void {
         return wrap
     }
 
+    const hasQualitySplits = (stacks: EntityInfoStack[]): boolean => stacks.some(s => s.quality)
+
     const recipeRow = (
         label: string,
         ingredients: EntityInfoStack[],
         results: EntityInfoStack[],
         arrow: string
     ): HTMLElement => {
+        const wrap = document.createElement('div')
         const row = document.createElement('div')
         row.className = 'eis-row'
         const lbl = document.createElement('span')
@@ -61,8 +64,29 @@ export function initEntityInfoSheet(): void {
         arr.className = 'eis-dim'
         arr.textContent = arrow
         row.appendChild(arr)
-        for (const r of results) row.appendChild(stackSpan(r))
-        return row
+
+        if (hasQualitySplits(results)) {
+            // Quality-split results overflow horizontally; render inline
+            // non-quality items then a vertical quality breakdown list.
+            const nonQuality = results.filter(r => !r.quality && r.type === 'fluid')
+            const qualityItems = results.filter(r => r.quality || r.type !== 'fluid')
+            for (const r of nonQuality) row.appendChild(stackSpan(r))
+            wrap.appendChild(row)
+
+            const list = document.createElement('div')
+            list.className = 'eis-quality-list'
+            for (const r of qualityItems) {
+                const entry = document.createElement('div')
+                entry.className = 'eis-quality-entry'
+                entry.appendChild(stackSpan(r))
+                list.appendChild(entry)
+            }
+            wrap.appendChild(list)
+        } else {
+            for (const r of results) row.appendChild(stackSpan(r))
+            wrap.appendChild(row)
+        }
+        return wrap
     }
 
     const render = (data: EntityInfoData | null): void => {

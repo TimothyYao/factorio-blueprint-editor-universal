@@ -71,6 +71,7 @@ const containerToBelt = (rotationSpeed: number, beltSpeed: number, n: number): n
 // TODO: add beltToContainer
 
 const roundToTwo = (n: number): number => Math.round(n * 100) / 100
+const roundToThree = (n: number): number => Math.round(n * 1000) / 1000
 const roundToFour = (n: number): number => Math.round(n * 10000) / 10000
 
 /** One side of a recipe row: an item/fluid token with its (resolved) amount. */
@@ -131,8 +132,8 @@ function qualitySplitResults(
 
         if (dist && dist.length > 1) {
             for (const d of dist) {
-                const amount = roundToTwo(r.amount * d.fraction)
-                if (amount < 0.005) continue
+                const amount = roundToThree(r.amount * d.fraction)
+                if (amount < 0.0005) continue
                 out.push({
                     type: r.type,
                     name: r.name,
@@ -346,7 +347,8 @@ export class EntityInfoPanel extends Panel {
                     entity.recipeQuality
                 )
 
-                // Render manually to support quality badges on individual result icons
+                const hasQualitySplits = effectiveResults.some(r => r.quality)
+
                 let nextX = 0
                 const rowY = 20
                 for (const i of effectiveIngredients) {
@@ -359,18 +361,41 @@ export class EntityInfoPanel extends Panel {
                 timeObject.position.set(nextX, 6 + rowY)
                 this.m_RecipeIOContainer.addChild(timeObject)
                 nextX += timeObject.width + 6
-                for (const r of effectiveResults) {
-                    F.CreateIconWithAmount(
-                        this.m_RecipeIOContainer,
-                        nextX,
-                        rowY,
-                        r.name,
-                        r.amount,
-                        undefined,
-                        undefined,
-                        r.quality
-                    )
-                    nextX += 36
+
+                if (hasQualitySplits) {
+                    // Render quality-split results as a vertical list below the
+                    // ingredients row: one icon + amount + quality label per line.
+                    let qY = rowY + 36
+                    for (const r of effectiveResults) {
+                        F.CreateIconWithAmount(
+                            this.m_RecipeIOContainer,
+                            0,
+                            qY,
+                            r.name,
+                            r.amount,
+                            undefined,
+                            undefined,
+                            r.quality
+                        )
+                        const label = new Text({
+                            text: ` ${r.amount}` + (r.quality ? ` (${r.quality})` : ''),
+                            style: styles.dialog.label,
+                        })
+                        label.position.set(36, qY + 8)
+                        this.m_RecipeIOContainer.addChild(label)
+                        qY += 36
+                    }
+                } else {
+                    for (const r of effectiveResults) {
+                        F.CreateIconWithAmount(
+                            this.m_RecipeIOContainer,
+                            nextX,
+                            rowY,
+                            r.name,
+                            r.amount
+                        )
+                        nextX += 36
+                    }
                 }
                 this.m_RecipeIOContainer.position.set(10, nextY)
                 nextY = this.m_RecipeIOContainer.position.y + this.m_RecipeIOContainer.height + 20
