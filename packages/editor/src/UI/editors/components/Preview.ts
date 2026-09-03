@@ -48,6 +48,7 @@ export class Preview extends Container {
         this.onEntityChange('recipe', this.onEntityChanged)
         this.onEntityChange('modules', this.onEntityChanged)
         this.onEntityChange('filters', this.onEntityChanged)
+        this.onEntityChange('quality', this.onEntityChanged)
         this.onEntityChange('splitterInputPriority', this.onEntityChanged)
         this.onEntityChange('splitterOutputPriority', this.onEntityChanged)
     }

@@ -184,23 +184,29 @@ export class Filters extends Container<Slot<number>> {
             } else {
                 // `label` caches quality (+ a quality-only marker) so a
                 // same-name / different-tier edit still rebuilds the badge.
-                const qualityKey = slotFilter.quality
-                    ? `${slotFilter.name ? 'i' : 'q'}:${slotFilter.quality}`
-                    : 'any'
+                const qualityKey = `${slotFilter.name ? 'i' : 'q'}:${slotFilter.quality || 'any'}:${slotFilter.comparator || ''}`
                 if (
                     slot.content === undefined ||
                     slot.name !== (slotFilter.name || '') ||
                     slot.label !== qualityKey ||
                     this.m_Amount
                 ) {
+                    const badge = {
+                        anyQuality: !slotFilter.quality,
+                        comparator: slotFilter.comparator,
+                    }
                     if (!slotFilter.name && slotFilter.quality) {
-                        // Quality-only: just the tier diamond (include Normal —
-                        // filtering "any item of normal quality" is meaningful).
+                        // Quality-only: tier diamond (include Normal) + comparator.
                         // Slot content is placed at the cell centre, so pivot
                         // like an anchored CreateIcon.
-                        const badge = F.CreateQualityBadge(slotFilter.quality, 28, true)
-                        if (badge) badge.pivot.set(14, 14)
-                        slot.content = badge ?? undefined
+                        const mark = F.CreateFilterQualityMark(slotFilter.quality, 28, {
+                            comparator: slotFilter.comparator,
+                        })
+                        if (mark) {
+                            const b = mark.getLocalBounds()
+                            mark.pivot.set(b.x + b.width / 2, b.y + b.height / 2)
+                        }
+                        slot.content = mark ?? undefined
                     } else if (this.m_Amount) {
                         if (slot.content !== undefined) {
                             const text = slot.children[1] as Text
@@ -217,7 +223,8 @@ export class Filters extends Container<Slot<number>> {
                             slotFilter.count,
                             undefined,
                             undefined,
-                            slotFilter.quality
+                            slotFilter.quality,
+                            badge
                         )
                         slot.content = container
                     } else {
@@ -226,7 +233,8 @@ export class Filters extends Container<Slot<number>> {
                             32,
                             true,
                             false,
-                            slotFilter.quality
+                            slotFilter.quality,
+                            badge
                         )
                     }
                     slot.name = slotFilter.name || ''

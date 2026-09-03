@@ -19,6 +19,7 @@ import {
 } from '../../core/recipeAmounts'
 import { styles } from '../style'
 import G from '../../common/globals'
+import { ComparatorString } from '../../types'
 import { IngredientPrototype, IconData, ProductPrototype } from 'factorio:prototype'
 
 /**
@@ -301,48 +302,61 @@ export function qualityBadgeDataUrl(quality: string | undefined): string | undef
     }
 }
 
-/** Same 16px dump diamond OverlayContainer / QualityRow chips use. */
-const MENU_BADGE_SIZE = 16
-
-function attachMenuQualityBadge(
-    icon: Container,
-    quality: string | undefined,
-    iconSize: number,
-    setAnchor: boolean
-): Container {
-    const badge = CreateQualityBadge(quality, MENU_BADGE_SIZE)
-    if (!badge) return icon
-    const wrap = new Container()
-    wrap.addChild(icon)
-    if (setAnchor) {
-        badge.position.set(-iconSize / 2, iconSize / 2 - MENU_BADGE_SIZE)
-    } else {
-        badge.position.set(0, iconSize - MENU_BADGE_SIZE)
-    }
-    wrap.addChild(badge)
-    return wrap
-}
-
 function attachQualityBadge(
     icon: Container,
     quality: string | undefined,
     iconSize: number,
-    setAnchor: boolean
+    setAnchor: boolean,
+    opts?: { anyQuality?: boolean; comparator?: ComparatorString }
 ): Container {
-    const badge = CreateQualityBadge(quality, Math.max(8, Math.round(iconSize * 0.4)))
-    if (!badge) return icon
+    const badgeSize = Math.max(8, Math.round(iconSize * 0.4))
+    const mark = CreateFilterQualityMark(quality, badgeSize, opts)
+    if (!mark) return icon
     const wrap = new Container()
     wrap.addChild(icon)
     // Bottom-left of the icon box. Anchored icons are centered on (0, 0);
     // unanchored ones (CreateIconWithAmount) sit with their top-left at origin.
-    const badgeSize = Math.max(8, Math.round(iconSize * 0.4))
     if (setAnchor) {
-        badge.position.set(-iconSize / 2, iconSize / 2 - badgeSize)
+        mark.position.set(-iconSize / 2, iconSize / 2 - badgeSize)
     } else {
-        badge.position.set(0, iconSize - badgeSize)
+        mark.position.set(0, iconSize - badgeSize)
     }
-    wrap.addChild(badge)
+    wrap.addChild(mark)
     return wrap
+}
+
+/**
+ * Quality diamond (or the any-quality asset) plus an optional comparator
+ * glyph — Factorio's filter slot / alt-mode cluster, not just the picker row.
+ */
+function CreateFilterQualityMark(
+    quality: string | undefined,
+    size: number,
+    opts?: { anyQuality?: boolean; comparator?: ComparatorString }
+): Container | undefined {
+    const badge = quality
+        ? CreateQualityBadge(quality, size, quality === 'normal')
+        : opts?.anyQuality && qualityUi.enabled
+          ? CreateAnyQualityBadge(size)
+          : undefined
+    const cmp = opts?.comparator
+    if (!badge && !cmp) return undefined
+
+    const cluster = new Container()
+    cluster.eventMode = 'none'
+    let x = 0
+    if (cmp) {
+        const t = new Text({ text: cmp, style: styles.icon.comparator })
+        t.anchor.set(0, 1)
+        t.position.set(0, size)
+        cluster.addChild(t)
+        x = Math.ceil(t.width) + 1
+    }
+    if (badge) {
+        badge.position.set(x, 0)
+        cluster.addChild(badge)
+    }
+    return cluster
 }
 
 /** Create Icon from Sprite Item information */
@@ -351,7 +365,8 @@ function CreateIcon(
     maxSize = 32,
     setAnchor = true,
     darkBackground = false,
-    quality?: string
+    quality?: string,
+    badge?: { anyQuality?: boolean; comparator?: ComparatorString }
 ): Container {
     if (darkBackground) {
         const item = FD.items[itemName]
@@ -361,14 +376,16 @@ function CreateIcon(
                     generateIcons(item.dark_background_icons),
                     quality,
                     maxSize,
-                    setAnchor
+                    setAnchor,
+                    badge
                 )
             } else if (item.dark_background_icon) {
                 return attachQualityBadge(
                     generateIcon(item.dark_background_icon, item.dark_background_icon_size),
                     quality,
                     maxSize,
-                    setAnchor
+                    setAnchor,
+                    badge
                 )
             }
         }
@@ -383,13 +400,14 @@ function CreateIcon(
         FD.inventoryLayout.find(g => g.name === itemName)
 
     if (item?.icons) {
-        return attachQualityBadge(generateIcons(item.icons), quality, maxSize, setAnchor)
+        return attachQualityBadge(generateIcons(item.icons), quality, maxSize, setAnchor, badge)
     } else if (item?.icon) {
         return attachQualityBadge(
             generateIcon(item.icon, item.icon_size),
             quality,
             maxSize,
-            setAnchor
+            setAnchor,
+            badge
         )
     }
 
@@ -401,7 +419,7 @@ function CreateIcon(
     // longer be opened — the recipe stays set, so every reopen re-threw (#35).
     const recipeIconSource = getRecipeIconSourceName(itemName)
     if (recipeIconSource) {
-        return CreateIcon(recipeIconSource, maxSize, setAnchor, darkBackground, quality)
+        return CreateIcon(recipeIconSource, maxSize, setAnchor, darkBackground, quality, badge)
     }
 
     throw new Error(`CreateIcon: no renderable icon for '${itemName}'`)
@@ -463,14 +481,10 @@ function CreateIconWithAmount(
     amount: number = 1,
     amountLabel?: string,
     probabilityLabel?: string,
-    quality?: string
+    quality?: string,
+    badge?: { anyQuality?: boolean; comparator?: ComparatorString }
 ): void {
-    const icon = attachMenuQualityBadge(
-        CreateIcon(name, undefined, false, false),
-        quality,
-        32,
-        false
-    )
+    const icon = CreateIcon(name, undefined, false, false, quality, badge)
     icon.position.set(x, y)
     host.addChild(icon)
 
@@ -572,6 +586,7 @@ export default {
     CreateIconWithAmount,
     CreateQualityBadge,
     CreateAnyQualityBadge,
+    CreateFilterQualityMark,
     CreateRecipe,
     applyTint,
     colorAndAlphaToColorSource,

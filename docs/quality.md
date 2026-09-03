@@ -21,7 +21,14 @@ Picker chips are icon-only (no labels) so they fit a phone editor.
 
 The leading **Any** chip uses the game's multicolored
 `__core__/graphics/icons/any-quality.png` (`utilitySprites.any_quality` /
-`signal-any-quality`), not a drawn stand-in.
+`signal-any-quality`), not a drawn stand-in. Named **item filters** with Any
+selected (keyless quality) get that diamond on the item too — Factorio's
+filter slot, not the entity-quality rule (omitted entity quality is Normal,
+no badge).
+
+Filter overlays and editor slots draw **on top of** the building's quality
+diamond. A comparator other than the implicit any-quality `=` (`≥`, `≠`, …)
+sits next to the quality mark, matching the game's filter cluster.
 
 ## Filter semantics
 

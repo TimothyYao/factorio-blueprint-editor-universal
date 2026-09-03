@@ -528,13 +528,7 @@ export class InventoryDialog extends Dialog {
     private makeItemButton(name: string): Button<Container> {
         const button = new Button<Container>(36, 36)
         button.label = name
-        button.content = F.CreateIcon(
-            name,
-            undefined,
-            true,
-            false,
-            storedQuality(this.m_pickQuality)
-        )
+        button.content = this.itemIcon(name)
 
         button.on('pointerdown', e => {
             e.stopPropagation()
@@ -659,18 +653,11 @@ export class InventoryDialog extends Dialog {
 
     /** Re-badge item icons when the quality row changes. */
     private retintItemButtons(): void {
-        const q = storedQuality(this.m_pickQuality)
         const apply = (parent: Container): void => {
             for (const child of parent.children) {
                 if (child instanceof Button && child.label) {
                     try {
-                        ;(child as Button<Container>).content = F.CreateIcon(
-                            child.label,
-                            undefined,
-                            true,
-                            false,
-                            q
-                        )
+                        ;(child as Button<Container>).content = this.itemIcon(child.label)
                     } catch {
                         // Group icons / anything CreateIcon can't render.
                     }
@@ -681,6 +668,23 @@ export class InventoryDialog extends Dialog {
         }
         apply(this.m_InventoryItems)
         if (this.m_recentsContainer) apply(this.m_recentsContainer)
+    }
+
+    /**
+     * Item icon for this picker. Filter selectors (comparator on) badge Any
+     * with the game's any-quality diamond and draw the comparator next to a
+     * chosen tier — same cluster the filter slot shows.
+     */
+    private itemIcon(name: string): Container {
+        const filterPicker = !!this.m_pickOptions?.comparator
+        return F.CreateIcon(name, undefined, true, false, storedQuality(this.m_pickQuality), {
+            anyQuality: filterPicker && this.m_pickQuality === undefined,
+            comparator: filterPicker
+                ? this.m_pickQuality
+                    ? (this.m_pickComparator as ComparatorString)
+                    : undefined
+                : undefined,
+        })
     }
 
     /** Quick-tap path: record + commit the selection and close. */
