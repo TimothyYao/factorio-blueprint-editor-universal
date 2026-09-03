@@ -69,7 +69,11 @@ export function applyPackIcon(el: HTMLElement, iconId: string, size = 24): boole
     const scale = size / cell
     el.textContent = ''
     el.style.display = 'block'
-    el.style.margin = '0 auto'
+    // No auto margins — callers that live in a flex row (rates drawer,
+    // entity-info sheet) need the icon flush-left; `margin: 0 auto` would
+    // steal free space from `margin-left: auto` siblings. Rail buttons already
+    // centre their glyph via `align-items: center`.
+    el.style.margin = '0'
     el.style.width = `${size}px`
     el.style.height = `${size}px`
     el.style.backgroundImage = `url("${sheetUrl}")`

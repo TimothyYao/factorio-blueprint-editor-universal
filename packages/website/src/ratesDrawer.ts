@@ -47,9 +47,11 @@ export function initRatesDrawer(): void {
 
         const isIntermediate = entry.production > 0 && entry.consumption > 0
         const rate = document.createElement('span')
+        // `rd-rate` carries margin-left: auto so the icon stays left and the
+        // rate (+ machines / intermediate detail) pack to the right edge.
         if (isIntermediate) {
             const net = entry.production - entry.consumption
-            rate.className = net >= 0 ? 'rd-net-pos' : 'rd-net-neg'
+            rate.className = `rd-rate ${net >= 0 ? 'rd-net-pos' : 'rd-net-neg'}`
             rate.textContent = `${net >= 0 ? '+' : '−'}${formatRate(Math.abs(net))}`
             el.appendChild(rate)
             const detail = document.createElement('span')
@@ -59,6 +61,7 @@ export function initRatesDrawer(): void {
             return el
         }
 
+        rate.className = 'rd-rate'
         rate.textContent = formatRate(entry.production > 0 ? entry.production : entry.consumption)
         el.appendChild(rate)
         el.appendChild(
