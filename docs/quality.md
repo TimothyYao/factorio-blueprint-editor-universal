@@ -36,7 +36,9 @@ on its own looks un-tiered). Named item + **Any** = any-quality diamond.
 Quality-only + **Normal** = Normal diamond — otherwise an empty-looking slot.
 
 The filter picker defaults to **Normal**, not Any. Any is still offered and
-is what a keyless named filter reopens on.
+is what a keyless named filter reopens on. Tapping the currently selected
+item again clears it (quality-only via Confirm). Changing the comparator
+re-badges the item grid the same way a quality chip does.
 
 ## Filter semantics
 

@@ -340,6 +340,7 @@ export class InventoryDialog extends Dialog {
                 },
                 onComparator: c => {
                     this.m_pickComparator = c
+                    this.retintItemButtons()
                     this.updatePreviewBar()
                 },
             })
@@ -544,6 +545,13 @@ export class InventoryDialog extends Dialog {
             if (this.m_pressTimer) {
                 // released before the long-press fired → quick tap.
                 this.clearPressTimer()
+                // Filter pickers: tapping the already-selected item again drops
+                // it (quality-only remains via Confirm) — same toggle on
+                // desktop and touch.
+                if (this.m_previewName === name && this.canDeselectToQualityOnly()) {
+                    this.clearPreview()
+                    return
+                }
                 if (inputMode.mode === 'desktop' || this.m_commitOnTap) {
                     // Desktop: a click commits immediately (precise pointer).
                     // Commit-on-tap selectors do the same on touch — see below.
@@ -651,7 +659,7 @@ export class InventoryDialog extends Dialog {
         }
     }
 
-    /** Re-badge item icons when the quality row changes. */
+    /** Re-badge item icons when quality or comparator changes. */
     private retintItemButtons(): void {
         const apply = (parent: Container): void => {
             for (const child of parent.children) {
@@ -705,15 +713,37 @@ export class InventoryDialog extends Dialog {
         return !!this.m_pickOptions?.comparator && this.m_pickQuality !== undefined
     }
 
+    /** Same gate as quality-only Confirm — only those pickers can toggle an item off. */
+    private canDeselectToQualityOnly(): boolean {
+        return this.canCommitQualityOnly()
+    }
+
     /** Long-press path: hold the item as a pending selection without closing. */
     public beginPreview(name: string, button?: Button<Container>): void {
         if (this.destroyed) return
+        // Second tap / long-press on the same item clears it so Confirm can
+        // write a quality-only filter (empty slot still has the tier).
+        if (this.m_previewName === name && this.canDeselectToQualityOnly()) {
+            this.clearPreview()
+            return
+        }
         if (this.m_previewButton && !this.m_previewButton.destroyed)
             this.m_previewButton.active = false
         this.m_previewName = name
         this.m_previewButton = button
         if (button) button.active = true
         this.updateRecipeVisualization(name)
+        this.updatePreviewBar()
+    }
+
+    /** Drop the previewed item (highlight + recipe strip) without closing. */
+    private clearPreview(): void {
+        if (this.m_previewButton && !this.m_previewButton.destroyed)
+            this.m_previewButton.active = false
+        this.m_previewName = undefined
+        this.m_previewButton = undefined
+        this.m_hoveredItem = undefined
+        this.updateRecipeVisualization(undefined)
         this.updatePreviewBar()
     }
 
