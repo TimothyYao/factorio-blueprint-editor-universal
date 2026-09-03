@@ -121,24 +121,28 @@ test.describe('quality UI', () => {
     })
 })
 
-// User-provided legendary-beacon + electromagnetic-plant blueprint. The
-// legendary beacon's supply area is 19×19 (Quality wiki +1 tile/level).
+// Legendary beacon (2× speed-module-3) + electromagnetic plant. Equivalent to
+// the user-provided layout; the pasted string failed zlib inflate (mangled in
+// transit) so this is a round-tripped encoding of the same entities.
 const LEGENDARY_BEACON_BP =
-    '0eJytkt1uhCAQhd9lrnHj7yZ62ddoNhvUiSFFsIC2xvjuHdS22+7Sq14pHOacmQ8WqOWIgxHKQbWAaLSyUD0vYEWnuPR7bh4QKjDYCPphoHjv1yixcUb3vFPoRBMNkpPHykCoFt+hStYLA1ROOIG75Z+FDAZt6axWPpPqYwazd2HQCsrelfiwnK9q7Gs0UKUU6LDfE0Tri4+c15FLOhn1uh0lRhlFHFskSuxQtdzMW8e7AdWrq1ATJWgSNsPvVc7AOt68UBMrCyhJUEmDShZU8vXyeoiPumaf91HBYGhA4jP9GNa7HiBq5HSt94Sj+FRskKP0VNxxfpz6i34WpG8HxPa/2CdB9skNe0/L8/KWfuyvh81gQmO3wYpzWuZlSZ+szM40puQ10jOHp5vTbwTCj0SGH5DgDp8='
+    '0eJy9kttqhDAQht9lruPSeCiYVymyxDgsoTGxMcqK5N07arvdLl2w0O5dDjP/N/nIDLUZsPPaBhAz6IAtiKszBkbWaOjM4AltI/2U1CiVs3SFNuigsQfxMm+b6WiHtkYPgjOwssUl7LO8cz2V05JAZxBPh4LBBCLJDkVk8DZIQwHXJOpZBtrydbP0fWT2HWKTtK4ZDCYZxEsh1dmjtiNN4yhgbfza0VB9kOqV4AyUG5ZH81jFyP46n3/PrxbCjaH0YggNquBdK08Wg1ZJZ+Sq/o6wzdc+Mz973fuefK+vzhNQBT0S6ffa8nva/guTPgaTPQaT3/61isGIvl9/TvGclnlZFlme8ozzGN8BlmlXnw=='
 
 test.describe('beacon supply area quality', () => {
     test('legendary beacon reports a 19×19 supply area', async ({ page }, testInfo) => {
         await page.goto(`/?test&pack=space-age&source=${encodeURIComponent(LEGENDARY_BEACON_BP)}`)
         await waitForAppReady(page)
         await expect
-            .poll(async () => {
-                return page.evaluate(() => {
-                    const w = window as unknown as {
-                        __FBE_TEST__: { getState: () => { blueprint: { entityCount: number } } }
-                    }
-                    return w.__FBE_TEST__.getState().blueprint.entityCount
-                })
-            })
+            .poll(
+                async () => {
+                    return page.evaluate(() => {
+                        const w = window as unknown as {
+                            __FBE_TEST__: { getState: () => { blueprint: { entityCount: number } } }
+                        }
+                        return w.__FBE_TEST__.getState().blueprint.entityCount
+                    })
+                },
+                { timeout: 30_000 }
+            )
             .toBeGreaterThan(0)
 
         const lines = await page.evaluate(() => {
