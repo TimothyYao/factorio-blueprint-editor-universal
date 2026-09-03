@@ -66,6 +66,17 @@ export function qualityCraftingSpeedMul(quality: string | undefined): number {
 }
 
 /**
+ * Inserter rotation/extension-speed multiplier from entity quality:
+ * 1 + 0.3 × level — the same linear boost the
+ * [Quality wiki](https://wiki.factorio.com/Quality) lists as
+ * "+30% inserter rotation speed" (and `QualityPrototype::inserter_speed_multiplier`
+ * defaults to). Legendary (level 5) is therefore 2.5×.
+ */
+export function qualityInserterSpeedMul(quality: string | undefined): number {
+    return 1 + 0.3 * qualityLevel(quality)
+}
+
+/**
  * Positive module effects scale with the *module's* quality; negatives stay
  * as written (FFF-375).
  */
