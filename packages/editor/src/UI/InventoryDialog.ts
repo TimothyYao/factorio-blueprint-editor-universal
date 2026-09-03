@@ -67,7 +67,7 @@ export interface InventoryPickOptions {
 }
 
 export type InventoryPickCallback = (
-    selectedItem: string,
+    selectedItem: string | undefined,
     quality?: string,
     comparator?: string
 ) => void
@@ -339,10 +339,15 @@ export class InventoryDialog extends Dialog {
                 },
                 onComparator: c => {
                     this.m_pickComparator = c
+                    this.updatePreviewBar()
                 },
             })
             row.position.set(12, 4)
             recipePanel.addChild(row)
+            // Filter pickers (comparator on): a tier with no item is a valid
+            // quality-only filter — reveal Confirm so the user can commit
+            // without picking an item (game: dots + green checkmark).
+            this.updatePreviewBar()
         }
 
         this.m_RecipeLabel = new Text({ text: '', style: styles.dialog.label })
@@ -382,6 +387,7 @@ export class InventoryDialog extends Dialog {
         this.m_confirmBtn.on('pointerup', e => {
             e.stopPropagation()
             if (this.m_previewName) this.commitSelect(this.m_previewName)
+            else if (this.canCommitQualityOnly()) this.commitSelect(undefined)
         })
         this.addChild(this.m_confirmBtn)
 
@@ -667,10 +673,19 @@ export class InventoryDialog extends Dialog {
     }
 
     /** Quick-tap path: record + commit the selection and close. */
-    private commitSelect(name: string): void {
-        if (this.m_recentsKey) recordRecent(this.m_recentsKey, name)
+    private commitSelect(name: string | undefined): void {
+        if (name && this.m_recentsKey) recordRecent(this.m_recentsKey, name)
         this.m_selectedCallBack?.(name, this.m_pickQuality, this.m_pickComparator)
         this.close()
+    }
+
+    /**
+     * Filter pickers (`comparator`) can confirm a quality with no item —
+     * Factorio's quality-only filter. Needs a concrete tier (including Normal);
+     * the leading Any chip leaves quality unset and is not enough on its own.
+     */
+    private canCommitQualityOnly(): boolean {
+        return !!this.m_pickOptions?.comparator && this.m_pickQuality !== undefined
     }
 
     /** Long-press path: hold the item as a pending selection without closing. */
@@ -686,11 +701,11 @@ export class InventoryDialog extends Dialog {
     }
 
     private updatePreviewBar(): void {
-        const active = !!this.m_previewName
+        const active = !!this.m_previewName || this.canCommitQualityOnly()
         if (this.m_confirmBtn) this.m_confirmBtn.visible = active
         if (this.m_pinBtn && this.m_pinText) {
             // The quickbar only holds items, so pinning is for the item selector.
-            const canPin = active && this.m_recentsKey === 'items'
+            const canPin = !!this.m_previewName && this.m_recentsKey === 'items'
             this.m_pinBtn.visible = canPin
             if (canPin) {
                 this.m_pinText.text = G.UI.quickbarPanel.hasItem(

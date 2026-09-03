@@ -202,6 +202,30 @@ function DrawControlFace(
 }
 
 /**
+ * Multicolored "any quality" diamond from the game (`__core__/…/any-quality.png`).
+ * Used by the filter/signal quality picker's leading Any chip — the hollow
+ * stroke we used to draw was a stand-in for this asset. Prefer the dump's
+ * `utilitySprites.any_quality` / `signal-any-quality` path; fall back to the
+ * well-known core filename (present on vanilla-2.0 and space-age packs alike).
+ */
+function CreateAnyQualityBadge(size = 16): Container {
+    const wrap = new Container()
+    wrap.eventMode = 'none'
+    // `any_quality` is on the dump but not always in the typed UtilitySprites.
+    const util = (
+        FD.utilitySprites as { any_quality?: { filename?: string; size?: number } } | undefined
+    )?.any_quality
+    const signal = FD.signals?.['signal-any-quality']
+    const filename = util?.filename ?? signal?.icon ?? '__core__/graphics/icons/any-quality.png'
+    const iconSize = util?.size ?? signal?.icon_size ?? 64
+    const sprite = new Sprite(G.getTexture(filename, 0, 0, iconSize, iconSize))
+    sprite.width = size
+    sprite.height = size
+    wrap.addChild(sprite)
+    return wrap
+}
+
+/**
  * Quality diamond (issue #5 slice 1). Texture from the dump's `icon` when the
  * pack shipped one; otherwise a Pixi diamond tinted with the tier colour so
  * vanilla-2.0 / pre-field dumps still badge. Nothing for omitted/`normal`.
@@ -547,6 +571,7 @@ export default {
     CreateIcon,
     CreateIconWithAmount,
     CreateQualityBadge,
+    CreateAnyQualityBadge,
     CreateRecipe,
     applyTint,
     colorAndAlphaToColorSource,

@@ -36,7 +36,8 @@ export interface ICondition {
 
 export interface ItemFilter {
     index: number
-    name: string
+    /** Omitted with quality set = quality-only (any item of that tier). */
+    name?: string
     quality?: string
     comparator?: ComparatorString
 }
@@ -47,7 +48,8 @@ export interface InventoryWithFilters {
 }
 
 export interface SplitterFilter {
-    name: string
+    /** Omitted with quality set = quality-only (any item of that tier). */
+    name?: string
     quality?: string
     comparator?: ComparatorString
 }

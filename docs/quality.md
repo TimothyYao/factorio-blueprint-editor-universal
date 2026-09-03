@@ -19,6 +19,19 @@ strips quality from the blueprint or export.
 icons; entity-corner overlay; info-panel name + diamond. Fluids stay unbadged.
 Picker chips are icon-only (no labels) so they fit a phone editor.
 
+The leading **Any** chip uses the game's multicolored
+`__core__/graphics/icons/any-quality.png` (`utilitySprites.any_quality` /
+`signal-any-quality`), not a drawn stand-in.
+
+## Filter semantics
+
+- Absent `quality` on a named item = **any quality** (keyless; not the same as
+  `normal` + `=`).
+- **Quality-only** (inserter / splitter): quality set, no item name → any item
+  of that tier (wiki/forum: confirm the quality row without picking an item).
+  Slots and overlays show the tier diamond alone. Logistic requests still need
+  a name.
+
 ## Write path
 
 Opt-in quality row on `InventoryDialog` (Filters, Modules, Recipe, **and

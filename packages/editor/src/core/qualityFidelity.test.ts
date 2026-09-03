@@ -92,6 +92,32 @@ describe.skipIf(!have)('quality fidelity', () => {
         expect((raw(e).filter as SplitterFilter).quality).toBe('rare')
     })
 
+    it('writes quality-only splitter filters without an item name', () => {
+        const e = make('splitter', { output_priority: 'left' })
+        e.filters = [{ index: 1, quality: 'uncommon', comparator: '≥' }]
+        expect(raw(e).filter).toEqual({
+            quality: 'uncommon',
+            comparator: '≥',
+        } satisfies SplitterFilter)
+        expect(e.filters).toEqual([{ index: 1, quality: 'uncommon', comparator: '≥' }])
+    })
+
+    it('writes quality-only inserter filters without an item name', () => {
+        const e = make('fast-inserter')
+        e.filters = [{ index: 1, quality: 'legendary', comparator: '=' }]
+        const filters = raw(e).filters as ItemFilter[]
+        expect(filters).toEqual([{ index: 1, quality: 'legendary', comparator: '=' }])
+        expect(filters[0].name).toBeUndefined()
+    })
+
+    it('reads quality-only splitter filters from imported raw data', () => {
+        const e = make('express-splitter', {
+            filter: { quality: 'epic', comparator: '=' },
+            output_priority: 'right',
+        })
+        expect(e.filters).toEqual([{ index: 1, quality: 'epic', comparator: '=' }])
+    })
+
     it('modules group insert-plans by name and quality', () => {
         const e = make('assembling-machine-2')
         e.modules = [{ name: 'speed-module', quality: 'rare' }, { name: 'speed-module' }]

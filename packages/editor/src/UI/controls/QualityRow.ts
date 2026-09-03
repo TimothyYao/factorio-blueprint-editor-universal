@@ -1,4 +1,4 @@
-import { Container, Graphics } from 'pixi.js'
+import { Container } from 'pixi.js'
 import { ComparatorString } from '../../types'
 import { pickerQualityTiers } from '../../core/quality'
 import { qualityUi } from '../../common/qualityUi'
@@ -111,26 +111,15 @@ export class QualityRow extends Container {
         }
     }
 
-    /** Diamond for a named tier; a hollow mark for the "any" (keyless) chip. */
+    /** Diamond for a named tier; the game's multicolored any-quality icon for Any. */
     private static chip(quality: string | undefined, active: boolean): Button {
         const b = new Button<undefined>(CHIP, CHIP)
         b.active = active
-        const mark = quality ? F.CreateQualityBadge(quality, 16, true) : QualityRow.anyMark()
+        const mark = quality ? F.CreateQualityBadge(quality, 16, true) : F.CreateAnyQualityBadge(16)
         if (mark) {
             mark.pivot.set(8, 8)
             b.content = mark
         }
         return b
-    }
-
-    private static anyMark(): Container {
-        const size = 16
-        const wrap = new Container()
-        wrap.eventMode = 'none'
-        const g = new Graphics()
-            .poly([size / 2, 0, size, size / 2, size / 2, size, 0, size / 2])
-            .stroke({ width: 1.5, color: 0x888888, alignment: 0 })
-        wrap.addChild(g)
-        return wrap
     }
 }
