@@ -149,8 +149,7 @@ export class InventoryDialog extends Dialog {
         pick?: InventoryPickOptions
     ) {
         const showQuality = qualityUi.enabled && !!(pick?.quality || recentsKey === 'items')
-        const qualityBand = showQuality ? QualityRow.H + 8 : 0
-        super(InventoryDialog.computeWidth(itemsFilter, recentsKey), 442 + qualityBand, title)
+        super(InventoryDialog.computeWidth(itemsFilter, recentsKey), 442, title)
 
         this.m_clearCallBack = clear?.onClear
         this.m_commitOnTap = recentsKey === 'modules'
@@ -306,13 +305,15 @@ export class InventoryDialog extends Dialog {
             }
         }
 
+        const qualityBand = showQuality ? QualityRow.H + 6 : 0
+
         const recipePanel = new Container()
-        recipePanel.position.set(0, 442 + qualityBand)
+        recipePanel.position.set(0, 442)
         this.addChild(recipePanel)
 
         const recipeBackground = F.DrawRectangle(
             this.width,
-            78,
+            78 + qualityBand,
             colors.dialog.background.color,
             colors.dialog.background.alpha,
             colors.dialog.background.border
@@ -320,16 +321,8 @@ export class InventoryDialog extends Dialog {
         recipeBackground.position.set(0, 0)
         recipePanel.addChild(recipeBackground)
 
-        this.m_RecipeLabel = new Text({ text: '', style: styles.dialog.label })
-        this.m_RecipeLabel.position.set(12, 10)
-        recipePanel.addChild(this.m_RecipeLabel)
-
-        this.m_RecipeContainer = new Container()
-        this.m_RecipeContainer.position.set(12, 36)
-        recipePanel.addChild(this.m_RecipeContainer)
-
-        // Quality chips in a dedicated row between the item grid and the
-        // recipe strip — the footer grows by qualityBand to make room.
+        // Quality chips sit at the top of the recipe footer, under the
+        // divider. The recipe label + icons shift down to make room.
         if (showQuality) {
             const row = new QualityRow({
                 value: this.m_pickQuality,
@@ -348,16 +341,24 @@ export class InventoryDialog extends Dialog {
                     this.m_pickComparator = c
                 },
             })
-            row.position.set(12, 442 + 4)
-            this.addChild(row)
+            row.position.set(12, 4)
+            recipePanel.addChild(row)
         }
+
+        this.m_RecipeLabel = new Text({ text: '', style: styles.dialog.label })
+        this.m_RecipeLabel.position.set(12, 10 + qualityBand)
+        recipePanel.addChild(this.m_RecipeLabel)
+
+        this.m_RecipeContainer = new Container()
+        this.m_RecipeContainer.position.set(12, 36 + qualityBand)
+        recipePanel.addChild(this.m_RecipeContainer)
 
         // Bottom Confirm / Pin bar (top-right of the recipe strip), revealed only
         // while an item is being long-press previewed.
         const pin = InventoryDialog.barButton('Pin', 0x2a5a7a)
         this.m_pinBtn = pin.container
         this.m_pinText = pin.text
-        this.m_pinBtn.position.set(this.width - 164, 446 + qualityBand)
+        this.m_pinBtn.position.set(this.width - 164, 446)
         this.m_pinBtn.on('pointerup', e => {
             e.stopPropagation()
             const name = this.m_previewName
@@ -377,7 +378,7 @@ export class InventoryDialog extends Dialog {
 
         const confirm = InventoryDialog.barButton('✓ Confirm', 0x2f7d32)
         this.m_confirmBtn = confirm.container
-        this.m_confirmBtn.position.set(this.width - 84, 446 + qualityBand)
+        this.m_confirmBtn.position.set(this.width - 84, 446)
         this.m_confirmBtn.on('pointerup', e => {
             e.stopPropagation()
             if (this.m_previewName) this.commitSelect(this.m_previewName)
