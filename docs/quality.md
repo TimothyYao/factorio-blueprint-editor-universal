@@ -36,6 +36,12 @@ See `rate-calculator.md`: crafting speed × (1 + 0.3 × entity level); positive
 module effects scale the same; beacon `distribution_effectivity` +=
 `distribution_effectivity_bonus_per_quality_level` × beacon level.
 
+Inserter **rotation speed** uses the same multiplier (`qualityInserterSpeedMul`
+— wiki "+30% inserter rotation speed" / `QualityPrototype::inserter_speed_multiplier`).
+The entity-info panel applies it before the container↔container / to-belt
+throughput formulas, so a Legendary fast inserter reads 18 items/s instead of
+the Normal 7.2.
+
 Quality-module first-roll chance is `effect.quality × next_probability`
 (`0.25 × 0.1` = 2.5% for Q3 in 2.0 dumps), then × (1 + 0.3 × module
 level), floored to 0.1% — wiki legendary Q3 is **+6.2%**, not 25% or

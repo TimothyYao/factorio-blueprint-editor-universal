@@ -8,6 +8,7 @@ import {
     qualityColorHex,
     qualityCraftingSpeedMul,
     qualityEffectChance,
+    qualityInserterSpeedMul,
     qualityRollDistribution,
     qualityDisplayName,
     qualityLevel,
@@ -58,6 +59,19 @@ describe('builtin quality tiers', () => {
         expect(qualityCraftingSpeedMul('legendary')).toBeCloseTo(2.5)
         expect(scalePositiveEffect(0.2, 'legendary')).toBeCloseTo(0.5)
         expect(scalePositiveEffect(-0.05, 'legendary')).toBe(-0.05)
+    })
+
+    it('scales inserter rotation speed by the same 0.3 × level (wiki +30%/tier)', () => {
+        // Fast inserter base 864°/s → uncommon 1123 / rare 1382 / epic 1642 /
+        // legendary 2160 on the Quality wiki; those ratios are exactly 1.3 /
+        // 1.6 / 1.9 / 2.5.
+        expect(qualityInserterSpeedMul(undefined)).toBe(1)
+        expect(qualityInserterSpeedMul('normal')).toBe(1)
+        expect(qualityInserterSpeedMul('uncommon')).toBeCloseTo(1.3)
+        expect(qualityInserterSpeedMul('rare')).toBeCloseTo(1.6)
+        expect(qualityInserterSpeedMul('epic')).toBeCloseTo(1.9)
+        expect(qualityInserterSpeedMul('legendary')).toBeCloseTo(2.5)
+        expect(qualityInserterSpeedMul('legendary')).toBe(qualityCraftingSpeedMul('legendary'))
     })
 
     it('lists picker tiers without quality-unknown', () => {
