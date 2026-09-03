@@ -146,9 +146,9 @@ describe('prototype vectors (space-age pack)', () => {
             // show the contents — but they still ship `icons_positioning` so
             // alt-mode icons land on the building. We draw those icons anyway
             // (OverlayContainer), same treatment as recipe icons.
-            const beacon = FD.entities['beacon'] as {
+            const beacon = FD.entities['beacon'] as unknown as {
                 graphics_set?: { module_icons_suppressed?: boolean }
-                icons_positioning?: { inventory_index: number }[]
+                icons_positioning?: readonly { inventory_index: number }[]
             }
             expect(beacon.graphics_set?.module_icons_suppressed).toBe(true)
             expect(
