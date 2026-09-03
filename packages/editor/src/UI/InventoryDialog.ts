@@ -148,9 +148,8 @@ export class InventoryDialog extends Dialog {
         clear?: SlotClear,
         pick?: InventoryPickOptions
     ) {
-        const qualityBand =
-            qualityUi.enabled && (pick?.quality || recentsKey === 'items') ? QualityRow.H + 8 : 0
-        super(InventoryDialog.computeWidth(itemsFilter, recentsKey), 442 + qualityBand, title)
+        const showQuality = qualityUi.enabled && !!(pick?.quality || recentsKey === 'items')
+        super(InventoryDialog.computeWidth(itemsFilter, recentsKey), 442, title)
 
         this.m_clearCallBack = clear?.onClear
         this.m_commitOnTap = recentsKey === 'modules'
@@ -307,7 +306,7 @@ export class InventoryDialog extends Dialog {
         }
 
         const recipePanel = new Container()
-        recipePanel.position.set(0, 442 + qualityBand)
+        recipePanel.position.set(0, 442)
         this.addChild(recipePanel)
 
         const recipeBackground = F.DrawRectangle(
@@ -328,12 +327,39 @@ export class InventoryDialog extends Dialog {
         this.m_RecipeContainer.position.set(12, 36)
         recipePanel.addChild(this.m_RecipeContainer)
 
+        // Quality chips live in this footer (under the dialog divider), not in
+        // the item grid — that empty strip is the recipe/preview band.
+        if (showQuality) {
+            const row = new QualityRow({
+                value: this.m_pickQuality,
+                includeAny:
+                    this.m_recentsKey !== 'modules' &&
+                    this.m_recentsKey !== 'recipes' &&
+                    this.m_recentsKey !== 'items',
+                showComparator: !!pick?.comparator,
+                comparator: (this.m_pickComparator as ComparatorString) ?? '=',
+                onChange: q => {
+                    this.m_pickQuality = q
+                    this.retintItemButtons()
+                    this.updatePreviewBar()
+                },
+                onComparator: c => {
+                    this.m_pickComparator = c
+                },
+            })
+            row.position.set(12, 10)
+            recipePanel.addChild(row)
+            const inset = row.width + 8
+            this.m_RecipeLabel.position.set(12 + inset, 10)
+            this.m_RecipeContainer.position.set(12 + inset, 36)
+        }
+
         // Bottom Confirm / Pin bar (top-right of the recipe strip), revealed only
         // while an item is being long-press previewed.
         const pin = InventoryDialog.barButton('Pin', 0x2a5a7a)
         this.m_pinBtn = pin.container
         this.m_pinText = pin.text
-        this.m_pinBtn.position.set(this.width - 164, 446 + qualityBand)
+        this.m_pinBtn.position.set(this.width - 164, 446)
         this.m_pinBtn.on('pointerup', e => {
             e.stopPropagation()
             const name = this.m_previewName
@@ -353,36 +379,12 @@ export class InventoryDialog extends Dialog {
 
         const confirm = InventoryDialog.barButton('✓ Confirm', 0x2f7d32)
         this.m_confirmBtn = confirm.container
-        this.m_confirmBtn.position.set(this.width - 84, 446 + qualityBand)
+        this.m_confirmBtn.position.set(this.width - 84, 446)
         this.m_confirmBtn.on('pointerup', e => {
             e.stopPropagation()
             if (this.m_previewName) this.commitSelect(this.m_previewName)
         })
         this.addChild(this.m_confirmBtn)
-
-        if (qualityBand > 0) {
-            const row = new QualityRow({
-                value: this.m_pickQuality,
-                includeAny:
-                    this.m_recentsKey !== 'modules' &&
-                    this.m_recentsKey !== 'recipes' &&
-                    this.m_recentsKey !== 'items',
-                showComparator: !!pick?.comparator,
-                comparator: (this.m_pickComparator as ComparatorString) ?? '=',
-                onChange: q => {
-                    this.m_pickQuality = q
-                    this.retintItemButtons()
-                    this.updatePreviewBar()
-                },
-                onComparator: c => {
-                    this.m_pickComparator = c
-                },
-            })
-            // Sit in the extra band below the item grid, not on the last row
-            // (y=410 overlapped the 8th row and stole last-item clicks).
-            row.position.set(12, 442)
-            this.addChild(row)
-        }
 
         // The escape hatch, shown whenever this selector was opened *from a slot*.
         //
