@@ -20,7 +20,8 @@ import { getIngredientAmount, getProductAmountWithProductivity } from '../core/r
 import { Entity } from '../core/Entity'
 import { createCircuitNetworkBadges } from './circuitNetworkBadges'
 import F from './controls/functions'
-import { qualityDisplayName } from '../core/quality'
+import { qualityCraftingSpeedMul, qualityDisplayName } from '../core/quality'
+import { qualityUi } from '../common/qualityUi'
 import { Panel } from './controls/Panel'
 import { fitToWidthScale } from './quickbarLayout'
 import { styles } from './style'
@@ -102,6 +103,7 @@ export interface EntityInfoData {
 
 function entityDisplayName(entity: Entity): string {
     const base = String(FD.entities[entity.name].localised_name)
+    if (!qualityUi.enabled) return base
     const q = qualityDisplayName(entity.quality)
     return q ? `${base} (${q})` : base
 }
@@ -187,7 +189,8 @@ export class EntityInfoPanel extends Panel {
                 findBeaconsReaching(entity)
             )
             const machineData = entity.entityData as CraftingMachinePrototype
-            const newCraftingSpeed = machineData.crafting_speed * (1 + speed)
+            const newCraftingSpeed =
+                machineData.crafting_speed * qualityCraftingSpeedMul(entity.quality) * (1 + speed)
             const newEnergyUsage =
                 parseInt(machineData.energy_usage.slice(0, -2)) * (1 + consumption)
 
@@ -542,6 +545,7 @@ function findBeaconsReaching(entity: Entity): BeaconSource[] {
         .map(beacon => ({
             prototype: beacon.entityData as BeaconPrototype,
             modules: resolveModuleNames(beacon.modules),
+            quality: beacon.quality,
             footprint: { position: beacon.position, size: beacon.size },
         }))
         .filter(beacon => beaconReaches(beacon, machine))
@@ -567,7 +571,8 @@ export function buildEntityInfo(entity: Entity): EntityInfoData {
             findBeaconsReaching(entity)
         )
         const machineData = entity.entityData as CraftingMachinePrototype
-        const newCraftingSpeed = machineData.crafting_speed * (1 + speed)
+        const newCraftingSpeed =
+            machineData.crafting_speed * qualityCraftingSpeedMul(entity.quality) * (1 + speed)
         const newEnergyUsage = parseInt(machineData.energy_usage.slice(0, -2)) * (1 + consumption)
         const fmt = (n: number): string =>
             ` (${Math.sign(n) === 1 ? '+' : '-'}${roundToTwo(Math.abs(n) * 100)}%)`

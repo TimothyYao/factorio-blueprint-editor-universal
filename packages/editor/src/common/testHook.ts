@@ -1,5 +1,7 @@
 import G from './globals'
 import { inputMode, type InputMode } from './input'
+import { qualityUi } from './qualityUi'
+import { buildEntityInfo } from '../UI/EntityInfoPanel'
 import { EditorMode } from '../containers/BlueprintContainer'
 import { PaintEntityContainer } from '../containers/PaintEntityContainer'
 import { PaintBlueprintContainer } from '../containers/PaintBlueprintContainer'
@@ -378,6 +380,13 @@ export interface FbeTestHook {
      * without driving the assign flow (which is not what those tests are about).
      */
     quickbarAssign: (name?: string) => void
+    /** Quality UI gate (`fbe:quality`). */
+    qualityEnabled: () => boolean
+    setQualityEnabled: (enabled: boolean) => void
+    entityQuality: (name: string) => string | null
+    setEntityQuality: (name: string, quality: string | undefined) => boolean
+    entityInfoName: (name: string) => string | null
+    serializedEntity: (name: string) => Record<string, unknown> | null
 }
 
 /** Approximate per-channel match against a target colour (tolerant of AA edges). */
@@ -623,6 +632,25 @@ export function installTestHook(win: Window = window): void {
         },
         quickbarAssign: (name = 'fast-inserter') => {
             G.UI.quickbarPanel.slotAt(0)?.assignItem(name)
+        },
+        qualityEnabled: () => qualityUi.enabled,
+        setQualityEnabled: enabled => {
+            qualityUi.enabled = enabled
+        },
+        entityQuality: name => findEntity(name)?.quality ?? null,
+        setEntityQuality: (name, quality) => {
+            const e = findEntity(name)
+            if (!e) return false
+            e.quality = quality
+            return true
+        },
+        entityInfoName: name => {
+            const e = findEntity(name)
+            return e ? buildEntityInfo(e).name : null
+        },
+        serializedEntity: name => {
+            const e = findEntity(name)
+            return e ? (JSON.parse(JSON.stringify(e.rawEntity)) as Record<string, unknown>) : null
         },
     }
     ;(win as unknown as Record<string, unknown>)[TEST_HOOK_KEY] = hook

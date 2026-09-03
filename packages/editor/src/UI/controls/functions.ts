@@ -9,6 +9,7 @@ import {
 } from 'pixi.js'
 import FD, { ColorWithAlpha, getColor, getRecipeIconSourceName } from '../../core/factorioData'
 import { qualityColorHex, qualityShowsBadge, resolveQuality } from '../../core/quality'
+import { qualityUi } from '../../common/qualityUi'
 import {
     abbreviateAmount,
     formatProductAmount,
@@ -206,7 +207,7 @@ function DrawControlFace(
  * vanilla-2.0 / pre-field dumps still badge. Nothing for omitted/`normal`.
  */
 function CreateQualityBadge(quality: string | undefined, size = 14): Container | undefined {
-    if (!qualityShowsBadge(quality)) return undefined
+    if (!qualityUi.enabled || !qualityShowsBadge(quality)) return undefined
     const q = resolveQuality(quality)
     const wrap = new Container()
     wrap.eventMode = 'none'

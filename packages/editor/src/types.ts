@@ -21,6 +21,7 @@ export type WireColor = 'copper' | 'red' | 'green'
 export interface ISignal {
     name?: string
     type?: SignalType
+    quality?: string
 }
 
 /** If not specified, defaults to "<" */

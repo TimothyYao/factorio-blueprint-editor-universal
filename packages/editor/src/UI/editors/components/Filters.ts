@@ -6,6 +6,7 @@ import F from '../../controls/functions'
 import { Slot } from '../../controls/Slot'
 import { bindSlotGestures } from '../../controls/gestures'
 import { Entity, EntityEvents, IFilter } from '../../../core/Entity'
+import { ComparatorString } from '../../../types'
 
 /** Module Slots for Entity */
 export class Filters extends Container<Slot<number>> {
@@ -241,8 +242,15 @@ export class Filters extends Container<Slot<number>> {
         const inv = G.UI.createInventory(
             'Select Filter',
             this.m_Entity.acceptedFilters,
-            name => {
+            (name, quality, comparator) => {
                 this.m_Filters[index].name = name
+                if (quality) {
+                    this.m_Filters[index].quality = quality
+                    this.m_Filters[index].comparator = (comparator as ComparatorString) || '='
+                } else {
+                    delete this.m_Filters[index].quality
+                    delete this.m_Filters[index].comparator
+                }
                 if (this.m_Amount) {
                     this.m_Filters[index].count = FD.items[name].stack_size
                 }
@@ -255,7 +263,13 @@ export class Filters extends Container<Slot<number>> {
             undefined,
             // "✕ Clear" on a filled slot, "✕ Cancel" on an empty one — either way
             // it leaves the slot empty and closes.
-            { onClear: () => this.clear(index), filled: this.m_Filters[index].name !== undefined }
+            { onClear: () => this.clear(index), filled: this.m_Filters[index].name !== undefined },
+            {
+                quality: true,
+                comparator: true,
+                initialQuality: this.m_Filters[index].quality,
+                initialComparator: this.m_Filters[index].comparator,
+            }
         )
         inv.on('close', () => this.emit('selection-ended'))
     }
@@ -263,6 +277,8 @@ export class Filters extends Container<Slot<number>> {
     /** Long-press / right-click (or the picker's ✕ Clear): empty the slot. */
     private clear(index: number): void {
         this.m_Filters[index].name = undefined
+        delete this.m_Filters[index].quality
+        delete this.m_Filters[index].comparator
         this.m_Entity.filters = this.m_Filters
         if (this.m_Amount) {
             this.emit('selected', -1, 0)

@@ -2,6 +2,7 @@
 
 > Tracking issue: [#87](https://github.com/trisiak/factorio-blueprint-editor/issues/87)
 > — its checklist mirrors the backlog below; keep the two in sync.
+> Quality multipliers: [`quality.md`](./quality.md) / issue #5.
 
 A blueprint-wide production/consumption readout in the spirit of raiguard's
 [RateCalculator](https://mods.factorio.com/mod/RateCalculator) mod: for every
@@ -31,9 +32,13 @@ editor reconstructs those bonuses from prototype data:
   `core/beaconEffects.ts`; supply-area semantics where a shared edge is a
   miss), clamps the way the engine does (speed/consumption ≥ −80%,
   productivity ≥ 0), and turns recipe amounts into per-second rates:
-  `rate = amount × crafting_speed × (1 + speed) / energy_required`, products
-  additionally scaled by productivity when the recipe allows it (honouring the
-  2.0 catalyst rule via `core/recipeAmounts.ts`).
+  `rate = amount × crafting_speed × (1 + 0.3 × entity quality level) × (1 + speed) / energy_required`,
+  products additionally scaled by productivity when the recipe allows it
+  (honouring the 2.0 catalyst rule via `core/recipeAmounts.ts`). Positive
+  module effects scale by `(1 + 0.3 × module quality level)`; negatives are
+  unchanged. Beacon transmission uses
+  `distribution_effectivity + distribution_effectivity_bonus_per_quality_level × beacon level`
+  (vanilla 1.5 → 2.5 legendary).
 - **`UI/RatesPanel.ts`** — the PixiJS panel. Materials are bucketed the way
   the mod presents them: **products** (only produced), **intermediates**
   (produced _and_ consumed — shown as a colored net rate with its breakdown),

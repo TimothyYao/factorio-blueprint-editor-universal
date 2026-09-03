@@ -83,14 +83,15 @@ export class Modules extends Container<Slot<number>> {
         G.UI.createInventory(
             'Select Module',
             this.m_Entity.acceptedModules,
-            name => {
-                this.m_Modules[index] = { name }
+            (name, quality) => {
+                this.m_Modules[index] = quality ? { name, quality } : { name }
                 this.m_Entity.modules = this.m_Modules
             },
             'modules',
             // "✕ Clear" on a filled slot, "✕ Cancel" on an empty one — either way
             // it leaves the slot empty and closes.
-            { onClear: () => this.clear(index), filled: this.m_Modules[index] !== undefined }
+            { onClear: () => this.clear(index), filled: this.m_Modules[index] !== undefined },
+            { quality: true, initialQuality: this.m_Modules[index]?.quality }
         )
     }
 

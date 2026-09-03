@@ -372,6 +372,12 @@ export class Entity extends EventEmitter<EntityEvents> {
             .onDone(r => this.emit('recipe', r))
             .commit()
 
+        if (recipe === undefined) {
+            this.m_BP.history
+                .updateValue(this.m_rawEntity, 'recipe_quality', undefined, 'Change recipe quality')
+                .commit()
+        }
+
         // Some modules on the entity may not be compatible with the new selected recipe, filter those out
         if (recipe !== undefined) {
             this.modules = this.modules.map(m => {
@@ -383,6 +389,23 @@ export class Entity extends EventEmitter<EntityEvents> {
         }
 
         this.m_BP.history.commitTransaction()
+    }
+
+    /**
+     * Quality of the set recipe (`recipe_quality`). Omitted / `normal` is the
+     * default. Independent of the *entity's* quality.
+     */
+    public get recipeQuality(): string | undefined {
+        const q = this.m_rawEntity.recipe_quality
+        return !q || q === 'normal' ? undefined : q
+    }
+    public set recipeQuality(value: string | undefined) {
+        const next = !value || value === 'normal' ? undefined : value
+        if ((this.m_rawEntity.recipe_quality || undefined) === next) return
+        this.m_BP.history
+            .updateValue(this.m_rawEntity, 'recipe_quality', next, 'Change recipe quality')
+            .onDone(() => this.emit('recipe', this.recipe))
+            .commit()
     }
 
     /** Recipes this entity can accept */
@@ -1182,6 +1205,42 @@ export class Entity extends EventEmitter<EntityEvents> {
     public set selectorSelectMax(selectMax: boolean) {
         this.mutateControlBehavior(cb => {
             cb.select_max = selectMax
+        }, 'Edit selector combinator')
+    }
+
+    public get selectorQualityFilter(): { quality?: string; comparator?: ComparatorString } {
+        return this.m_rawEntity.control_behavior?.quality_filter ?? {}
+    }
+    public set selectorQualityFilter(v: { quality?: string; comparator?: ComparatorString }) {
+        this.mutateControlBehavior(cb => {
+            cb.quality_filter = v.quality || v.comparator ? v : undefined
+        }, 'Edit selector combinator')
+    }
+
+    public get selectorQualityFromSignal(): boolean {
+        return !!this.m_rawEntity.control_behavior?.select_quality_from_signal
+    }
+    public set selectorQualityFromSignal(v: boolean) {
+        this.mutateControlBehavior(cb => {
+            cb.select_quality_from_signal = v || undefined
+        }, 'Edit selector combinator')
+    }
+
+    public get selectorQualitySourceStatic(): string | undefined {
+        return this.m_rawEntity.control_behavior?.quality_source_static
+    }
+    public set selectorQualitySourceStatic(v: string | undefined) {
+        this.mutateControlBehavior(cb => {
+            cb.quality_source_static = v
+        }, 'Edit selector combinator')
+    }
+
+    public get selectorQualityDestSignal(): ISignal | undefined {
+        return this.m_rawEntity.control_behavior?.quality_destination_signal
+    }
+    public set selectorQualityDestSignal(v: ISignal | undefined) {
+        this.mutateControlBehavior(cb => {
+            cb.quality_destination_signal = v
         }, 'Edit selector combinator')
     }
 

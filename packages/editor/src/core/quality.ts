@@ -60,6 +60,20 @@ export function qualityLevel(id: string | undefined): number {
     return BUILTIN_QUALITY_TIERS[id]?.level ?? 0
 }
 
+/** Crafting-speed multiplier from entity quality: 1 + 0.3 × level. */
+export function qualityCraftingSpeedMul(quality: string | undefined): number {
+    return 1 + 0.3 * qualityLevel(quality)
+}
+
+/**
+ * Positive module effects scale with the *module's* quality; negatives stay
+ * as written (FFF-375).
+ */
+export function scalePositiveEffect(value: number, quality: string | undefined): number {
+    if (value <= 0) return value
+    return value * (1 + 0.3 * qualityLevel(quality))
+}
+
 /**
  * Resolved tier for badges / pickers. Dump wins (icon, color, level, locale);
  * then the built-in five; unknown names get a neutral placeholder so a modded
@@ -101,6 +115,30 @@ export function resolveQuality(
  */
 export function qualityShowsBadge(quality: string | undefined): boolean {
     return !!quality && quality !== 'normal'
+}
+
+const HIDDEN_PICKER_TIERS = new Set(['quality-unknown'])
+
+/**
+ * Tiers the quality picker should offer. Dump order by `level` when the pack
+ * shipped `qualities`; otherwise the built-in five. `quality-unknown` is a
+ * dump sentinel, not a user-facing tier.
+ */
+export function pickerQualityTiers(): { id: string; label: string }[] {
+    const dumped = FD.qualities
+    const names =
+        dumped && Object.keys(dumped).length > 0
+            ? Object.values(dumped)
+                  .filter(q => q?.name && !HIDDEN_PICKER_TIERS.has(q.name))
+                  .sort((a, b) => (a.level ?? 0) - (b.level ?? 0))
+                  .map(q => q.name)
+            : Object.keys(BUILTIN_QUALITY_TIERS)
+    return names.map(id => {
+        const q = resolveQuality(id)
+        const raw = q?.localised_name
+        const label = typeof raw === 'string' ? raw : id
+        return { id, label }
+    })
 }
 
 /** Human label for the info panel (`Legendary`), or undefined when no badge. */

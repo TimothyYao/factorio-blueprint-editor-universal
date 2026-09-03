@@ -88,13 +88,7 @@ export class EntityContainer {
         }
 
         const onQualityChange = (): void => {
-            // Always rebuild: a quality-only overlay (no recipe/filters) must
-            // appear when quality is set and disappear when it is cleared, even
-            // on entity types the type-gated redrawEntityInfo would skip.
-            if (this.entityInfo !== undefined) {
-                this.entityInfo.destroy()
-            }
-            this.entityInfo = G.BPC.overlayContainer.createEntityInfo(this.m_Entity, this.position)
+            this.rebuildOverlay()
             G.UI.updateEntityInfoPanel(this.m_Entity)
         }
 
@@ -303,6 +297,21 @@ export class EntityContainer {
             this.destroyUndergroundLine()
             this.createUndergroundLine()
         }
+    }
+
+    /** Rebuild every placed entity's overlay (quality-UI toggle). */
+    public static refreshAllOverlays(): void {
+        for (const c of EntityContainer.mappings.values()) {
+            c.rebuildOverlay()
+        }
+        G.UI.updateEntityInfoPanel(G.BPC.hoverContainer?.entity)
+    }
+
+    private rebuildOverlay(): void {
+        if (this.entityInfo !== undefined) {
+            this.entityInfo.destroy()
+        }
+        this.entityInfo = G.BPC.overlayContainer.createEntityInfo(this.m_Entity, this.position)
     }
 
     private redrawEntityInfo(): void {

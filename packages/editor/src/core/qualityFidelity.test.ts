@@ -141,4 +141,13 @@ describe.skipIf(!have)('quality fidelity', () => {
         expect((ins?.filters as ItemFilter[])[0].quality).toBe('uncommon')
         expect((spl?.filter as SplitterFilter).quality).toBe('epic')
     })
+
+    it('types recipe_quality independently of entity quality', () => {
+        const e = make('assembling-machine-2', { recipe: 'iron-gear-wheel' })
+        e.recipeQuality = 'epic'
+        expect(e.recipeQuality).toBe('epic')
+        expect(raw(e).recipe_quality).toBe('epic')
+        e.recipe = undefined
+        expect(raw(e).recipe_quality).toBeUndefined()
+    })
 })

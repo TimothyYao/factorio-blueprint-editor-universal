@@ -15,14 +15,22 @@ export class PaintEntityContainer extends PaintContainer {
     private directionType: DirectionType
     private direction: number
     private mirrored: boolean
+    private readonly quality: string | undefined
     /** This is only a reference */
     private undergroundLine: Container
 
-    public constructor(bpc: BlueprintContainer, name: string, direction: number, mirror = false) {
+    public constructor(
+        bpc: BlueprintContainer,
+        name: string,
+        direction: number,
+        mirror = false,
+        quality?: string
+    ) {
         super(bpc, name)
 
         this.direction = direction
         this.mirrored = mirror
+        this.quality = quality && quality !== 'normal' ? quality : undefined
         this.directionType = FD.entities[name].type === 'loader' ? 'output' : 'input'
 
         this.visualizationArea = this.bpc.underlayContainer.create(this.name, this.position)
@@ -206,6 +214,7 @@ export class PaintEntityContainer extends PaintContainer {
                     name: this.name,
                     position: { x: 0, y: 0 },
                     direction,
+                    quality: this.quality,
                     mirror: this.mirrored || undefined,
                     type:
                         FD.entities[this.name].type === 'underground-belt' ||
@@ -299,6 +308,7 @@ export class PaintEntityContainer extends PaintContainer {
                     name: this.name,
                     position,
                     direction,
+                    quality: this.quality,
                     type:
                         fd.type === 'underground-belt' || fd.type === 'loader'
                             ? this.directionType

@@ -144,7 +144,7 @@ export class OverlayContainer extends Container {
             const shift = vectorToPoint(spec.shift) ?? { x: 0, y: 0 }
             const scale = spec.scale || 1
             const recipeInfo = new Container()
-            createIconWithBackground(recipeInfo, entity.recipe)
+            createIconWithBackground(recipeInfo, entity.recipe, undefined, entity.recipeQuality)
             recipeInfo.scale.set(scale)
             // shift is entity-local; rotate + mirror so the icon stays on the
             // building (the glyph itself is not flipX'd — it must stay readable).
