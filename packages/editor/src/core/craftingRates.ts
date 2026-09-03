@@ -6,7 +6,7 @@ import {
 } from 'factorio:prototype'
 import { IPoint } from '../types'
 import FD, { getModule, isCraftingMachine } from './factorioData'
-import { beaconEffectMultiplier } from './beaconEffects'
+import { beaconEffectMultiplier, beaconSupplyAreaDistance } from './beaconEffects'
 import { getIngredientAmount, getProductAmountWithProductivity } from './recipeAmounts'
 import type { IModuleSlot } from './Entity'
 import {
@@ -68,7 +68,7 @@ export type ModuleInput = ModulePrototype | ResolvedModule
 export interface BeaconSource {
     prototype: BeaconPrototype
     modules: ModuleInput[]
-    /** Beacon entity quality — scales `distribution_effectivity`. */
+    /** Beacon entity quality — scales transmission and supply-area distance. */
     quality?: string
     footprint: Footprint
 }
@@ -94,14 +94,16 @@ function asResolved(module: ModuleInput): ResolvedModule {
 
 /**
  * Whether `beacon`'s supply area reaches `machine`. The supply area is the
- * beacon's own footprint grown by `supply_area_distance` on every side; a
- * shared edge is a *miss* (collision boxes sit strictly inside the tile grid,
- * so an edge-adjacent machine is out of range) — the same strict-inequality
- * semantics as PixiJS's `Rectangle.intersects`, which the entity info panel
- * used before this was extracted.
+ * beacon's own footprint grown by `beaconSupplyAreaDistance` on every side
+ * (quality adds `beacon_supply_area_distance_bonus`, defaulting to the
+ * quality level — see beaconEffects.ts); a shared edge is a *miss*
+ * (collision boxes sit strictly inside the tile grid, so an edge-adjacent
+ * machine is out of range) — the same strict-inequality semantics as
+ * PixiJS's `Rectangle.intersects`, which the entity info panel used before
+ * this was extracted.
  */
 export function beaconReaches(beacon: BeaconSource, machine: Footprint): boolean {
-    const distance = beacon.prototype.supply_area_distance ?? 0
+    const distance = beaconSupplyAreaDistance(beacon.prototype, beacon.quality)
     const reachX = distance + beacon.footprint.size.x / 2 + machine.size.x / 2
     const reachY = distance + beacon.footprint.size.y / 2 + machine.size.y / 2
     const dx = Math.abs(machine.position.x - beacon.footprint.position.x)

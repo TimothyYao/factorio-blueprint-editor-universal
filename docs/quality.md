@@ -43,6 +43,15 @@ level), floored to 0.1% — wiki legendary Q3 is **+6.2%**, not 25% or
 Rolls then follow the wiki ladder: stay `1−Q`, +1 `Q×0.9`, +2 `Q×0.09`,
 +3 `Q×0.009`, legendary tail `Q×0.001`.
 
+Beacon **supply area** grows with the same +1 tile per quality level the
+[Quality wiki](https://wiki.factorio.com/Quality) lists for electric poles
+(`QualityPrototype::beacon_supply_area_distance_bonus`, default
+`clamp(level, 0, 64)`). A vanilla 3×3 / distance-3 beacon is 9×9 at Normal
+and 19×19 at Legendary. The hover/paint aura and the rate maths
+(`beaconReaches`) share that helper so a machine just outside the Normal
+9×9 is counted once the beacon is Rare or better. A pack that dumps
+`quality_affects_supply_area_distance: false` keeps the flat wiki 9×9.
+
 ## Slices
 
 0. Fidelity — typed writes, no drop

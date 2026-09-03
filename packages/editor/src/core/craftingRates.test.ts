@@ -177,6 +177,16 @@ describe('beaconReaches', () => {
             beaconReaches(beaconAt(8, 8, []), { position: { x: 0, y: 0 }, size: { x: 3, y: 3 } })
         ).toBe(false)
     })
+
+    it('grows reach with beacon quality (legendary covers a machine a normal beacon misses)', () => {
+        // Centers 7 tiles apart: normal reach is 6 (miss), legendary reach is
+        // 8 + 1.5 + 1.5 = 11 (hit). Same footprint, only quality changes.
+        const machine = { position: { x: 0, y: 0 }, size: { x: 3, y: 3 } }
+        const normal = { ...beaconAt(7, 0, []), quality: undefined }
+        const legendary = { ...beaconAt(7, 0, []), quality: 'legendary' }
+        expect(beaconReaches(normal, machine)).toBe(false)
+        expect(beaconReaches(legendary, machine)).toBe(true)
+    })
 })
 
 describe('craftingMachineRates', () => {
@@ -269,6 +279,16 @@ describe('aggregateRates', () => {
         const { rates } = aggregateRates(machines, beacons)
         // Boosted: 0.75 × (1 + 0.6) / 0.5 × 2 = 4.8/s; plain: 3/s.
         expect(rates.get('copper-cable').production).toBeCloseTo(4.8 + 3)
+    })
+
+    it('lets a legendary beacon boost a machine outside the normal 9×9', () => {
+        // Same layout as the quality-reach test: machine at 0, beacon at 7.
+        // Normal quality misses; legendary hits and transmits 2 × 0.2 × 1.5.
+        const machines = [machine(asm2, copperCable, 0, 0)]
+        const beacons = [{ ...beaconAt(7, 0, [speedModule, speedModule]), quality: 'legendary' }]
+        const { rates } = aggregateRates(machines, beacons)
+        // 0.75 × (1 + 0.6) / 0.5 × 2 = 4.8/s
+        expect(rates.get('copper-cable').production).toBeCloseTo(4.8)
     })
 })
 

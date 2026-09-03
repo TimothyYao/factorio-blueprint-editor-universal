@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
       - run: npm install --legacy-peer-deps
       - run: npm run lint
 
@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
       - run: npm install --legacy-peer-deps
       # The editor-routing audit (editorRouting.test.ts, the #28 ratchet) reads
       # each pack's data.json, which is no longer committed — fetch the JSON
@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
       - run: npm install --legacy-peer-deps
       - run: npm run type-check
 
@@ -63,7 +63,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
       - run: npm install --legacy-peer-deps
       - run: npm run format
 
@@ -85,7 +85,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
       - run: npm install --legacy-peer-deps
       # Browser + OS deps for the Playwright chromium projects. The webServer in
       # playwright.config builds the site and serves it on :8080 automatically.

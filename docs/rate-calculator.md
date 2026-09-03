@@ -31,8 +31,10 @@ editor reconstructs those bonuses from prototype data:
   `craftingRates.test.ts`): sums a machine's own module effects with each
   in-range beacon's transmitted effects (2.0 profile falloff via
   `core/beaconEffects.ts`; supply-area semantics where a shared edge is a
-  miss), clamps the way the engine does (speed/consumption ≥ −80%,
-  productivity ≥ 0), and turns recipe amounts into per-second rates:
+  miss, with `beaconSupplyAreaDistance` growing +1 tile per quality
+  level — legendary 3×3 → 19×19), clamps the way the engine does
+  (speed/consumption ≥ −80%, productivity ≥ 0), and turns recipe amounts
+  into per-second rates:
   `rate = amount × crafting_speed × (1 + 0.3 × entity quality level) × (1 + speed) / energy_required`,
   products additionally scaled by productivity when the recipe allows it
   (honouring the 2.0 catalyst rule via `core/recipeAmounts.ts`). Positive
