@@ -33,8 +33,12 @@ export function initEntityInfoSheet(): void {
             icon.textContent = stack.name
         }
         const amount = document.createElement('span')
-        const shown = Math.round(stack.amount * rateUnit.multiplier * 1000) / 1000
-        amount.textContent = String(shown)
+        // Keep 3 decimals for small quality-split fractions (legendary at /s
+        // is often < 0.001 before the /h multiplier recovers it).
+        const scaled = stack.amount * rateUnit.multiplier
+        const abs = Math.abs(scaled)
+        const digits = abs > 0 && abs < 10 ? 3 : abs < 100 ? 1 : 0
+        amount.textContent = String(Number(scaled.toFixed(digits)))
         wrap.append(wrapIconWithQuality(icon, stack.quality), amount)
         return wrap
     }

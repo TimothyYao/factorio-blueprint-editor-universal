@@ -21,16 +21,16 @@ import { getIngredientAmount, getProductAmountWithProductivity } from '../core/r
 import { Entity } from '../core/Entity'
 import { createCircuitNetworkBadges } from './circuitNetworkBadges'
 import F from './controls/functions'
-import {
-    qualityCraftingSpeedMul,
-    qualityDisplayName,
-    qualityRollDistribution,
-} from '../core/quality'
+import { qualityCraftingSpeedMul, qualityDisplayName } from '../core/quality'
 import { qualityUi } from '../common/qualityUi'
 import { ratePeriodLabel, rateUnit } from '../common/rateUnit'
 import { Panel } from './controls/Panel'
 import { fitToWidthScale } from './quickbarLayout'
 import { styles } from './style'
+import { EntityInfoStack, qualitySplitResults, withRecipeQuality } from './entityInfoQuality'
+
+export type { EntityInfoStack }
+export { qualitySplitResults, withRecipeQuality } from './entityInfoQuality'
 
 function template(strings: TemplateStringsArray, ...keys: (number | string)[]) {
     return (...values: (unknown | Record<string, unknown>)[]) => {
@@ -76,14 +76,6 @@ const roundToTwo = (n: number): number => Math.round(n * 100) / 100
 const roundToThree = (n: number): number => Math.round(n * 1000) / 1000
 const roundToFour = (n: number): number => Math.round(n * 10000) / 10000
 
-/** One side of a recipe row: an item/fluid token with its (resolved) amount. */
-export interface EntityInfoStack {
-    type: string
-    name: string
-    amount: number
-    quality?: string
-}
-
 /**
  * Pure, render-free projection of what the entity info panel shows — the seam
  * that lets the website's DOM bottom sheet (#89 Phase 2) present the same facts
@@ -107,54 +99,6 @@ export interface EntityInfoData {
      * upgrading it to icon tokens is a noted follow-up.
      */
     circuit: string[]
-}
-
-/**
- * Split a set of recipe results into quality-distributed stacks. Non-fluid
- * outputs are multiplied by the quality roll distribution; fluids pass through
- * unchanged (they never carry quality). When `recipeQuality` is set, non-fluid
- * outputs inherit that quality instead of normal (the input quality floor).
- */
-function qualitySplitResults(
-    results: EntityInfoStack[],
-    qualityChance: number,
-    recipeQuality?: string
-): EntityInfoStack[] {
-    if (qualityChance <= 0 && !recipeQuality) return results
-
-    const inputQuality = recipeQuality || undefined
-    const dist = qualityChance > 0 ? qualityRollDistribution(qualityChance, inputQuality) : null
-    const out: EntityInfoStack[] = []
-
-    for (const r of results) {
-        if (r.type === 'fluid') {
-            out.push(r)
-            continue
-        }
-
-        if (dist && dist.length > 1) {
-            for (const d of dist) {
-                const amount = roundToThree(r.amount * d.fraction)
-                const isInputTier = d.quality === (inputQuality || 'normal')
-                // Always keep the regular / input-tier row (total minus the
-                // quality upgrades) even when the remainder rounds to 0.
-                if (!isInputTier && amount < 0.0005) continue
-                out.push({
-                    type: r.type,
-                    name: r.name,
-                    amount,
-                    quality: d.quality === 'normal' ? undefined : d.quality,
-                })
-            }
-        } else {
-            // No quality modules, but recipe has quality — tag all items with it
-            out.push({
-                ...r,
-                quality: inputQuality,
-            })
-        }
-    }
-    return out
 }
 
 function entityDisplayName(entity: Entity): string {
@@ -299,7 +243,8 @@ export class EntityInfoPanel extends Panel {
                     20,
                     recipe.ingredients,
                     recipe.results,
-                    recipe.energy_required
+                    recipe.energy_required,
+                    entity.recipeQuality
                 )
                 this.m_RecipeContainer.position.set(10, nextY)
                 nextY = this.m_RecipeContainer.position.y + this.m_RecipeContainer.height + 20
@@ -330,21 +275,25 @@ export class EntityInfoPanel extends Panel {
                 // getProductAmountWithProductivity, which honours the catalyst
                 // rule (`ignored_by_productivity`) so e.g. cryonite's water output
                 // — pure catalyst — is left untouched by productivity modules.
-                const effectiveIngredients = recipe.ingredients.map(i => ({
-                    type: i.type,
-                    name: i.name,
-                    amount: roundToThree(
-                        (getIngredientAmount(i) * newCraftingSpeed) / energy_required
-                    ),
-                }))
+                const effectiveIngredients = withRecipeQuality(
+                    recipe.ingredients.map(i => ({
+                        type: i.type,
+                        name: i.name,
+                        amount: roundToThree(
+                            (getIngredientAmount(i) * newCraftingSpeed) / energy_required
+                        ),
+                    })),
+                    entity.recipeQuality
+                )
+                // Keep full precision into the quality split — roundToTwo here
+                // used to zero out the legendary tail before filtering.
                 const rawResults: EntityInfoStack[] = recipe.results.map(r => ({
                     type: r.type,
                     name: r.name,
-                    amount: roundToTwo(
+                    amount:
                         (getProductAmountWithProductivity(r, effectiveProductivity) *
                             newCraftingSpeed) /
-                            energy_required
-                    ),
+                        energy_required,
                 }))
                 const effectiveResults = qualitySplitResults(
                     rawResults,
@@ -354,7 +303,15 @@ export class EntityInfoPanel extends Panel {
 
                 const hasQualitySplits = effectiveResults.some(r => r.quality)
                 const mul = rateUnit.multiplier
-                const shown = (n: number): number => roundToThree(n * mul)
+                // Match RatesPanel: keep 3 decimals for small quality-split
+                // fractions so legendary at /s doesn't render as a blank 0
+                // when the user hasn't switched to /h yet.
+                const shown = (n: number): number => {
+                    const scaled = n * mul
+                    const abs = Math.abs(scaled)
+                    const digits = abs > 0 && abs < 10 ? 3 : abs < 100 ? 1 : 0
+                    return Number(scaled.toFixed(digits))
+                }
 
                 let nextX = 0
                 const rowY = 20
@@ -364,7 +321,10 @@ export class EntityInfoPanel extends Panel {
                         nextX,
                         rowY,
                         i.name,
-                        shown(i.amount)
+                        shown(i.amount),
+                        undefined,
+                        undefined,
+                        i.quality
                     )
                     nextX += 36
                 }
@@ -408,7 +368,10 @@ export class EntityInfoPanel extends Panel {
                             nextX,
                             rowY,
                             r.name,
-                            shown(r.amount)
+                            shown(r.amount),
+                            undefined,
+                            undefined,
+                            r.quality
                         )
                         nextX += 36
                     }
@@ -730,34 +693,42 @@ export function buildEntityInfo(entity: Entity): EntityInfoData {
             const effectiveProductivity = recipe.allow_productivity ? productivity : 0
             data.recipe = {
                 time: energy_required,
-                ingredients: recipe.ingredients.map(i => ({
-                    type: i.type,
-                    name: i.name,
-                    amount: roundToTwo(getIngredientAmount(i)),
-                })),
-                results: recipe.results.map(r => ({
-                    type: r.type,
-                    name: r.name,
-                    amount: roundToTwo(getProductAmountWithProductivity(r, 0)),
-                })),
+                ingredients: withRecipeQuality(
+                    recipe.ingredients.map(i => ({
+                        type: i.type,
+                        name: i.name,
+                        amount: roundToTwo(getIngredientAmount(i)),
+                    })),
+                    entity.recipeQuality
+                ),
+                results: withRecipeQuality(
+                    recipe.results.map(r => ({
+                        type: r.type,
+                        name: r.name,
+                        amount: roundToTwo(getProductAmountWithProductivity(r, 0)),
+                    })),
+                    entity.recipeQuality
+                ),
             }
             const rawEffectiveResults: EntityInfoStack[] = recipe.results.map(r => ({
                 type: r.type,
                 name: r.name,
-                amount: roundToThree(
+                amount:
                     (getProductAmountWithProductivity(r, effectiveProductivity) *
                         newCraftingSpeed) /
-                        energy_required
-                ),
+                    energy_required,
             }))
             data.effectiveRecipe = {
-                ingredients: recipe.ingredients.map(i => ({
-                    type: i.type,
-                    name: i.name,
-                    amount: roundToThree(
-                        (getIngredientAmount(i) * newCraftingSpeed) / energy_required
-                    ),
-                })),
+                ingredients: withRecipeQuality(
+                    recipe.ingredients.map(i => ({
+                        type: i.type,
+                        name: i.name,
+                        amount: roundToThree(
+                            (getIngredientAmount(i) * newCraftingSpeed) / energy_required
+                        ),
+                    })),
+                    entity.recipeQuality
+                ),
                 results: qualitySplitResults(
                     rawEffectiveResults,
                     qualityEffect,

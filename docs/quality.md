@@ -41,7 +41,12 @@ Quality-module first-roll chance is `effect.quality × next_probability`
 level), floored to 0.1% — wiki legendary Q3 is **+6.2%**, not 25% or
 62.5%. Five of those in an electromagnetic plant is **31%**, not 312.5%.
 Rolls then follow the wiki ladder: stay `1−Q`, +1 `Q×0.9`, +2 `Q×0.09`,
-+3 `Q×0.009`, legendary tail `Q×0.001`.
++3 `Q×0.009`, legendary tail `Q×0.001`. The entity-info panel keeps every
+tier from that ladder (including the legendary tail) and only rounds after
+the active `/s` `/m` `/h` multiplier — filtering on a pre-rounded per-second
+amount used to hide legendary entirely. When a recipe has quality set,
+non-fluid **ingredients** show the same quality badge as the outputs
+(fluids stay unbadged).
 
 Beacon **supply area** grows with the same +1 tile per quality level the
 [Quality wiki](https://wiki.factorio.com/Quality) lists for electric poles
