@@ -1,4 +1,4 @@
-import { inputMode } from '@fbe/editor'
+import { inputMode, ratePeriodLabel, rateUnit } from '@fbe/editor'
 import type { EntityInfoData, EntityInfoStack } from '@fbe/editor'
 import { applyPackIcon } from './packIcons'
 import { wrapIconWithQuality } from './qualityOverlay'
@@ -33,7 +33,8 @@ export function initEntityInfoSheet(): void {
             icon.textContent = stack.name
         }
         const amount = document.createElement('span')
-        amount.textContent = String(stack.amount)
+        const shown = Math.round(stack.amount * rateUnit.multiplier * 1000) / 1000
+        amount.textContent = String(shown)
         wrap.append(wrapIconWithQuality(icon, stack.quality), amount)
         return wrap
     }
@@ -115,10 +116,10 @@ export function initEntityInfoSheet(): void {
         if (data.effectiveRecipe) {
             sheet.appendChild(
                 recipeRow(
-                    'Per second:',
+                    `${ratePeriodLabel()}:`,
                     data.effectiveRecipe.ingredients,
                     data.effectiveRecipe.results,
-                    '>'
+                    `=1${rateUnit.unit}>`
                 )
             )
         }

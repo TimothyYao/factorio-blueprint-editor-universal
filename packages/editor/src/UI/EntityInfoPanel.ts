@@ -26,6 +26,7 @@ import {
     qualityRollDistribution,
 } from '../core/quality'
 import { qualityUi } from '../common/qualityUi'
+import { ratePeriodLabel, rateUnit } from '../common/rateUnit'
 import { Panel } from './controls/Panel'
 import { fitToWidthScale } from './quickbarLayout'
 import { styles } from './style'
@@ -133,7 +134,10 @@ function qualitySplitResults(
         if (dist && dist.length > 1) {
             for (const d of dist) {
                 const amount = roundToThree(r.amount * d.fraction)
-                if (amount < 0.0005) continue
+                const isInputTier = d.quality === (inputQuality || 'normal')
+                // Always keep the regular / input-tier row (total minus the
+                // quality upgrades) even when the remainder rounds to 0.
+                if (!isInputTier && amount < 0.0005) continue
                 out.push({
                     type: r.type,
                     name: r.name,
@@ -302,7 +306,7 @@ export class EntityInfoPanel extends Panel {
                 // Show recipe that takes entity effects into account
                 this.m_RecipeIOContainer.addChild(
                     new Text({
-                        text: 'Recipe (takes entity effects into account):',
+                        text: `${ratePeriodLabel()} (takes entity effects into account):`,
                         style: styles.dialog.label,
                     })
                 )
@@ -348,15 +352,23 @@ export class EntityInfoPanel extends Panel {
                 )
 
                 const hasQualitySplits = effectiveResults.some(r => r.quality)
+                const mul = rateUnit.multiplier
+                const shown = (n: number): number => roundToThree(n * mul)
 
                 let nextX = 0
                 const rowY = 20
                 for (const i of effectiveIngredients) {
-                    F.CreateIconWithAmount(this.m_RecipeIOContainer, nextX, rowY, i.name, i.amount)
+                    F.CreateIconWithAmount(
+                        this.m_RecipeIOContainer,
+                        nextX,
+                        rowY,
+                        i.name,
+                        shown(i.amount)
+                    )
                     nextX += 36
                 }
                 nextX += 2
-                const timeText = '=1s>'
+                const timeText = `=1${rateUnit.unit}>`
                 const timeObject = new Text({ text: timeText, style: styles.dialog.label })
                 timeObject.position.set(nextX, 6 + rowY)
                 this.m_RecipeIOContainer.addChild(timeObject)
@@ -365,6 +377,7 @@ export class EntityInfoPanel extends Panel {
                 if (hasQualitySplits) {
                     // Render quality-split results as a vertical list below the
                     // ingredients row: one icon + amount + quality label per line.
+                    // The first row is the regular / input-tier remainder.
                     let qY = rowY + 36
                     for (const r of effectiveResults) {
                         F.CreateIconWithAmount(
@@ -372,13 +385,15 @@ export class EntityInfoPanel extends Panel {
                             0,
                             qY,
                             r.name,
-                            r.amount,
+                            shown(r.amount),
                             undefined,
                             undefined,
                             r.quality
                         )
                         const label = new Text({
-                            text: ` ${r.amount}` + (r.quality ? ` (${r.quality})` : ''),
+                            text:
+                                ` ${shown(r.amount)}` +
+                                (r.quality ? ` (${r.quality})` : ' (normal)'),
                             style: styles.dialog.label,
                         })
                         label.position.set(36, qY + 8)
@@ -392,7 +407,7 @@ export class EntityInfoPanel extends Panel {
                             nextX,
                             rowY,
                             r.name,
-                            r.amount
+                            shown(r.amount)
                         )
                         nextX += 36
                     }

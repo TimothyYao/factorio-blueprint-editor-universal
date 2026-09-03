@@ -512,9 +512,27 @@ body.mobile
         display: flex
         align-items: center
         justify-content: space-between
+        gap: 8px
         font-weight: 600
         font-size: 14px
         margin-bottom: 2px
+    .rd-units
+        display: inline-flex
+        gap: 2px
+        margin-left: auto
+        .rd-unit
+            min-width: 28px
+            padding: 2px 4px
+            color: #b5b5b5
+            font-size: 12px
+            background: transparent
+            border: 1px solid transparent
+            border-radius: 4px
+            cursor: pointer
+            &.active
+                color: #eee
+                border-color: #888
+                background: rgba(255, 255, 255, 0.08)
         .rates-close
             width: 32px
             height: 32px
@@ -568,11 +586,18 @@ body.mobile
         position: absolute
         left: -1px
         bottom: -1px
-        width: 8px
-        height: 8px
+        width: 10px
+        height: 10px
         background: #808080
         clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%)
         box-shadow: 0 0 0 1px #111
+        &.q-overlay-art
+            clip-path: none
+            box-shadow: none
+            background-color: transparent
+            background-repeat: no-repeat
+            background-size: contain
+            background-position: center
 
 // Layering contract (#89): while any Pixi dialog is open (entity editor,
 // inventory — the editor mirrors the count over `fbe:dialogs`, see index.ts),

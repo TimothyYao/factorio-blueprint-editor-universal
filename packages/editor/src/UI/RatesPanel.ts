@@ -9,6 +9,7 @@ import F from './controls/functions'
 import { Panel } from './controls/Panel'
 import { fitToWidthScale } from './quickbarLayout'
 import { colors, styles } from './style'
+import { rateUnit, RATE_UNITS, type RateUnit } from '../common/rateUnit'
 
 /**
  * Blueprint-wide production/consumption overview (a RateCalculator-style
@@ -64,16 +65,16 @@ const netNegativeStyle = new TextStyle({
 })
 
 /**
- * Compact per-second rate: 3 decimals under 10 (quality-split fractions live
- * in the thousandths — a 0.1% legendary roll would otherwise round to 0/s),
- * 1 under 100, whole numbers above. Shared with the website's DOM drawer
- * (#89 Phase 2) so both presentations format identically.
+ * Compact rate: 3 decimals under 10 (quality-split fractions live in the
+ * thousandths — a 0.1% legendary roll would otherwise round to 0), 1 under
+ * 100, whole numbers above. `n` is always per-second; the active `rateUnit`
+ * scales it for display. Shared with the website's DOM drawer.
  */
-export const formatRate = (n: number): string => {
-    const abs = Math.abs(n)
+export const formatRate = (n: number, unit: RateUnit = rateUnit.unit): string => {
+    const scaled = n * (unit === 's' ? 1 : unit === 'm' ? 60 : 3600)
+    const abs = Math.abs(scaled)
     const digits = abs < 10 ? 3 : abs < 100 ? 1 : 0
-    // Trim trailing zeros so common exact rates read clean ("1.5", not "1.500").
-    return `${Number(n.toFixed(digits))}/s`
+    return `${Number(scaled.toFixed(digits))}/${unit}`
 }
 
 /** One material row of the rates projection: gross rates + per-machine-type counts. */
@@ -104,6 +105,7 @@ export interface RatesData {
 
 export class RatesPanel extends Panel {
     private readonly title: Text
+    private readonly m_UnitButtons: Text[]
     private readonly m_CloseButton: Text
     private readonly m_Rows: Container
     /** Blueprint currently subscribed for add/remove events (tracked so a
@@ -137,6 +139,25 @@ export class RatesPanel extends Panel {
         this.title.position.set(super.width / 2, 2)
         this.addChild(this.title)
 
+        // /s /m /h cycle — same unit the DOM drawer reads from `rateUnit`.
+        this.m_UnitButtons = RATE_UNITS.map((u, i) => {
+            const btn = new Text({ text: `/${u}`, style: styles.dialog.hint })
+            btn.eventMode = 'static'
+            btn.cursor = 'pointer'
+            btn.hitArea = new Rectangle(-4, -2, 28, 22)
+            btn.position.set(8 + i * 28, 4)
+            btn.on('pointertap', () => {
+                rateUnit.unit = u
+            })
+            this.addChild(btn)
+            return btn
+        })
+        this.paintUnitButtons()
+        rateUnit.on('change', () => {
+            this.paintUnitButtons()
+            this.recompute()
+        })
+
         // A dismiss affordance of its own: without it the only way out is
         // re-triggering the action, which touch users may have buried in the
         // rail's ⋯ overflow — easy to strand the panel over the blueprint,
@@ -152,6 +173,14 @@ export class RatesPanel extends Panel {
 
         this.m_Rows = new Container()
         this.addChild(this.m_Rows)
+    }
+
+    private paintUnitButtons(): void {
+        for (let i = 0; i < this.m_UnitButtons.length; i++) {
+            const btn = this.m_UnitButtons[i]
+            const active = RATE_UNITS[i] === rateUnit.unit
+            btn.style = active ? styles.dialog.label : styles.dialog.hint
+        }
     }
 
     public toggle(): void {

@@ -237,6 +237,37 @@ function CreateQualityBadge(
     return wrap
 }
 
+/**
+ * Rasterise the same dump-icon quality diamond menus / blueprint overlays use
+ * (`CreateQualityBadge` → `G.getTexture(q.icon)`), so the DOM sheets can
+ * overlay the real art instead of a CSS stand-in. Undefined while the atlas
+ * hasn't loaded or the pack has no icon (caller falls back to a tinted diamond).
+ */
+export function qualityBadgeDataUrl(quality: string | undefined, size = 16): string | undefined {
+    if (!qualityUi.enabled || !quality || quality === 'normal') return undefined
+    const q = resolveQuality(quality)
+    const filename = q?.icon ?? q?.icons?.[0]?.icon
+    const renderer = G.app?.renderer
+    if (!filename || !renderer) return undefined
+    const iconSize = q.icons?.[0]?.icon_size ?? q.icon_size ?? 64
+    try {
+        const tex = G.getTexture(filename, 0, 0, iconSize, iconSize)
+        const canvas = renderer.extract.canvas(tex) as HTMLCanvasElement | undefined
+        if (!canvas || canvas.width < 2) return undefined
+        if (canvas.width === size && canvas.height === size) return canvas.toDataURL()
+        const scaled = document.createElement('canvas')
+        scaled.width = size
+        scaled.height = size
+        const ctx = scaled.getContext('2d')
+        if (!ctx) return canvas.toDataURL()
+        ctx.imageSmoothingEnabled = false
+        ctx.drawImage(canvas, 0, 0, size, size)
+        return scaled.toDataURL()
+    } catch {
+        return undefined
+    }
+}
+
 function attachQualityBadge(
     icon: Container,
     quality: string | undefined,

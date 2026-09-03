@@ -16,6 +16,7 @@ import { WiresPanel } from './WiresPanel'
 import { RatesPanel } from './RatesPanel'
 import { Editor } from './editors/Editor'
 import { createEditor } from './editors/factory'
+import { rateUnit } from '../common/rateUnit'
 
 export class UIContainer extends Container {
     private debugContainer: DebugContainer
@@ -25,6 +26,7 @@ export class UIContainer extends Container {
     private ratesPanel: RatesPanel
     private dialogsContainer: Container
     private paintIconContainer: Container
+    private lastInfoEntity?: Entity
 
     public constructor() {
         super()
@@ -46,9 +48,12 @@ export class UIContainer extends Container {
             this.dialogsContainer,
             this.paintIconContainer
         )
+
+        rateUnit.on('change', () => this.updateEntityInfoPanel(this.lastInfoEntity))
     }
 
     public updateEntityInfoPanel(entity?: Entity): void {
+        this.lastInfoEntity = entity
         // Desktop shows the canvas panel; mobile shows the website's DOM
         // bottom sheet (#89 Phase 2) — one presentation per input mode, same
         // signal. The sheet gets a render-free data projection over a window

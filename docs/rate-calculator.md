@@ -13,11 +13,12 @@ assemblers?") are visible at a glance without launching the game.
 **Toggle:** the `showRates` action — `T` on desktop, the **Rates** button on
 the mobile action rail — or the panel's own ✕ to dismiss (so it can't get
 stranded over the blueprint when the toggle is buried in the rail's ⋯
-overflow). The panel pins to the right edge _below_ the entity info panel's
-anchor — the top-left belongs to the website's logo/settings DOM overlay,
-which a canvas panel would sit underneath — and updates live while open:
-entity add/remove, recipe changes, module changes, undo/redo, and blueprint
-loads all recompute.
+overflow). `/s` `/m` `/h` on the panel (and the mobile drawer) switch the
+display unit; the maths stay per-second. The panel pins to the right edge
+_below_ the entity info panel's anchor — the top-left belongs to the
+website's logo/settings DOM overlay, which a canvas panel would sit
+underneath — and updates live while open: entity add/remove, recipe
+changes, module changes, undo/redo, and blueprint loads all recompute.
 
 ## How it works
 

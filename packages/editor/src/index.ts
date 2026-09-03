@@ -12,6 +12,8 @@ import {
 import { Editor } from './Editor'
 import { inputMode, InputMode } from './common/input'
 import { qualityUi } from './common/qualityUi'
+import { rateUnit, ratePeriodLabel } from './common/rateUnit'
+import type { RateUnit } from './common/rateUnit'
 import { installTestHook } from './common/testHook'
 import type { EditorTestState, FbeTestHook } from './common/testHook'
 import FD from './core/factorioData'
@@ -36,12 +38,14 @@ export {
     FD,
     inputMode,
     qualityUi,
+    rateUnit,
+    ratePeriodLabel,
     installTestHook,
 }
 export { DATA_ROOT, DATA_PACK, DEFAULT_DATA_PACK, setDataPack }
 export { loadPackManifest, getCanonicalDataPack, canonicalPackId, canonicalPacks }
 export { graphicsOptions }
-export type { InputMode, EditorTestState, FbeTestHook, PackManifestEntry }
+export type { InputMode, EditorTestState, FbeTestHook, PackManifestEntry, RateUnit }
 // The render-free entity-info projection consumed by the website's DOM bottom
 // sheet (#89 Phase 2); delivered at runtime via the `fbe:entityinfo` event.
 export type { EntityInfoData, EntityInfoStack } from './UI/EntityInfoPanel'
@@ -50,6 +54,7 @@ export type { EntityInfoData, EntityInfoStack } from './UI/EntityInfoPanel'
 export type { RatesData, RatesEntryData } from './UI/RatesPanel'
 export { formatRate } from './UI/RatesPanel'
 export { qualityColorCss } from './core/quality'
+export { qualityBadgeDataUrl } from './UI/controls/functions'
 export default {
     registerAction,
     callAction,
