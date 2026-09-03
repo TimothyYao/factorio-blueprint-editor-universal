@@ -332,7 +332,7 @@ export class EntityInfoPanel extends Panel {
                 const effectiveIngredients = recipe.ingredients.map(i => ({
                     type: i.type,
                     name: i.name,
-                    amount: roundToTwo(
+                    amount: roundToThree(
                         (getIngredientAmount(i) * newCraftingSpeed) / energy_required
                     ),
                 }))
@@ -732,7 +732,7 @@ export function buildEntityInfo(entity: Entity): EntityInfoData {
             const rawEffectiveResults: EntityInfoStack[] = recipe.results.map(r => ({
                 type: r.type,
                 name: r.name,
-                amount: roundToTwo(
+                amount: roundToThree(
                     (getProductAmountWithProductivity(r, effectiveProductivity) *
                         newCraftingSpeed) /
                         energy_required
@@ -742,7 +742,7 @@ export function buildEntityInfo(entity: Entity): EntityInfoData {
                 ingredients: recipe.ingredients.map(i => ({
                     type: i.type,
                     name: i.name,
-                    amount: roundToTwo(
+                    amount: roundToThree(
                         (getIngredientAmount(i) * newCraftingSpeed) / energy_required
                     ),
                 })),

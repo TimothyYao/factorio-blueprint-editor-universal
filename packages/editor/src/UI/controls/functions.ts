@@ -245,25 +245,33 @@ function CreateQualityBadge(
  */
 export function qualityBadgeDataUrl(quality: string | undefined, size = 16): string | undefined {
     if (!qualityUi.enabled || !quality || quality === 'normal') return undefined
-    const q = resolveQuality(quality)
-    const filename = q?.icon ?? q?.icons?.[0]?.icon
     const renderer = G.app?.renderer
-    if (!filename || !renderer) return undefined
-    const iconSize = q.icons?.[0]?.icon_size ?? q.icon_size ?? 64
+    if (!renderer) return undefined
+    const badge = CreateQualityBadge(quality, size)
+    if (!badge) return undefined
     try {
-        const tex = G.getTexture(filename, 0, 0, iconSize, iconSize)
-        const canvas = renderer.extract.canvas(tex) as HTMLCanvasElement | undefined
+        const bounds = badge.getLocalBounds()
+        if (bounds.width < 1 || bounds.height < 1) return undefined
+        const rt = RenderTexture.create({ width: size, height: size })
+        renderer.render({ container: badge, target: rt })
+        const canvas = renderer.extract.canvas(rt) as HTMLCanvasElement | undefined
+        rt.destroy(true)
+        badge.destroy({ children: true })
         if (!canvas || canvas.width < 2) return undefined
-        if (canvas.width === size && canvas.height === size) return canvas.toDataURL()
-        const scaled = document.createElement('canvas')
-        scaled.width = size
-        scaled.height = size
-        const ctx = scaled.getContext('2d')
-        if (!ctx) return canvas.toDataURL()
-        ctx.imageSmoothingEnabled = false
-        ctx.drawImage(canvas, 0, 0, size, size)
-        return scaled.toDataURL()
+        const ctx = canvas.getContext('2d')
+        if (ctx) {
+            const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data
+            let visible = 0
+            for (let i = 3; i < data.length; i += 4) {
+                if (data[i] > 16) visible += 1
+            }
+            // Still-loading basis textures extract as a blank quad — use the
+            // CSS diamond fallback instead of painting a black square.
+            if (visible < 4) return undefined
+        }
+        return canvas.toDataURL()
     } catch {
+        badge.destroy({ children: true })
         return undefined
     }
 }
