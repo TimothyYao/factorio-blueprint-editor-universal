@@ -30,6 +30,7 @@ import { PaintTileContainer } from './PaintTileContainer'
 import { PaintWireContainer } from './PaintWireContainer'
 import { Axis, IllegalFlipError, PaintContainer } from './PaintContainer'
 import { PaintBlueprintContainer } from './PaintBlueprintContainer'
+import { PaintRailContainer } from './PaintRailContainer'
 import { GridData } from './GridData'
 import { WiresPanel } from '../UI/WiresPanel'
 
@@ -113,7 +114,9 @@ export class BlueprintContainer extends Container {
     private readonly entitySprites: Container<EntitySprite>
     public readonly wiresContainer: WiresContainer
     public readonly overlayContainer: OverlayContainer
-    private readonly entityPaintSlot: Container<PaintEntityContainer | PaintBlueprintContainer>
+    private readonly entityPaintSlot: Container<
+        PaintEntityContainer | PaintBlueprintContainer | PaintRailContainer
+    >
     private readonly wirePaintSlot: Container<PaintWireContainer>
 
     public hoverContainer: EntityContainer
@@ -170,7 +173,7 @@ export class BlueprintContainer extends Container {
          * selection box (when armed via the Select button). Tap-or-drag is
          * unknown until then, so this stays undefined while `moved` is false.
          */
-        target?: 'pan' | 'ghost' | 'marquee'
+        target?: 'pan' | 'ghost' | 'marquee' | 'rail-plan'
         /**
          * Ghost drags preserve the grab point: the ghost's center stays
          * `grabOffset` away from the finger (in screen px) instead of teleporting
@@ -385,8 +388,19 @@ export class BlueprintContainer extends Container {
         }
 
         let draggingCreateMode = false
+        let railPointerDown = false
         this.buildStart = (): boolean => {
             if (this.mode !== EditorMode.PAINT) return false
+            if (this.paintContainer instanceof PaintRailContainer) {
+                railPointerDown = true
+                if (this.paintContainer.isPlanning) {
+                    // Second click while lingering: commit the current path.
+                    this.paintContainer.commitPlan()
+                    return true
+                }
+                this.paintContainer.beginPlan()
+                return true
+            }
 
             draggingCreateMode = true
 
@@ -397,6 +411,13 @@ export class BlueprintContainer extends Container {
             return true
         }
         this.buildEnd = (): void => {
+            if (this.paintContainer instanceof PaintRailContainer && railPointerDown) {
+                railPointerDown = false
+                if (this.paintContainer.movedSinceBegin) {
+                    this.paintContainer.commitPlan()
+                }
+                return
+            }
             if (!draggingCreateMode) return
 
             draggingCreateMode = false
@@ -422,6 +443,14 @@ export class BlueprintContainer extends Container {
 
         let remove = false
         this.mineStart = (): boolean => {
+            if (
+                this.paintContainer instanceof PaintRailContainer &&
+                this.paintContainer.isPlanning
+            ) {
+                // Right-click cancels the in-progress plan only (rail stays in hand).
+                this.paintContainer.cancelPlan()
+                return true
+            }
             remove = true
             this.gridData.on('update32', mine)
             mine()
@@ -508,6 +537,7 @@ export class BlueprintContainer extends Container {
                 // applyPinchPan drive the viewport
                 G.actions.releaseAll()
                 this.touchPan = null
+                // A rail plan lives on PaintRailContainer, not touchPan — keep it.
                 // If a marquee box was mid-draw, a second finger means the user
                 // wants to pan/zoom — abandon the half-drawn selection cleanly so
                 // it can't get stuck (re-tap Select to start over). A *held*
@@ -549,6 +579,17 @@ export class BlueprintContainer extends Container {
                     if (this.marqueeArmed) {
                         tp.target = 'marquee'
                         this.beginMarqueeDrag(tp.startX, tp.startY)
+                    } else if (
+                        this.paintContainer instanceof PaintRailContainer &&
+                        (this.paintContainer.isPlanning ||
+                            this.paintContainer.visible ||
+                            this.grabsPaintGhost(tp.startX, tp.startY))
+                    ) {
+                        tp.target = 'rail-plan'
+                        this.gridData.moveTo(tp.startX, tp.startY)
+                        if (!this.paintContainer.isPlanning) {
+                            this.paintContainer.beginPlan()
+                        }
                     } else if (this.grabsPaintGhost(tp.startX, tp.startY)) {
                         tp.target = 'ghost'
                         const t = this.viewport.getTransform()
@@ -564,6 +605,11 @@ export class BlueprintContainer extends Container {
                     // Grow the selection box: moving the grid cursor fires the
                     // update events the rect + entity-collection listen on.
                     this.gridData.moveTo(e.global.x, e.global.y)
+                } else if (tp.target === 'rail-plan') {
+                    this.gridData.moveTo(e.global.x, e.global.y)
+                    if (this.paintContainer instanceof PaintRailContainer) {
+                        this.paintContainer.moveAtCursor()
+                    }
                 } else if (tp.target === 'ghost') {
                     // Steer the grid cursor (which the ghost follows, tile-snapped)
                     // to the finger, offset by the original grab point.
@@ -586,6 +632,11 @@ export class BlueprintContainer extends Container {
                 // The box is drawn; hold the selection and let the user pick
                 // Copy / Cut / Delete from the on-screen bar.
                 this.endMarqueeDrag()
+                return
+            }
+            if (tp.moved && tp.target === 'rail-plan') {
+                // Linger: the path stays ghosted until Place / a tap on it.
+                this.lastPaintTapTile = this.paintContainer?.getGridPosition()
                 return
             }
             if (tp.moved && tp.target === 'ghost' && this.mode === EditorMode.PAINT) {
@@ -619,16 +670,29 @@ export class BlueprintContainer extends Container {
                     return
                 }
                 // A tap seeds the grid + hover at the touch point, then acts.
-                this.gridData.moveTo(tp.startX, tp.startY)
-                this.updateHoverContainer()
+                // Exception: a tap on a lingering rail-plan ghost commits the
+                // current path — don't retarget the goal first.
+                const commitRailGhost =
+                    this.mode === EditorMode.PAINT &&
+                    this.paintContainer instanceof PaintRailContainer &&
+                    this.paintContainer.isPlanning &&
+                    this.grabsPaintGhost(tp.startX, tp.startY)
+                if (!commitRailGhost) {
+                    this.gridData.moveTo(tp.startX, tp.startY)
+                    this.updateHoverContainer()
+                }
                 if (this.mode === EditorMode.PAINT) {
-                    // Placement is deferred on touch: a tap positions/previews the
-                    // ghost (the touch analogue of desktop hover) and only a second
-                    // tap on the same tile commits. This makes orientation and
-                    // location previewable before the entity lands, instead of the
-                    // old blind tap-to-place. The Place (✓) toolbar button is the
-                    // alternative confirm. Desktop is unaffected.
-                    this.handlePaintTap()
+                    if (this.paintContainer instanceof PaintRailContainer) {
+                        this.handleRailPaintTap(tp.startX, tp.startY)
+                    } else {
+                        // Placement is deferred on touch: a tap positions/previews the
+                        // ghost (the touch analogue of desktop hover) and only a second
+                        // tap on the same tile commits. This makes orientation and
+                        // location previewable before the entity lands, instead of the
+                        // old blind tap-to-place. The Place (✓) toolbar button is the
+                        // alternative confirm. Desktop is unaffected.
+                        this.handlePaintTap()
+                    }
                 } else if (this.mode === EditorMode.EDIT) {
                     // Opening an entity's settings is deferred like placement: the
                     // first tap selects/hovers it (which shows its info panel,
@@ -850,6 +914,14 @@ export class BlueprintContainer extends Container {
      * cancel button both route through, since touch has no keyboard to bail with.
      */
     public clearCursor(): void {
+        if (
+            this.mode === EditorMode.PAINT &&
+            this.paintContainer instanceof PaintRailContainer &&
+            this.paintContainer.isPlanning
+        ) {
+            this.paintContainer.cancelPlan()
+            return
+        }
         if (this.mode === EditorMode.PAINT) {
             this.paintContainer.destroy()
         }
@@ -868,6 +940,39 @@ export class BlueprintContainer extends Container {
         if (this.mode !== EditorMode.PAINT || !this.paintContainer) return false
         const [worldX, worldY] = this.toWorld(screenX, screenY)
         return this.paintContainer.containsWorldPoint(worldX, worldY)
+    }
+
+    /**
+     * Touch tap while holding the rail planner: an idle tap stamps one straight
+     * (FFF-113's manual building); a tap while a plan is lingering commits it.
+     */
+    private handleRailPaintTap(screenX: number, screenY: number): void {
+        const paint = this.paintContainer
+        if (!(paint instanceof PaintRailContainer)) return
+        paint.show()
+        if (paint.isPlanning) {
+            // Tap on the lingering ghost commits; a tap elsewhere retargets the
+            // goal (and lets the 200/frame search keep filling in).
+            if (this.grabsPaintGhost(screenX, screenY)) {
+                paint.commitPlan()
+            } else {
+                paint.moveAtCursor()
+            }
+        } else {
+            paint.moveAtCursor()
+            const tile = paint.getGridPosition()
+            const onSameTile =
+                this.lastPaintTapTile !== undefined &&
+                this.lastPaintTapTile.x === tile.x &&
+                this.lastPaintTapTile.y === tile.y
+            // First tap positions/previews (same as belts). A second tap on
+            // that tile stamps one straight — not every tap, or a circular
+            // "draw" becomes a ring of islands.
+            if (onSameTile) {
+                paint.placeEntityContainer()
+            }
+        }
+        this.lastPaintTapTile = paint.getGridPosition()
     }
 
     /**
@@ -919,6 +1024,15 @@ export class BlueprintContainer extends Container {
      */
     public confirmPlacement(): void {
         if (this.mode !== EditorMode.PAINT) return
+        if (this.paintContainer instanceof PaintRailContainer) {
+            if (this.paintContainer.isPlanning) {
+                this.paintContainer.commitPlan()
+            } else {
+                this.paintContainer.placeEntityContainer()
+            }
+            this.lastPaintTapTile = this.paintContainer.getGridPosition()
+            return
+        }
         this.paintContainer.placeEntityContainer()
         this.lastPaintTapTile = this.paintContainer.getGridPosition()
     }
@@ -934,7 +1048,13 @@ export class BlueprintContainer extends Container {
             // (it ignores grid updates while hidden).
             this.paintContainer.show()
             this.paintContainer.moveAtCursor()
-            this.gridData.nudge(offset.x, offset.y)
+            // Ground rails live on the even/odd 2-tile joint grid; a 1-tile
+            // nudge would snap back. The d-pad / arrows step two tiles.
+            const step =
+                this.paintContainer instanceof PaintRailContainer
+                    ? { x: offset.x * 2, y: offset.y * 2 }
+                    : offset
+            this.gridData.nudge(step.x, step.y)
             // Keep the tap-to-commit contract: after a nudge, a tap on the
             // ghost's (visible) center tile commits.
             this.lastPaintTapTile = this.paintContainer.getGridPosition()
@@ -1655,6 +1775,13 @@ export class BlueprintContainer extends Container {
                 } else if (tileResult) {
                     this.paintContainer = this.tilePaintSlot.addChild(
                         new PaintTileContainer(this, placeResult)
+                    )
+                } else if (
+                    FD.entities[placeResult]?.type === 'straight-rail' ||
+                    FD.entities[placeResult]?.type === 'legacy-straight-rail'
+                ) {
+                    this.paintContainer = this.entityPaintSlot.addChild(
+                        new PaintRailContainer(this, placeResult, direction)
                     )
                 } else {
                     this.paintContainer = this.entityPaintSlot.addChild(

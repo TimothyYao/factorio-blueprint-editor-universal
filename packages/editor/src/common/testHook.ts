@@ -6,6 +6,7 @@ import { EditorMode } from '../containers/BlueprintContainer'
 import { PaintEntityContainer } from '../containers/PaintEntityContainer'
 import { PaintBlueprintContainer } from '../containers/PaintBlueprintContainer'
 import { PaintTileContainer } from '../containers/PaintTileContainer'
+import { PaintRailContainer } from '../containers/PaintRailContainer'
 import { OverlayContainer } from '../containers/OverlayContainer'
 import { EntityContainer } from '../containers/EntityContainer'
 import { Dialog } from '../UI/controls/Dialog'
@@ -15,6 +16,7 @@ import { Filters } from '../UI/editors/components/Filters'
 import { Recipe } from '../UI/editors/components/Recipe'
 import { Editor } from '../UI/editors/Editor'
 import { Entity } from '../core/Entity'
+import FD from '../core/factorioData'
 
 /**
  * Read-only logical-state snapshot for e2e tests. The editor renders into a
@@ -59,7 +61,7 @@ export interface EditorTestState {
          * (multi-entity ghost, draggable/nudgeable on touch), or null when idle.
          * Lets placement tests target the blueprint case specifically.
          */
-        kind: 'entity' | 'blueprint' | null
+        kind: 'entity' | 'blueprint' | 'rail' | null
         /**
          * Square tile brush edge length while a *tile* brush is held (the
          * value the [ / ] keys and the d-pad Size buttons drive); null for
@@ -67,6 +69,17 @@ export interface EditorTestState {
          * is a tile brush".
          */
         tileSize: number | null
+        /**
+         * Rail planner (#) — null when the cursor isn't a rail. `active` is a
+         * lingering/in-progress plan; `pieceCount` is the current ghost path.
+         */
+        railPlan: {
+            active: boolean
+            pieceCount: number
+            complete: boolean
+            start: { x: number; y: number; dir: number } | null
+            goal: { x: number; y: number; dir: number } | null
+        } | null
         /**
          * Alt-mode overlay containers parented onto the held ghost (inserter
          * arrows, miner output arrows, …). 0 when idle or for tiles/wires.
@@ -140,7 +153,9 @@ export function getEditorTestState(): EditorTestState {
             direction:
                 painting && G.BPC.paintContainer instanceof PaintEntityContainer
                     ? G.BPC.paintContainer.getDirection()
-                    : null,
+                    : painting && G.BPC.paintContainer instanceof PaintRailContainer
+                      ? G.BPC.paintContainer.getHeading()
+                      : null,
             mirrored:
                 painting && G.BPC.paintContainer instanceof PaintEntityContainer
                     ? G.BPC.paintContainer.getMirror()
@@ -149,12 +164,18 @@ export function getEditorTestState(): EditorTestState {
                 ? null
                 : G.BPC.paintContainer instanceof PaintBlueprintContainer
                   ? 'blueprint'
-                  : G.BPC.paintContainer instanceof PaintEntityContainer
-                    ? 'entity'
-                    : null,
+                  : G.BPC.paintContainer instanceof PaintRailContainer
+                    ? 'rail'
+                    : G.BPC.paintContainer instanceof PaintEntityContainer
+                      ? 'entity'
+                      : null,
             tileSize:
                 painting && G.BPC.paintContainer instanceof PaintTileContainer
                     ? G.BPC.paintContainer.brushSize
+                    : null,
+            railPlan:
+                painting && G.BPC.paintContainer instanceof PaintRailContainer
+                    ? G.BPC.paintContainer.getPlanState()
                     : null,
             overlayInfoCount: painting
                 ? G.BPC.paintContainer.children.filter(
@@ -220,6 +241,10 @@ export interface FbeTestHook {
      * or the (not-yet-built) touch marquee. Returns false on an empty blueprint.
      */
     spawnPasteGhost: () => boolean
+    /** Pick up the rail planner cursor (the `rail` item). */
+    spawnRailCursor: () => boolean
+    /** Viewport translation + scale — two-finger pan tests assert this moved. */
+    viewportPan: () => { x: number; y: number; scale: number }
     /**
      * Screen-space (canvas-relative, CSS px) position of a named entity, or null
      * if absent — lets touch tests tap an entity deterministically (e.g. to enter
@@ -450,10 +475,16 @@ export function installTestHook(win: Window = window): void {
         },
         closeDialogs: () => Dialog.closeAll(),
         centerView: () => G.BPC.centerViewport(),
+        viewportPan: () => ({ x: G.BPC.x, y: G.BPC.y, scale: G.BPC.scale.x }),
         spawnPasteGhost: () => {
             const entities = G.bp.entities.valuesArray()
             if (entities.length === 0) return false
             G.BPC.spawnPaintContainer(entities)
+            return true
+        },
+        spawnRailCursor: () => {
+            if (!FD.items.rail) return false
+            G.BPC.spawnPaintContainer('rail')
             return true
         },
         entityScreenPos: name => {
