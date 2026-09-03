@@ -17,6 +17,7 @@ strips quality from the blueprint or export.
 
 `F.CreateQualityBadge` — dump icon, else a Pixi diamond. Bottom-left on item
 icons; entity-corner overlay; info-panel name + diamond. Fluids stay unbadged.
+Picker chips are icon-only (no labels) so they fit a phone editor.
 
 ## Write path
 

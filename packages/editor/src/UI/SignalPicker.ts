@@ -133,7 +133,6 @@ export class SignalPicker extends Dialog {
         if (qualityUi.enabled) {
             const row = new QualityRow({
                 includeAny: true,
-                anyLabel: 'Any',
                 onChange: q => {
                     this.pickQuality = q
                     if (this.preview.signal) {

@@ -359,8 +359,7 @@ export class InventoryDialog extends Dialog {
         if (qualityBand > 0) {
             const row = new QualityRow({
                 value: this.m_pickQuality,
-                includeAny: true,
-                anyLabel: this.m_recentsKey === 'modules' ? 'Normal' : 'Any',
+                includeAny: this.m_recentsKey !== 'modules' && this.m_recentsKey !== 'recipes',
                 showComparator: !!pick?.comparator,
                 comparator: (this.m_pickComparator as ComparatorString) ?? '=',
                 onChange: q => {

@@ -79,8 +79,6 @@ export abstract class Editor extends Dialog {
         if (qualityUi.enabled) {
             const row = new QualityRow({
                 value: this.m_Entity.quality,
-                includeAny: true,
-                anyLabel: 'Nrm',
                 onChange: q => {
                     this.m_Entity.quality = q
                 },

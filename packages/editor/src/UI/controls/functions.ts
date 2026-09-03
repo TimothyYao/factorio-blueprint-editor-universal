@@ -206,8 +206,14 @@ function DrawControlFace(
  * pack shipped one; otherwise a Pixi diamond tinted with the tier colour so
  * vanilla-2.0 / pre-field dumps still badge. Nothing for omitted/`normal`.
  */
-function CreateQualityBadge(quality: string | undefined, size = 14): Container | undefined {
-    if (!qualityUi.enabled || !qualityShowsBadge(quality)) return undefined
+function CreateQualityBadge(
+    quality: string | undefined,
+    size = 14,
+    /** Picker chips need the normal diamond too; overlays still skip it. */
+    includeNormal = false
+): Container | undefined {
+    if (!qualityUi.enabled || !quality) return undefined
+    if (!includeNormal && !qualityShowsBadge(quality)) return undefined
     const q = resolveQuality(quality)
     const wrap = new Container()
     wrap.eventMode = 'none'
