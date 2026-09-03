@@ -378,7 +378,9 @@ export class InventoryDialog extends Dialog {
                     this.m_pickComparator = c
                 },
             })
-            row.position.set(12, 410)
+            // Sit in the extra band below the item grid, not on the last row
+            // (y=410 overlapped the 8th row and stole last-item clicks).
+            row.position.set(12, 442)
             this.addChild(row)
         }
 
