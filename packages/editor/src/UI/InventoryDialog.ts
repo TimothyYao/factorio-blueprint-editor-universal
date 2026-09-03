@@ -13,6 +13,7 @@ import { colors, styles } from './style'
 import { qualityUi } from '../common/qualityUi'
 import { QualityRow } from './controls/QualityRow'
 import { storedQuality } from '../core/quality'
+import { parseQuickbarSlot } from './quickbarSerialize'
 import { ComparatorString } from '../types'
 
 /*
@@ -592,7 +593,11 @@ export class InventoryDialog extends Dialog {
         if (recent.length) sections.push({ label: 'Recent', color: 0xffffff, names: recent })
         if (key === 'items') {
             const quickbar = collect(
-                G.UI.quickbarPanel.serialize().filter((n): n is string => !!n),
+                G.UI.quickbarPanel
+                    .serialize()
+                    .map(parseQuickbarSlot)
+                    .filter((s): s is { name: string; quality?: string } => !!s)
+                    .map(s => s.name),
                 false
             )
             if (quickbar.length)
