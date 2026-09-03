@@ -20,8 +20,9 @@ import { EntityContainer } from './containers/EntityContainer'
 import { qualityUi } from './common/qualityUi'
 import { PaintTileContainer } from './containers/PaintTileContainer'
 import { UIContainer } from './UI/UIContainer'
+import type { QuickbarStored } from './UI/quickbarSerialize'
 import { Dialog } from './UI/controls/Dialog'
-import { ActionRegistry, MouseButton } from './actions'
+import { ActionRegistry, MouseButton, historyModifiers } from './actions'
 
 export class Editor {
     // Stable mode emitter. The BlueprintContainer is swapped out on every
@@ -280,10 +281,10 @@ export class Editor {
         G.BPC.gridPattern = pattern
     }
 
-    public get quickbarItems(): string[] {
+    public get quickbarItems(): QuickbarStored[] {
         return G.UI.quickbarPanel.serialize()
     }
-    public set quickbarItems(items: string[]) {
+    public set quickbarItems(items: QuickbarStored[]) {
         G.UI.quickbarPanel.generateSlots(items)
     }
 
@@ -566,7 +567,8 @@ export class Editor {
                             G.UI.createInventory(
                                 'Inventory',
                                 undefined,
-                                name => G.BPC.spawnPaintContainer(name),
+                                (name, quality) =>
+                                    G.BPC.spawnPaintContainer(name, 0, [], false, quality),
                                 'items'
                             )
                         }
@@ -696,7 +698,8 @@ export class Editor {
                 trigger: {
                     code: 'KeyZ',
                 },
-                modifiers: { control: true },
+                // Command+Z on Mac, Control+Z elsewhere. Same as Factorio.
+                modifiers: historyModifiers(),
                 callbacks: {
                     onPress: () => {
                         G.bp.history.undo()
@@ -704,11 +707,26 @@ export class Editor {
                     },
                 },
             },
+            // Factorio binds redo to both Ctrl/Cmd+Y and Ctrl/Cmd+Shift+Z
+            // (FFF #412: ⌘⇧Z on Mac). Shift+Z is the primary so Mac users get
+            // the usual redo chord; Y stays as the other Factorio default.
             redo: {
+                trigger: {
+                    code: 'KeyZ',
+                },
+                modifiers: historyModifiers({ shift: true }),
+                callbacks: {
+                    onPress: () => {
+                        G.bp.history.redo()
+                        return true
+                    },
+                },
+            },
+            redoY: {
                 trigger: {
                     code: 'KeyY',
                 },
-                modifiers: { control: true },
+                modifiers: historyModifiers(),
                 callbacks: {
                     onPress: () => {
                         G.bp.history.redo()

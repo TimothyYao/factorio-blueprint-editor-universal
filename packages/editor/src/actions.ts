@@ -9,7 +9,8 @@ export enum MouseButton {
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
-type ModifierKey = 'Control' | 'Shift' | 'Alt'
+// 'Meta' is Command on macOS (and the Super/Windows key elsewhere).
+type ModifierKey = 'Control' | 'Shift' | 'Alt' | 'Meta'
 
 /**
  * Intersection of codes emitted by Firefox and Chrome on all platforms listed on
@@ -132,6 +133,27 @@ interface Modifiers {
     control?: boolean
     shift?: boolean
     alt?: boolean
+    meta?: boolean
+}
+
+/**
+ * True on Apple platforms, where Command (Meta) is the chord modifier users
+ * expect for undo/redo instead of Control. `platform` is the usual signal
+ * (`MacIntel`, `iPhone`, …); `userAgent` covers the cases where `platform` is
+ * empty or spoofed. Pass a stub in tests — defaults to the real `navigator`.
+ */
+export function isMacPlatform(nav?: { platform?: string; userAgent?: string }): boolean {
+    const source = nav ?? (typeof navigator === 'undefined' ? undefined : navigator)
+    if (!source) return false
+    return (
+        /Mac|iPhone|iPad|iPod/.test(source.platform || '') ||
+        /Mac OS X|Macintosh/.test(source.userAgent || '')
+    )
+}
+
+/** Ctrl on Windows/Linux, Command on Mac — the undo/redo chord. Extra flags (e.g. `shift`) layer on. */
+export function historyModifiers(extra: Modifiers = {}): Modifiers {
+    return { ...(isMacPlatform() ? { meta: true } : { control: true }), ...extra }
 }
 
 interface Callbacks {
@@ -170,6 +192,7 @@ export class ActionRegistry {
         control: false,
         shift: false,
         alt: false,
+        meta: false,
     }
 
     public constructor(actions: Record<string, IAction>) {
@@ -225,6 +248,13 @@ export class ActionRegistry {
                 if (action.pressMod(this.modifiers, e.key)) return
             }
         }
+        // Chord matching reads the event flags too: Command's keydown is
+        // sometimes eaten by the browser (menu bar) before we see it, but the
+        // following KeyZ still has `metaKey: true`.
+        this.modifiers.control = e.ctrlKey
+        this.modifiers.shift = e.shiftKey
+        this.modifiers.alt = e.altKey
+        this.modifiers.meta = e.metaKey
         this.press(e)
     }
     public releaseKey(e: KeyboardEvent): void {
@@ -241,7 +271,8 @@ export class ActionRegistry {
     private press(e: TriggerEvent): void {
         for (const action of this.sortedActions) {
             if (action.press(this.modifiers, e)) {
-                if (e instanceof KeyboardEvent) {
+                // KeyboardEvent isn't defined in the node unit-test env.
+                if (typeof KeyboardEvent !== 'undefined' && e instanceof KeyboardEvent) {
                     e.preventDefault()
                 }
                 return
@@ -257,7 +288,7 @@ export class ActionRegistry {
     }
 
     private isModifier(key: string): key is ModifierKey {
-        return key === 'Control' || key === 'Shift' || key === 'Alt'
+        return key === 'Control' || key === 'Shift' || key === 'Alt' || key === 'Meta'
     }
     private setModifiers(key: ModifierKey, value: boolean): void {
         switch (key) {
@@ -270,6 +301,9 @@ export class ActionRegistry {
             case 'Alt':
                 this.modifiers.alt = value
                 break
+            case 'Meta':
+                this.modifiers.meta = value
+                break
         }
     }
 
@@ -277,6 +311,7 @@ export class ActionRegistry {
         this.modifiers.control = false
         this.modifiers.shift = false
         this.modifiers.alt = false
+        this.modifiers.meta = false
 
         for (const action of this.sortedActions) {
             action.forceRelease()
@@ -328,6 +363,11 @@ class Action {
             if (this.modifiers.control) {
                 add('Control')
             }
+            if (this.modifiers.meta) {
+                // Shown as Command in the Keybinds pane — that's the Mac name
+                // for Meta, and the string we persist if the user remaps.
+                add('Command')
+            }
             if (this.modifiers.shift) {
                 add('Shift')
             }
@@ -363,6 +403,9 @@ class Action {
             switch (name) {
                 case 'Control':
                     return 'control'
+                case 'Command':
+                case 'Meta':
+                    return 'meta'
                 case 'Shift':
                     return 'shift'
                 case 'Alt':
@@ -424,6 +467,8 @@ class Action {
                 return this.modifiers.shift
             case 'Alt':
                 return this.modifiers.alt
+            case 'Meta':
+                return this.modifiers.meta
         }
     }
 
@@ -432,6 +477,7 @@ class Action {
         if (this.modifiers.control && !modifiers.control) return false
         if (this.modifiers.shift && !modifiers.shift) return false
         if (this.modifiers.alt && !modifiers.alt) return false
+        if (this.modifiers.meta && !modifiers.meta) return false
         return true
     }
 
@@ -441,6 +487,7 @@ class Action {
         if (this.modifiers.control) count += 1
         if (this.modifiers.shift) count += 1
         if (this.modifiers.alt) count += 1
+        if (this.modifiers.meta) count += 1
         return count
     }
 
