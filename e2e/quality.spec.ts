@@ -120,3 +120,51 @@ test.describe('quality UI', () => {
         ).toBe('legendary')
     })
 })
+
+// User-provided legendary-beacon + electromagnetic-plant blueprint. The
+// legendary beacon's supply area is 19×19 (Quality wiki +1 tile/level).
+const LEGENDARY_BEACON_BP =
+    '0eJytkt1uhCAQhd9lrnHj7yZ62ddoNhvUiSFFsIC2xvjuHdS22+7Sq14pHOacmQ8WqOWIgxHKQbWAaLSyUD0vYEWnuPR7bh4QKjDYCPphoHjv1yixcUb3vFPoRBMNkpPHykCoFt+hStYLA1ROOIG75Z+FDAZt6axWPpPqYwazd2HQCsrelfiwnK9q7Gs0UKUU6LDfE0Tri4+c15FLOhn1uh0lRhlFHFskSuxQtdzMW8e7AdWrq1ATJWgSNsPvVc7AOt68UBMrCyhJUEmDShZU8vXyeoiPumaf91HBYGhA4jP9GNa7HiBq5HSt94Sj+FRskKP0VNxxfpz6i34WpG8HxPa/2CdB9skNe0/L8/KWfuyvh81gQmO3wYpzWuZlSZ+szM40puQ10jOHp5vTbwTCj0SGH5DgDp8='
+
+test.describe('beacon supply area quality', () => {
+    test('legendary beacon reports a 19×19 supply area', async ({ page }, testInfo) => {
+        await page.goto(`/?test&pack=space-age&source=${encodeURIComponent(LEGENDARY_BEACON_BP)}`)
+        await waitForAppReady(page)
+        await expect
+            .poll(async () => {
+                return page.evaluate(() => {
+                    const w = window as unknown as {
+                        __FBE_TEST__: { getState: () => { blueprint: { entityCount: number } } }
+                    }
+                    return w.__FBE_TEST__.getState().blueprint.entityCount
+                })
+            })
+            .toBeGreaterThan(0)
+
+        const lines = await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__: { entityInfoLines: (name: string) => string[] | null }
+            }
+            return w.__FBE_TEST__.entityInfoLines('beacon')
+        })
+        expect(lines).toContain('Supply area: 19×19')
+
+        await page.evaluate(() => {
+            const w = window as unknown as {
+                __FBE_TEST__: {
+                    centerView: () => void
+                    zoom: (zoomIn: boolean) => void
+                    hoverEntity: (name: string) => boolean
+                }
+            }
+            w.__FBE_TEST__.centerView()
+            for (let i = 0; i < 8; i++) w.__FBE_TEST__.zoom(false)
+            w.__FBE_TEST__.hoverEntity('beacon')
+        })
+
+        await page.screenshot({
+            path: testInfo.outputPath('legendary-beacon-supply-area.png'),
+            fullPage: true,
+        })
+    })
+})
