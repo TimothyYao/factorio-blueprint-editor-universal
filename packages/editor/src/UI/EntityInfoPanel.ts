@@ -1,5 +1,5 @@
 import { Container, Text } from 'pixi.js'
-import FD from '../core/factorioData'
+import FD, { isCraftingMachine } from '../core/factorioData'
 import {
     BeaconPrototype,
     CraftingMachinePrototype,
@@ -229,8 +229,9 @@ export class EntityInfoPanel extends Panel {
         this.m_EntityName.position.set(nameX, nextY)
         nextY = this.m_EntityName.position.y + this.m_EntityName.height + 10
 
-        if (entity.entityData.type === 'assembling-machine') {
-            // Details for assembling machines with or without recipe. The
+        if (isCraftingMachine(entity.entityData)) {
+            // Details for crafting machines (assemblers, furnaces, rocket silos,
+            // chemical plants, foundries, electromagnetic plants, etc.). The
             // module/beacon effect summing (incl. the 2.0 per-beacon profile
             // falloff and the engine's -80% clamps) lives in core/craftingRates
             // so the blueprint-wide rates panel computes the exact same numbers.
@@ -649,7 +650,7 @@ export function buildEntityInfo(entity: Entity): EntityInfoData {
         circuit: [],
     }
 
-    if (entity.entityData.type === 'assembling-machine') {
+    if (isCraftingMachine(entity.entityData)) {
         const {
             speed,
             productivity,
