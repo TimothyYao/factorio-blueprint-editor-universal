@@ -677,7 +677,10 @@ export class InventoryDialog extends Dialog {
      */
     private itemIcon(name: string): Container {
         const filterPicker = !!this.m_pickOptions?.comparator
-        return F.CreateIcon(name, undefined, true, false, storedQuality(this.m_pickQuality), {
+        // Filter pickers keep Normal (storedQuality would drop it) so `>` +
+        // Normal can still badge; the Items/recipe pickers stay unbadged.
+        const quality = filterPicker ? this.m_pickQuality : storedQuality(this.m_pickQuality)
+        return F.CreateIcon(name, undefined, true, false, quality, {
             anyQuality: filterPicker && this.m_pickQuality === undefined,
             comparator:
                 filterPicker && this.m_pickQuality && this.m_pickComparator !== '='

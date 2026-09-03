@@ -330,9 +330,9 @@ function attachQualityBadge(
 /**
  * Quality diamond (or the any-quality asset) plus an optional comparator
  * glyph — Factorio's filter slot / alt-mode cluster, not just the picker row.
- * `=` is the default and is not drawn. Normal is drawn only when
- * `includeNormal` (quality-only: any item of Normal); a named item of Normal
- * stays unbadged.
+ * `=` is the default and is not drawn. Normal on a named item is unbadged
+ * unless a non-`=` comparator is set (then the diamond must sit next to `>`
+ * / `≥` / …); quality-only always draws Normal (`includeNormal`).
  */
 function CreateFilterQualityMark(
     quality: string | undefined,
@@ -343,12 +343,12 @@ function CreateFilterQualityMark(
         includeNormal?: boolean
     }
 ): Container | undefined {
+    const cmp = opts?.comparator && opts.comparator !== '=' ? opts.comparator : undefined
     const badge = quality
-        ? CreateQualityBadge(quality, size, !!opts?.includeNormal)
+        ? CreateQualityBadge(quality, size, !!opts?.includeNormal || !!cmp)
         : opts?.anyQuality && qualityUi.enabled
           ? CreateAnyQualityBadge(size)
           : undefined
-    const cmp = opts?.comparator && opts.comparator !== '=' ? opts.comparator : undefined
     if (!badge && !cmp) return undefined
 
     const cluster = new Container()
