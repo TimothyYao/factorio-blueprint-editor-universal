@@ -21,7 +21,11 @@ import { getIngredientAmount, getProductAmountWithProductivity } from '../core/r
 import { Entity } from '../core/Entity'
 import { createCircuitNetworkBadges } from './circuitNetworkBadges'
 import F from './controls/functions'
-import { qualityCraftingSpeedMul, qualityDisplayName } from '../core/quality'
+import {
+    qualityCraftingSpeedMul,
+    qualityDisplayName,
+    qualityInserterSpeedMul,
+} from '../core/quality'
 import { qualityUi } from '../common/qualityUi'
 import { ratePeriodLabel, rateUnit } from '../common/rateUnit'
 import { Panel } from './controls/Panel'
@@ -392,11 +396,11 @@ export class EntityInfoPanel extends Panel {
             e.entityData.type === 'loader'
 
         if (entity.entityData.type === 'inserter') {
-            // Details for inserters
-            let speed = containerToContainer(
-                (entity.entityData as InserterPrototype).rotation_speed,
-                entity.inserterStackSize
-            )
+            // Details for inserters — quality scales rotation_speed (+30%/level).
+            const rotationSpeed =
+                (entity.entityData as InserterPrototype).rotation_speed *
+                qualityInserterSpeedMul(entity.quality)
+            let speed = containerToContainer(rotationSpeed, entity.inserterStackSize)
             const tiles = entity.name === 'long-handed-inserter' ? 2 : 1
             // const fromP = util.rotatePointBasedOnDir([0, -tiles], entity.direction)
             const toP = util.rotatePointBasedOnDir([0, tiles], entity.direction)
@@ -410,7 +414,7 @@ export class EntityInfoPanel extends Panel {
             )
             if (to && isBelt(to)) {
                 speed = containerToBelt(
-                    (entity.entityData as InserterPrototype).rotation_speed,
+                    rotationSpeed,
                     (to.entityData as TransportBeltConnectablePrototype).speed,
                     entity.inserterStackSize
                 )
@@ -748,11 +752,12 @@ export function buildEntityInfo(entity: Entity): EntityInfoData {
 
     if (entity.entityData.type === 'inserter') {
         // Same to-a-belt refinement as the canvas panel: unloading onto a belt
-        // is slower than container-to-container.
-        let speed = containerToContainer(
-            (entity.entityData as InserterPrototype).rotation_speed,
-            entity.inserterStackSize
-        )
+        // is slower than container-to-container. Quality scales rotation_speed
+        // the same way as crafting speed (+30% per level; legendary = 2.5×).
+        const rotationSpeed =
+            (entity.entityData as InserterPrototype).rotation_speed *
+            qualityInserterSpeedMul(entity.quality)
+        let speed = containerToContainer(rotationSpeed, entity.inserterStackSize)
         const tiles = entity.name === 'long-handed-inserter' ? 2 : 1
         const toP = util.rotatePointBasedOnDir([0, tiles], entity.direction)
         const to = G.bp.entityPositionGrid.getEntityAtPosition(util.sumprod(entity.position, toP))
@@ -764,7 +769,7 @@ export function buildEntityInfo(entity: Entity): EntityInfoData {
                 to.entityData.type === 'loader')
         if (toIsBelt) {
             speed = containerToBelt(
-                (entity.entityData as InserterPrototype).rotation_speed,
+                rotationSpeed,
                 (to.entityData as TransportBeltConnectablePrototype).speed,
                 entity.inserterStackSize
             )
