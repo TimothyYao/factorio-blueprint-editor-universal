@@ -20,6 +20,8 @@ import { getIngredientAmount, getProductAmountWithProductivity } from '../core/r
 import { Entity } from '../core/Entity'
 import { createCircuitNetworkBadges } from './circuitNetworkBadges'
 import F from './controls/functions'
+import { qualityCraftingSpeedMul, qualityDisplayName } from '../core/quality'
+import { qualityUi } from '../common/qualityUi'
 import { Panel } from './controls/Panel'
 import { fitToWidthScale } from './quickbarLayout'
 import { styles } from './style'
@@ -83,7 +85,7 @@ export interface EntityInfoStack {
  * `fbe:entityinfo` CustomEvent (see `UIContainer.updateEntityInfoPanel`).
  */
 export interface EntityInfoData {
-    /** Localised entity name. */
+    /** Localised entity name, with a `(Legendary)` suffix when the entity has quality. */
     name: string
     /** Stat lines (crafting speed / power / productivity, belt or inserter speed). */
     lines: string[]
@@ -99,6 +101,13 @@ export interface EntityInfoData {
     circuit: string[]
 }
 
+function entityDisplayName(entity: Entity): string {
+    const base = String(FD.entities[entity.name].localised_name)
+    if (!qualityUi.enabled) return base
+    const q = qualityDisplayName(entity.quality)
+    return q ? `${base} (${q})` : base
+}
+
 /**
  * This class creates a panel to show detailed informations about each entity (as the original game and maybe more).
  * @function updateVisualization (Update informations and show/hide panel)
@@ -109,6 +118,7 @@ export interface EntityInfoData {
 export class EntityInfoPanel extends Panel {
     private title: Text
     private m_EntityName: Text
+    private m_QualityBadge: Container
     private m_entityInfo: Text
     private m_RecipeContainer: Container
     private m_RecipeIOContainer: Container
@@ -126,12 +136,14 @@ export class EntityInfoPanel extends Panel {
         this.addChild(this.title)
 
         this.m_EntityName = new Text({ text: '', style: styles.dialog.label })
+        this.m_QualityBadge = new Container()
         this.m_entityInfo = new Text({ text: '', style: styles.dialog.label })
         this.m_RecipeContainer = new Container()
         this.m_RecipeIOContainer = new Container()
         this.m_CircuitContainer = new Container()
 
         this.addChild(
+            this.m_QualityBadge,
             this.m_EntityName,
             this.m_entityInfo,
             this.m_RecipeContainer,
@@ -144,6 +156,7 @@ export class EntityInfoPanel extends Panel {
         this.m_RecipeContainer.removeChildren()
         this.m_RecipeIOContainer.removeChildren()
         this.m_CircuitContainer.removeChildren()
+        this.m_QualityBadge.removeChildren()
 
         if (!entity) {
             this.visible = false
@@ -155,8 +168,15 @@ export class EntityInfoPanel extends Panel {
         this.visible = true
         let nextY = this.title.position.y + this.title.height + 10
 
-        this.m_EntityName.text = `Name: ${FD.entities[entity.name].localised_name}`
-        this.m_EntityName.position.set(10, nextY)
+        let nameX = 10
+        const badge = F.CreateQualityBadge(entity.quality, 14)
+        if (badge) {
+            badge.position.set(nameX, nextY)
+            this.m_QualityBadge.addChild(badge)
+            nameX += 18
+        }
+        this.m_EntityName.text = `Name: ${entityDisplayName(entity)}`
+        this.m_EntityName.position.set(nameX, nextY)
         nextY = this.m_EntityName.position.y + this.m_EntityName.height + 10
 
         if (entity.entityData.type === 'assembling-machine') {
@@ -169,7 +189,8 @@ export class EntityInfoPanel extends Panel {
                 findBeaconsReaching(entity)
             )
             const machineData = entity.entityData as CraftingMachinePrototype
-            const newCraftingSpeed = machineData.crafting_speed * (1 + speed)
+            const newCraftingSpeed =
+                machineData.crafting_speed * qualityCraftingSpeedMul(entity.quality) * (1 + speed)
             const newEnergyUsage =
                 parseInt(machineData.energy_usage.slice(0, -2)) * (1 + consumption)
 
@@ -524,6 +545,7 @@ function findBeaconsReaching(entity: Entity): BeaconSource[] {
         .map(beacon => ({
             prototype: beacon.entityData as BeaconPrototype,
             modules: resolveModuleNames(beacon.modules),
+            quality: beacon.quality,
             footprint: { position: beacon.position, size: beacon.size },
         }))
         .filter(beacon => beaconReaches(beacon, machine))
@@ -538,7 +560,7 @@ function findBeaconsReaching(entity: Entity): BeaconSource[] {
  */
 export function buildEntityInfo(entity: Entity): EntityInfoData {
     const data: EntityInfoData = {
-        name: String(FD.entities[entity.name].localised_name),
+        name: entityDisplayName(entity),
         lines: [],
         circuit: [],
     }
@@ -549,7 +571,8 @@ export function buildEntityInfo(entity: Entity): EntityInfoData {
             findBeaconsReaching(entity)
         )
         const machineData = entity.entityData as CraftingMachinePrototype
-        const newCraftingSpeed = machineData.crafting_speed * (1 + speed)
+        const newCraftingSpeed =
+            machineData.crafting_speed * qualityCraftingSpeedMul(entity.quality) * (1 + speed)
         const newEnergyUsage = parseInt(machineData.energy_usage.slice(0, -2)) * (1 + consumption)
         const fmt = (n: number): string =>
             ` (${Math.sign(n) === 1 ? '+' : '-'}${roundToTwo(Math.abs(n) * 100)}%)`

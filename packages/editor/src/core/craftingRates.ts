@@ -9,6 +9,7 @@ import FD, { getModule, isCraftingMachine } from './factorioData'
 import { beaconEffectMultiplier } from './beaconEffects'
 import { getIngredientAmount, getProductAmountWithProductivity } from './recipeAmounts'
 import type { IModuleSlot } from './Entity'
+import { qualityCraftingSpeedMul, scalePositiveEffect } from './quality'
 
 /**
  * Blueprint-wide production/consumption rate maths (issue: RateCalculator-style
@@ -50,9 +51,18 @@ export interface Footprint {
 }
 
 /** A beacon that may influence machines: its prototype + the modules it holds. */
+export interface ResolvedModule {
+    prototype: ModulePrototype
+    quality?: string
+}
+
+export type ModuleInput = ModulePrototype | ResolvedModule
+
 export interface BeaconSource {
     prototype: BeaconPrototype
-    modules: ModulePrototype[]
+    modules: ModuleInput[]
+    /** Beacon entity quality — scales `distribution_effectivity`. */
+    quality?: string
     footprint: Footprint
 }
 
@@ -60,8 +70,17 @@ export interface BeaconSource {
 export interface CraftingMachineSource {
     prototype: CraftingMachinePrototype
     recipe?: RecipePrototype
-    modules: ModulePrototype[]
+    modules: ModuleInput[]
+    /** Entity quality — scales crafting_speed by 1 + 0.3 × level. */
+    quality?: string
     footprint: Footprint
+}
+
+function asResolved(module: ModuleInput): ResolvedModule {
+    if (module && typeof module === 'object' && 'prototype' in module && module.prototype) {
+        return module
+    }
+    return { prototype: module as ModulePrototype }
 }
 
 /**
@@ -95,17 +114,20 @@ export function beaconReaches(beacon: BeaconSource, machine: Footprint): boolean
  * negative crafting rate.
  */
 export function computeMachineEffects(
-    machineModules: ModulePrototype[],
+    machineModules: ModuleInput[],
     beacons: BeaconSource[]
 ): MachineEffects {
     let speed = 0
     let productivity = 0
     let consumption = 0
 
-    const add = (module: ModulePrototype, multiplier: number): void => {
-        if (module.effect.speed) speed += module.effect.speed * multiplier
-        if (module.effect.productivity) productivity += module.effect.productivity * multiplier
-        if (module.effect.consumption) consumption += module.effect.consumption * multiplier
+    const add = (module: ModuleInput, multiplier: number): void => {
+        const r = asResolved(module)
+        const e = r.prototype.effect
+        if (e.speed) speed += scalePositiveEffect(e.speed, r.quality) * multiplier
+        if (e.productivity)
+            productivity += scalePositiveEffect(e.productivity, r.quality) * multiplier
+        if (e.consumption) consumption += scalePositiveEffect(e.consumption, r.quality) * multiplier
     }
 
     for (const module of machineModules) add(module, 1)
@@ -114,7 +136,8 @@ export function computeMachineEffects(
         const multiplier = beaconEffectMultiplier(
             beacon.prototype,
             beacons.filter(b => b.prototype.name === beacon.prototype.name).length,
-            beacons.length
+            beacons.length,
+            beacon.quality
         )
         for (const module of beacon.modules) add(module, multiplier)
     }
@@ -150,10 +173,13 @@ export interface RateContribution {
 export function craftingMachineRates(
     machine: CraftingMachinePrototype,
     recipe: RecipePrototype,
-    effects: MachineEffects
+    effects: MachineEffects,
+    machineQuality?: string
 ): { ingredients: RateContribution[]; products: RateContribution[] } {
     const energyRequired = recipe.energy_required || 0.5
-    const craftsPerSecond = (machine.crafting_speed * (1 + effects.speed)) / energyRequired
+    const craftsPerSecond =
+        (machine.crafting_speed * qualityCraftingSpeedMul(machineQuality) * (1 + effects.speed)) /
+        energyRequired
     const productivity = recipe.allow_productivity ? effects.productivity : 0
 
     return {
@@ -253,7 +279,8 @@ export function aggregateRates(
         const { ingredients, products } = craftingMachineRates(
             machine.prototype,
             machine.recipe,
-            effects
+            effects,
+            machine.quality
         )
 
         for (const i of ingredients) {
@@ -289,6 +316,7 @@ export interface RateSource {
     position: IPoint
     size: IPoint
     recipe?: string
+    quality?: string
     modules: (string | IModuleSlot | undefined)[]
 }
 
@@ -297,11 +325,12 @@ export interface RateSource {
  * slots and names the loaded pack doesn't know — a foreign blueprint can carry
  * module names this pack doesn't have. Shared with EntityInfoPanel.
  */
-export function resolveModuleNames(names: (string | IModuleSlot | undefined)[]): ModulePrototype[] {
-    const out: ModulePrototype[] = []
+export function resolveModuleNames(names: (string | IModuleSlot | undefined)[]): ResolvedModule[] {
+    const out: ResolvedModule[] = []
     for (const slot of names) {
         const name = !slot ? undefined : typeof slot === 'string' ? slot : slot.name
-        if (name && FD.items[name]) out.push(getModule(name))
+        const quality = !slot || typeof slot === 'string' ? undefined : slot.quality
+        if (name && FD.items[name]) out.push({ prototype: getModule(name), quality })
     }
     return out
 }
@@ -328,6 +357,7 @@ export function calculateBlueprintRates(sources: RateSource[]): BlueprintRates {
             beacons.push({
                 prototype: prototype as BeaconPrototype,
                 modules: resolveModuleNames(source.modules),
+                quality: source.quality,
                 footprint,
             })
         } else if (isCraftingMachine(prototype)) {
@@ -335,6 +365,7 @@ export function calculateBlueprintRates(sources: RateSource[]): BlueprintRates {
                 prototype,
                 recipe: source.recipe ? FD.recipes[source.recipe] : undefined,
                 modules: resolveModuleNames(source.modules),
+                quality: source.quality,
                 footprint,
             })
         }

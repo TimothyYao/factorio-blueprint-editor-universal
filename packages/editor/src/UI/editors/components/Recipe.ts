@@ -24,13 +24,15 @@ export class Recipe extends Slot<undefined> {
                 G.UI.createInventory(
                     'Select Recipe',
                     this.m_Entity.acceptedRecipes,
-                    name => {
+                    (name, quality) => {
                         this.m_Entity.recipe = name
+                        this.m_Entity.recipeQuality = quality
                     },
                     'recipes',
                     // "✕ Clear" once a recipe is set, "✕ Cancel" before then —
                     // picking a recipe for the first time needs a way out too.
-                    { onClear: clear, filled: this.m_Entity.recipe !== undefined }
+                    { onClear: clear, filled: this.m_Entity.recipe !== undefined },
+                    { quality: true, initialQuality: this.m_Entity.recipeQuality }
                 ),
             clear
         )
@@ -53,7 +55,7 @@ export class Recipe extends Slot<undefined> {
                 this.content = undefined
             }
         } else {
-            this.content = F.CreateIcon(recipe)
+            this.content = F.CreateIcon(recipe, 32, true, false, this.m_Entity.recipeQuality)
         }
         this.emit('changed')
     }

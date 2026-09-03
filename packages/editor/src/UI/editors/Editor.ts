@@ -10,6 +10,8 @@ import { Modules } from './components/Modules'
 import { Filters } from './components/Filters'
 import { CircuitCondition } from './components/CircuitCondition'
 import { createCircuitNetworkBadges } from '../circuitNetworkBadges'
+import { qualityUi } from '../../common/qualityUi'
+import { QualityRow } from '../controls/QualityRow'
 
 /** Editor */
 export abstract class Editor extends Dialog {
@@ -71,6 +73,21 @@ export abstract class Editor extends Dialog {
 
         // Close on entity destroy
         this.m_Entity.once('destroy', () => this.close())
+
+        // Entity-level quality chips (issue #5 slice 3). Sit under the title,
+        // left of the circuit badges; hidden when the quality UI is off.
+        if (qualityUi.enabled) {
+            const row = new QualityRow({
+                value: this.m_Entity.quality,
+                includeAny: true,
+                anyLabel: 'Nrm',
+                onChange: q => {
+                    this.m_Entity.quality = q
+                },
+            })
+            row.position.set(140, 10)
+            this.addChild(this.registerControl('entityQuality', row))
+        }
     }
 
     /**

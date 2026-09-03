@@ -1,8 +1,10 @@
 # Mobile / touch controls
 
 > **Companion doc:** [`mobile-layout-inventory.md`](./mobile-layout-inventory.md)
-> (the screen-space map). **Open issues:** #52 (reposition a selection without
-> breaking wires — the broader problem behind the in-place nudge).
+> (the screen-space map). Quality (unrelated to touch, but the same editor) is
+> tracked in [`quality.md`](./quality.md) / issue #5. **Open issues:** #52
+> (reposition a selection without breaking wires — the broader problem behind
+> the in-place nudge).
 > This doc is the source of truth for _what's done_ on the touch arc (it leads
 > the issue tracker) — when a slice lands, close/tick the matching issue in the
 > same change so they don't contradict each other. See CLAUDE.md "Keep issues

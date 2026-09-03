@@ -16,6 +16,8 @@ import G, { DATA_URL, Logger, loadTextureTransforms } from './common/globals'
 import { Entity } from './core/Entity'
 import { Blueprint, oilOutpostSettings, IOilOutpostSettings } from './core/Blueprint'
 import { BlueprintContainer, EditorMode, GridPattern } from './containers/BlueprintContainer'
+import { EntityContainer } from './containers/EntityContainer'
+import { qualityUi } from './common/qualityUi'
 import { PaintTileContainer } from './containers/PaintTileContainer'
 import { UIContainer } from './UI/UIContainer'
 import { Dialog } from './UI/controls/Dialog'
@@ -105,6 +107,8 @@ export class Editor {
         G.UI = new UIContainer()
         G.app.stage.addChild(G.UI)
         G.UI.showDebuggingLayer = G.debug
+
+        qualityUi.on('change', () => EntityContainer.refreshAllOverlays())
     }
 
     /** Re-emit the active container's mode + the blueprint's content changes on the stable emitters. */
@@ -562,7 +566,7 @@ export class Editor {
                             G.UI.createInventory(
                                 'Inventory',
                                 undefined,
-                                G.BPC.spawnPaintContainer.bind(G.BPC),
+                                name => G.BPC.spawnPaintContainer(name),
                                 'items'
                             )
                         }

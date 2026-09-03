@@ -8,6 +8,8 @@ import {
     RenderTexture,
 } from 'pixi.js'
 import FD, { ColorWithAlpha, getColor, getRecipeIconSourceName } from '../../core/factorioData'
+import { qualityColorHex, qualityShowsBadge, resolveQuality } from '../../core/quality'
+import { qualityUi } from '../../common/qualityUi'
 import {
     abbreviateAmount,
     formatProductAmount,
@@ -199,20 +201,83 @@ function DrawControlFace(
     return out
 }
 
+/**
+ * Quality diamond (issue #5 slice 1). Texture from the dump's `icon` when the
+ * pack shipped one; otherwise a Pixi diamond tinted with the tier colour so
+ * vanilla-2.0 / pre-field dumps still badge. Nothing for omitted/`normal`.
+ */
+function CreateQualityBadge(quality: string | undefined, size = 14): Container | undefined {
+    if (!qualityUi.enabled || !qualityShowsBadge(quality)) return undefined
+    const q = resolveQuality(quality)
+    const wrap = new Container()
+    wrap.eventMode = 'none'
+
+    const filename = q?.icon ?? q?.icons?.[0]?.icon
+    if (filename) {
+        const iconSize = q.icons?.[0]?.icon_size ?? q.icon_size ?? 64
+        const sprite = new Sprite(G.getTexture(filename, 0, 0, iconSize, iconSize))
+        sprite.width = size
+        sprite.height = size
+        wrap.addChild(sprite)
+        return wrap
+    }
+
+    const hex = qualityColorHex(q?.color)
+    const g = new Graphics()
+        .poly([size / 2, 0, size, size / 2, size / 2, size, 0, size / 2])
+        .fill(hex)
+        .stroke({ width: Math.max(1, size / 14), color: 0x111111, alignment: 0 })
+    wrap.addChild(g)
+    return wrap
+}
+
+function attachQualityBadge(
+    icon: Container,
+    quality: string | undefined,
+    iconSize: number,
+    setAnchor: boolean
+): Container {
+    const badge = CreateQualityBadge(quality, Math.max(8, Math.round(iconSize * 0.4)))
+    if (!badge) return icon
+    const wrap = new Container()
+    wrap.addChild(icon)
+    // Bottom-left of the icon box. Anchored icons are centered on (0, 0);
+    // unanchored ones (CreateIconWithAmount) sit with their top-left at origin.
+    const badgeSize = Math.max(8, Math.round(iconSize * 0.4))
+    if (setAnchor) {
+        badge.position.set(-iconSize / 2, iconSize / 2 - badgeSize)
+    } else {
+        badge.position.set(0, iconSize - badgeSize)
+    }
+    wrap.addChild(badge)
+    return wrap
+}
+
 /** Create Icon from Sprite Item information */
 function CreateIcon(
     itemName: string,
     maxSize = 32,
     setAnchor = true,
-    darkBackground = false
+    darkBackground = false,
+    quality?: string
 ): Container {
     if (darkBackground) {
         const item = FD.items[itemName]
         if (item) {
             if (item.dark_background_icons) {
-                return generateIcons(item.dark_background_icons)
+                return attachQualityBadge(
+                    generateIcons(item.dark_background_icons),
+                    quality,
+                    maxSize,
+                    setAnchor
+                )
             } else if (item.dark_background_icon) {
-                return generateIcon(item.dark_background_icon, item.dark_background_icon_size)
+                return attachQualityBadge(
+                    generateIcon(item.dark_background_icon, item.dark_background_icon_size),
+                    quality,
+                    maxSize,
+                    setAnchor
+                )
             }
         }
     }
@@ -226,9 +291,14 @@ function CreateIcon(
         FD.inventoryLayout.find(g => g.name === itemName)
 
     if (item?.icons) {
-        return generateIcons(item.icons)
+        return attachQualityBadge(generateIcons(item.icons), quality, maxSize, setAnchor)
     } else if (item?.icon) {
-        return generateIcon(item.icon, item.icon_size)
+        return attachQualityBadge(
+            generateIcon(item.icon, item.icon_size),
+            quality,
+            maxSize,
+            setAnchor
+        )
     }
 
     // A recipe may define no icon of its own — in Factorio it then shows its
@@ -239,7 +309,7 @@ function CreateIcon(
     // longer be opened — the recipe stays set, so every reopen re-threw (#35).
     const recipeIconSource = getRecipeIconSourceName(itemName)
     if (recipeIconSource) {
-        return CreateIcon(recipeIconSource, maxSize, setAnchor, darkBackground)
+        return CreateIcon(recipeIconSource, maxSize, setAnchor, darkBackground, quality)
     }
 
     throw new Error(`CreateIcon: no renderable icon for '${itemName}'`)
@@ -300,9 +370,10 @@ function CreateIconWithAmount(
     name: string,
     amount: number = 1,
     amountLabel?: string,
-    probabilityLabel?: string
+    probabilityLabel?: string,
+    quality?: string
 ): void {
-    const icon = CreateIcon(name, undefined, false)
+    const icon = CreateIcon(name, undefined, false, false, quality)
     icon.position.set(x, y)
     host.addChild(icon)
 
@@ -402,6 +473,7 @@ export default {
     DrawControlFace,
     CreateIcon,
     CreateIconWithAmount,
+    CreateQualityBadge,
     CreateRecipe,
     applyTint,
     colorAndAlphaToColorSource,

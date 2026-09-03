@@ -39,7 +39,13 @@ export class Modules extends Container<Slot<number>> {
                 () => this.clear(slotIndex)
             )
             if (this.m_Modules[slotIndex] !== undefined) {
-                slot.content = F.CreateIcon(this.m_Modules[slotIndex].name)
+                slot.content = F.CreateIcon(
+                    this.m_Modules[slotIndex].name,
+                    32,
+                    true,
+                    false,
+                    this.m_Modules[slotIndex].quality
+                )
             }
             this.addChild(slot)
         }
@@ -67,7 +73,7 @@ export class Modules extends Container<Slot<number>> {
                 slot.content = undefined
             }
         } else {
-            slot.content = F.CreateIcon(module.name)
+            slot.content = F.CreateIcon(module.name, 32, true, false, module.quality)
         }
         this.emit('changed')
     }
@@ -77,14 +83,15 @@ export class Modules extends Container<Slot<number>> {
         G.UI.createInventory(
             'Select Module',
             this.m_Entity.acceptedModules,
-            name => {
-                this.m_Modules[index] = { name }
+            (name, quality) => {
+                this.m_Modules[index] = quality ? { name, quality } : { name }
                 this.m_Entity.modules = this.m_Modules
             },
             'modules',
             // "✕ Clear" on a filled slot, "✕ Cancel" on an empty one — either way
             // it leaves the slot empty and closes.
-            { onClear: () => this.clear(index), filled: this.m_Modules[index] !== undefined }
+            { onClear: () => this.clear(index), filled: this.m_Modules[index] !== undefined },
+            { quality: true, initialQuality: this.m_Modules[index]?.quality }
         )
     }
 
