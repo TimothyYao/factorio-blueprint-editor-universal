@@ -109,8 +109,6 @@ export class SelectorCombinatorEditor extends Editor {
 
             extras.source = new QualityRow({
                 value: entity.selectorQualitySourceStatic,
-                includeAny: true,
-                anyLabel: 'Nrm',
                 onChange: q => {
                     entity.selectorQualitySourceStatic = q
                 },

@@ -17,6 +17,9 @@ export abstract class Dialog extends Panel {
     /** Stores all open dialogs */
     protected static s_openDialogs: Dialog[] = []
 
+    /** Title label, when the dialog was constructed with one. */
+    protected readonly m_title?: Text
+
     public constructor(width: number, height: number, title?: string) {
         super(
             width,
@@ -31,7 +34,7 @@ export abstract class Dialog extends Panel {
         this.interactiveChildren = true
 
         if (title !== undefined) {
-            this.addLabel(12, 10, title, styles.dialog.title)
+            this.m_title = this.addLabel(12, 10, title, styles.dialog.title)
         }
 
         Dialog.s_openDialogs.push(this)

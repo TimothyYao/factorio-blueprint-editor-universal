@@ -1,29 +1,33 @@
-import { Container, Text } from 'pixi.js'
+import { Container, Graphics } from 'pixi.js'
 import { ComparatorString } from '../../types'
 import { pickerQualityTiers } from '../../core/quality'
 import { qualityUi } from '../../common/qualityUi'
 import F from './functions'
 import { Button } from './Button'
 import { CycleButton } from './CycleButton'
-import { styles } from '../style'
 
 const COMPARATORS: ComparatorString[] = ['=', '≠', '>', '<', '≥', '≤']
+const CHIP = 26
+const STEP = 28
 
 export interface QualityRowOptions {
-    /** Current quality id; omitted/`normal` is the first/Any chip. */
+    /** Current quality id; omitted/`normal` means the Normal (or Any) chip. */
     value?: string
     onChange: (quality: string | undefined) => void
-    /** Extra leading chip that means "no quality key" (filters / signals). */
+    /**
+     * Leading "any quality" chip (filters / signals: omit the key). Distinct
+     * from Normal. Entity/module rows leave this off so Normal isn't doubled.
+     */
     includeAny?: boolean
-    anyLabel?: string
     showComparator?: boolean
     comparator?: ComparatorString
     onComparator?: (comparator: ComparatorString) => void
 }
 
 /**
- * Compact tier chips (Any + dump/builtin qualities) used by the inventory
- * picker, signal picker, and the shared entity-editor frame (issue #5).
+ * Icon-only quality chips (issue #5). Diamonds from the dump / fallback; no
+ * labels — three-letter stubs overflowed on a phone and duplicated Normal
+ * ("Nrm" + "Nor") next to the built-in tier list.
  */
 export class QualityRow extends Container {
     public static readonly H = 28
@@ -34,7 +38,11 @@ export class QualityRow extends Container {
     public constructor(opts: QualityRowOptions) {
         super()
         this.opts = opts
-        this.current = opts.value && opts.value !== 'normal' ? opts.value : undefined
+        this.current = this.opts.includeAny
+            ? opts.value
+            : opts.value && opts.value !== 'normal'
+              ? opts.value
+              : undefined
         this.rebuild()
     }
 
@@ -43,7 +51,7 @@ export class QualityRow extends Container {
     }
 
     public set value(next: string | undefined) {
-        const n = next && next !== 'normal' ? next : undefined
+        const n = this.opts.includeAny ? next : next && next !== 'normal' ? next : undefined
         if (n === this.current) return
         this.current = n
         this.rebuild()
@@ -57,35 +65,37 @@ export class QualityRow extends Container {
         const tiers = pickerQualityTiers()
 
         const select = (id: string | undefined): void => {
-            const n = id && id !== 'normal' ? id : undefined
+            const n = id === 'normal' && !this.opts.includeAny ? undefined : id
             this.current = n
             this.opts.onChange(n)
             this.rebuild()
         }
 
         if (this.opts.includeAny) {
-            const any = QualityRow.chip(this.opts.anyLabel ?? 'Any', !this.current)
+            const any = QualityRow.chip(undefined, this.current === undefined)
             any.position.set(x, 0)
             any.on('pointerdown', e => {
                 e.stopPropagation()
                 select(undefined)
             })
             this.addChild(any)
-            x += 40
+            x += STEP
         }
 
         for (const tier of tiers) {
-            const active =
-                this.current === tier.id ||
-                (!this.current && !this.opts.includeAny && tier.id === 'normal')
-            const chip = QualityRow.chip(tier.label.slice(0, 3), active, tier.id)
+            const active = this.opts.includeAny
+                ? this.current === tier.id
+                : tier.id === 'normal'
+                  ? !this.current
+                  : this.current === tier.id
+            const chip = QualityRow.chip(tier.id, active)
             chip.position.set(x, 0)
             chip.on('pointerdown', e => {
                 e.stopPropagation()
-                select(tier.id === 'normal' && this.opts.includeAny ? undefined : tier.id)
+                select(tier.id)
             })
             this.addChild(chip)
-            x += 40
+            x += STEP
         }
 
         if (this.opts.showComparator && this.opts.onComparator) {
@@ -94,28 +104,33 @@ export class QualityRow extends Container {
                 this.opts.comparator ?? '=',
                 v => this.opts.onComparator?.(v),
                 36,
-                26
+                CHIP
             )
             cmp.position.set(x + 4, 0)
             this.addChild(cmp)
         }
     }
 
-    private static chip(label: string, active: boolean, quality?: string): Button {
-        const b = new Button<undefined>(36, 26)
+    /** Diamond for a named tier; a hollow mark for the "any" (keyless) chip. */
+    private static chip(quality: string | undefined, active: boolean): Button {
+        const b = new Button<undefined>(CHIP, CHIP)
         b.active = active
-        const icon = quality && quality !== 'normal' ? F.CreateQualityBadge(quality, 12) : undefined
-        const t = new Text({ text: label, style: styles.dialog.label })
-        t.anchor.set(0.5)
-        if (icon) {
-            const wrap = new Container()
-            icon.position.set(-10, -6)
-            t.position.set(6, 0)
-            wrap.addChild(icon, t)
-            b.content = wrap
-        } else {
-            b.content = t
+        const mark = quality ? F.CreateQualityBadge(quality, 16, true) : QualityRow.anyMark()
+        if (mark) {
+            mark.pivot.set(8, 8)
+            b.content = mark
         }
         return b
+    }
+
+    private static anyMark(): Container {
+        const size = 16
+        const wrap = new Container()
+        wrap.eventMode = 'none'
+        const g = new Graphics()
+            .poly([size / 2, 0, size, size / 2, size / 2, size, 0, size / 2])
+            .stroke({ width: 1.5, color: 0x888888, alignment: 0 })
+        wrap.addChild(g)
+        return wrap
     }
 }
