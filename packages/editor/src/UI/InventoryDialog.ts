@@ -12,6 +12,7 @@ import { moduleSlotName } from '../core/Entity'
 import { colors, styles } from './style'
 import { qualityUi } from '../common/qualityUi'
 import { QualityRow } from './controls/QualityRow'
+import { storedQuality } from '../core/quality'
 import { ComparatorString } from '../types'
 
 /*
@@ -55,7 +56,8 @@ export interface SlotClear {
     filled: boolean
 }
 
-/** Opt-in quality / comparator row (issue #5 slice 3). */
+/** Opt-in quality / comparator row (issue #5). Items picker uses the same
+ * chips so a place can carry quality without opening an entity editor. */
 export interface InventoryPickOptions {
     quality?: boolean
     comparator?: boolean
@@ -145,7 +147,8 @@ export class InventoryDialog extends Dialog {
         clear?: SlotClear,
         pick?: InventoryPickOptions
     ) {
-        const qualityBand = pick?.quality && qualityUi.enabled ? QualityRow.H + 8 : 0
+        const qualityBand =
+            qualityUi.enabled && (pick?.quality || recentsKey === 'items') ? QualityRow.H + 8 : 0
         super(InventoryDialog.computeWidth(itemsFilter, recentsKey), 442 + qualityBand, title)
 
         this.m_clearCallBack = clear?.onClear
@@ -335,8 +338,8 @@ export class InventoryDialog extends Dialog {
             const name = this.m_previewName
             if (!name) return
             const qb = G.UI.quickbarPanel
-            if (qb.hasItem(name)) qb.removeItem(name)
-            else qb.addItem(name)
+            if (qb.hasItem(name, this.m_pickQuality)) qb.removeItem(name, this.m_pickQuality)
+            else qb.addItem(name, this.m_pickQuality)
             this.updatePreviewBar()
             // Reflect the quickbar change in the Recents tab immediately.
             if (this.m_recentsContainer) {
@@ -359,11 +362,16 @@ export class InventoryDialog extends Dialog {
         if (qualityBand > 0) {
             const row = new QualityRow({
                 value: this.m_pickQuality,
-                includeAny: this.m_recentsKey !== 'modules' && this.m_recentsKey !== 'recipes',
+                includeAny:
+                    this.m_recentsKey !== 'modules' &&
+                    this.m_recentsKey !== 'recipes' &&
+                    this.m_recentsKey !== 'items',
                 showComparator: !!pick?.comparator,
                 comparator: (this.m_pickComparator as ComparatorString) ?? '=',
                 onChange: q => {
                     this.m_pickQuality = q
+                    this.retintItemButtons()
+                    this.updatePreviewBar()
                 },
                 onComparator: c => {
                     this.m_pickComparator = c
@@ -498,7 +506,14 @@ export class InventoryDialog extends Dialog {
      */
     private makeItemButton(name: string): Button<Container> {
         const button = new Button<Container>(36, 36)
-        button.content = F.CreateIcon(name)
+        button.label = name
+        button.content = F.CreateIcon(
+            name,
+            undefined,
+            true,
+            false,
+            storedQuality(this.m_pickQuality)
+        )
 
         button.on('pointerdown', e => {
             e.stopPropagation()
@@ -617,6 +632,32 @@ export class InventoryDialog extends Dialog {
         }
     }
 
+    /** Re-badge item icons when the quality row changes. */
+    private retintItemButtons(): void {
+        const q = storedQuality(this.m_pickQuality)
+        const apply = (parent: Container): void => {
+            for (const child of parent.children) {
+                if (child instanceof Button && child.label) {
+                    try {
+                        ;(child as Button<Container>).content = F.CreateIcon(
+                            child.label,
+                            undefined,
+                            true,
+                            false,
+                            q
+                        )
+                    } catch {
+                        // Group icons / anything CreateIcon can't render.
+                    }
+                } else if (child instanceof Container) {
+                    apply(child)
+                }
+            }
+        }
+        apply(this.m_InventoryItems)
+        if (this.m_recentsContainer) apply(this.m_recentsContainer)
+    }
+
     /** Quick-tap path: record + commit the selection and close. */
     private commitSelect(name: string): void {
         if (this.m_recentsKey) recordRecent(this.m_recentsKey, name)
@@ -644,7 +685,10 @@ export class InventoryDialog extends Dialog {
             const canPin = active && this.m_recentsKey === 'items'
             this.m_pinBtn.visible = canPin
             if (canPin) {
-                this.m_pinText.text = G.UI.quickbarPanel.hasItem(this.m_previewName)
+                this.m_pinText.text = G.UI.quickbarPanel.hasItem(
+                    this.m_previewName,
+                    this.m_pickQuality
+                )
                     ? 'Unpin'
                     : 'Pin'
             }

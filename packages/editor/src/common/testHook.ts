@@ -71,6 +71,8 @@ export interface EditorTestState {
          * arrows, miner output arrows, …). 0 when idle or for tiles/wires.
          */
         overlayInfoCount: number
+        /** Quality on a held entity ghost; null when idle / Normal / not an entity. */
+        quality: string | null
     }
     /**
      * True while a modal dialog (e.g. an entity editor overlay) is open. On touch,
@@ -160,6 +162,10 @@ export function getEditorTestState(): EditorTestState {
                       c => c.label === OverlayContainer.ENTITY_INFO_LABEL
                   ).length
                 : 0,
+            quality:
+                painting && G.BPC.paintContainer instanceof PaintEntityContainer
+                    ? (G.BPC.paintContainer.getQuality() ?? null)
+                    : null,
         },
         dialogOpen: Dialog.anyOpen(),
         marquee: {
@@ -379,8 +385,10 @@ export interface FbeTestHook {
      * Seed quickbar slot 0 with a known item, so a spec has something to clear
      * without driving the assign flow (which is not what those tests are about).
      */
-    quickbarAssign: (name?: string) => void
-    /** Quality UI gate (`fbe:quality`). */
+    quickbarAssign: (name?: string, quality?: string) => void
+    /** Put `name` on the cursor with optional quality (skips the inventory). */
+    spawnPaintItem: (name: string, quality?: string) => void
+    confirmPlacement: () => void
     qualityEnabled: () => boolean
     setQualityEnabled: (enabled: boolean) => void
     entityQuality: (name: string) => string | null
@@ -436,7 +444,7 @@ export function installTestHook(win: Window = window): void {
             return G.UI.createInventory(
                 'Inventory',
                 undefined,
-                name => G.BPC.spawnPaintContainer(name),
+                (name, quality) => G.BPC.spawnPaintContainer(name, 0, [], false, quality),
                 'items'
             ).scrollToLastItem()
         },
@@ -622,7 +630,10 @@ export function installTestHook(win: Window = window): void {
             }
         },
         quickbarItems: () =>
-            G.UI.quickbarPanel.serialize().map(itemName => itemName ?? null) as (string | null)[],
+            G.UI.quickbarPanel.serialize().map(item => {
+                if (!item) return null
+                return typeof item === 'string' ? item : item.name
+            }) as (string | null)[],
         quickbarSlotPos: index => {
             const slot = G.UI.quickbarPanel.slotAt(index)
             if (!slot) return null
@@ -630,8 +641,18 @@ export function installTestHook(win: Window = window): void {
             if (r.width === 0 || r.height === 0) return null
             return { x: r.x + r.width / 2, y: r.y + r.height / 2 }
         },
-        quickbarAssign: (name = 'fast-inserter') => {
-            G.UI.quickbarPanel.slotAt(0)?.assignItem(name)
+        quickbarAssign: (name = 'fast-inserter', quality?: string) => {
+            G.UI.quickbarPanel.slotAt(0)?.assignItem(name, quality)
+        },
+        spawnPaintItem: (name, quality) => {
+            G.BPC.spawnPaintContainer(name, 0, [], false, quality)
+        },
+        confirmPlacement: () => {
+            if (G.BPC.mode === EditorMode.PAINT && G.BPC.paintContainer) {
+                G.BPC.paintContainer.show()
+                G.BPC.paintContainer.moveAtCursor()
+            }
+            G.BPC.confirmPlacement()
         },
         qualityEnabled: () => qualityUi.enabled,
         setQualityEnabled: enabled => {

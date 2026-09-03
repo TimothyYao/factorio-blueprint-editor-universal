@@ -20,6 +20,7 @@ import { EntityContainer } from './containers/EntityContainer'
 import { qualityUi } from './common/qualityUi'
 import { PaintTileContainer } from './containers/PaintTileContainer'
 import { UIContainer } from './UI/UIContainer'
+import type { QuickbarStored } from './UI/quickbarSerialize'
 import { Dialog } from './UI/controls/Dialog'
 import { ActionRegistry, MouseButton } from './actions'
 
@@ -280,10 +281,10 @@ export class Editor {
         G.BPC.gridPattern = pattern
     }
 
-    public get quickbarItems(): string[] {
+    public get quickbarItems(): QuickbarStored[] {
         return G.UI.quickbarPanel.serialize()
     }
-    public set quickbarItems(items: string[]) {
+    public set quickbarItems(items: QuickbarStored[]) {
         G.UI.quickbarPanel.generateSlots(items)
     }
 
@@ -566,7 +567,8 @@ export class Editor {
                             G.UI.createInventory(
                                 'Inventory',
                                 undefined,
-                                name => G.BPC.spawnPaintContainer(name),
+                                (name, quality) =>
+                                    G.BPC.spawnPaintContainer(name, 0, [], false, quality),
                                 'items'
                             )
                         }
