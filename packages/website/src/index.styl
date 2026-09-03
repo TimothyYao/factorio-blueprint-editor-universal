@@ -471,16 +471,8 @@ body.mobile
         display: inline-flex
         align-items: center
         gap: 3px
-    .eis-quality
-        display: inline-block
-        font-size: 9px
-        font-weight: 700
-        padding: 1px 3px
-        border-radius: 3px
-        background: rgba(255, 255, 255, 0.15)
-        color: #ffa020
-        line-height: 1
-        vertical-align: middle
+    .eis-icon
+        display: block
     .eis-quality-list
         padding-left: 24px
         margin: 2px 0
@@ -561,15 +553,26 @@ body.mobile
         gap: 3px
         color: #b5b5b5
         font-size: 12px
-    .rd-quality
-        display: inline-block
-        font-size: 9px
-        font-weight: 700
-        padding: 1px 3px
-        border-radius: 3px
-        background: rgba(255, 255, 255, 0.15)
-        color: #ffa020
-        line-height: 1
+    .rd-icon
+        display: block
+
+// Quality diamond overlay — same mark as the canvas CreateQualityBadge
+// (bottom-left of the icon, tinted with the tier colour). Shared by the
+// entity-info sheet and the rates drawer.
+.q-icon-wrap
+    position: relative
+    display: inline-block
+    flex-shrink: 0
+    line-height: 0
+    .q-overlay
+        position: absolute
+        left: -1px
+        bottom: -1px
+        width: 8px
+        height: 8px
+        background: #808080
+        clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%)
+        box-shadow: 0 0 0 1px #111
 
 // Layering contract (#89): while any Pixi dialog is open (entity editor,
 // inventory — the editor mirrors the count over `fbe:dialogs`, see index.ts),

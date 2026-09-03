@@ -1,6 +1,7 @@
 import { inputMode } from '@fbe/editor'
 import type { EntityInfoData, EntityInfoStack } from '@fbe/editor'
 import { applyPackIcon } from './packIcons'
+import { wrapIconWithQuality } from './qualityOverlay'
 
 // Entity-info sheet (#89 Phase 2): the mobile presentation of the entity info
 // panel. The editor dispatches a render-free `EntityInfoData` on every
@@ -33,14 +34,7 @@ export function initEntityInfoSheet(): void {
         }
         const amount = document.createElement('span')
         amount.textContent = String(stack.amount)
-        wrap.append(icon, amount)
-        if (stack.quality) {
-            const qBadge = document.createElement('span')
-            qBadge.className = 'eis-quality'
-            qBadge.textContent = stack.quality.charAt(0).toUpperCase()
-            qBadge.title = stack.quality
-            wrap.appendChild(qBadge)
-        }
+        wrap.append(wrapIconWithQuality(icon, stack.quality), amount)
         return wrap
     }
 

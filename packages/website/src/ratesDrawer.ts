@@ -1,6 +1,7 @@
 import EDITOR, { formatRate, inputMode } from '@fbe/editor'
 import type { RatesData, RatesEntryData } from '@fbe/editor'
 import { applyPackIcon } from './packIcons'
+import { wrapIconWithQuality } from './qualityOverlay'
 
 // Production-rates drawer (#89 Phase 2): the mobile presentation of the rates
 // readout (#87). The editor's RatesPanel stays the state holder and computer —
@@ -38,19 +39,10 @@ export function initRatesDrawer(): void {
         return wrap
     }
 
-    const qualityBadge = (quality: string): HTMLElement => {
-        const badge = document.createElement('span')
-        badge.className = 'rd-quality'
-        badge.textContent = quality.charAt(0).toUpperCase()
-        badge.title = quality
-        return badge
-    }
-
     const row = (entry: RatesEntryData): HTMLElement => {
         const el = document.createElement('div')
         el.className = 'rd-row'
-        el.appendChild(iconSpan(entry.type, entry.name))
-        if (entry.quality) el.appendChild(qualityBadge(entry.quality))
+        el.appendChild(wrapIconWithQuality(iconSpan(entry.type, entry.name), entry.quality))
 
         const isIntermediate = entry.production > 0 && entry.consumption > 0
         const rate = document.createElement('span')

@@ -49,6 +49,7 @@ export type { EntityInfoData, EntityInfoStack } from './UI/EntityInfoPanel'
 // drawer's numbers formatted exactly like the canvas panel's.
 export type { RatesData, RatesEntryData } from './UI/RatesPanel'
 export { formatRate } from './UI/RatesPanel'
+export { qualityColorCss } from './core/quality'
 export default {
     registerAction,
     callAction,

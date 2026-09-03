@@ -264,3 +264,9 @@ export function qualityColorHex(
     }
     return Math.floor(r * 255) * 0x10000 + Math.floor(g * 255) * 0x100 + Math.floor(b * 255)
 }
+
+/** CSS `#rrggbb` for a quality id — used by the DOM overlay diamond. */
+export function qualityColorCss(id: string | undefined): string {
+    const hex = qualityColorHex(resolveQuality(id)?.color)
+    return `#${hex.toString(16).padStart(6, '0')}`
+}

@@ -4,6 +4,7 @@ import { havePackData, readPackData } from './packDataFiles'
 import {
     BUILTIN_QUALITY_TIERS,
     pickerQualityTiers,
+    qualityColorCss,
     qualityColorHex,
     qualityCraftingSpeedMul,
     qualityDisplayName,
@@ -67,6 +68,11 @@ describe('builtin quality tiers', () => {
         expect(qualityColorHex({ r: 1, g: 0, b: 0 })).toBe(0xff0000)
         expect(qualityColorHex({ r: 255, g: 0, b: 0 })).toBe(0xff0000)
         expect(qualityColorHex([43, 165, 61])).toBe(qualityColorHex({ r: 43, g: 165, b: 61 }))
+    })
+
+    it('formats a quality id as a CSS #rrggbb for the DOM overlay', () => {
+        expect(qualityColorCss('legendary')).toBe('#ffa01e')
+        expect(qualityColorCss(undefined)).toBe('#808080')
     })
 })
 

@@ -64,15 +64,15 @@ const netNegativeStyle = new TextStyle({
 })
 
 /**
- * Compact per-second rate: 2 decimals under 10 (module ratios live in the
- * hundredths), 1 under 100, whole numbers above — keeps megabase-scale rows
- * from overflowing the panel's fixed width. Shared with the website's DOM
- * drawer (#89 Phase 2) so both presentations format identically.
+ * Compact per-second rate: 3 decimals under 10 (quality-split fractions live
+ * in the thousandths — a 0.1% legendary roll would otherwise round to 0/s),
+ * 1 under 100, whole numbers above. Shared with the website's DOM drawer
+ * (#89 Phase 2) so both presentations format identically.
  */
 export const formatRate = (n: number): string => {
     const abs = Math.abs(n)
-    const digits = abs < 10 ? 2 : abs < 100 ? 1 : 0
-    // Trim trailing zeros so common exact rates read clean ("1.5", not "1.50").
+    const digits = abs < 10 ? 3 : abs < 100 ? 1 : 0
+    // Trim trailing zeros so common exact rates read clean ("1.5", not "1.500").
     return `${Number(n.toFixed(digits))}/s`
 }
 
